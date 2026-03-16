@@ -1,0 +1,307 @@
+function changeFormaEntrega(obj) {
+	var oForm = document.frmCarrinho || document.frmFechamento;
+	if (obj.name == 'forma_entrega') {
+		if ((obj.getAttribute('cost') <= 0) && obj.value == 'M') {
+			document.getElementById('infoValorFrete').innerHTML = 'Serviço indisponível para o CEP informado';
+			switch (obj.value) {
+				case 'C': document.getElementById('infoValorFrete').innerHTML = 'Selecione o serviço para entrega'; break;
+				case 'M': document.getElementById('infoValorFrete').innerHTML = 'Serviço indisponível para o CEP informado'; break;
+			}
+		}
+
+		if (obj.value == 'C') {
+			if (oForm.courier) {
+				for (var c = 0, tc = oForm.courier.length; c < tc; c++) {
+					if (oForm.courier[c].checked) oForm.courier[c].click();
+				}
+			} else {
+				document.getElementById('infoValorFrete').innerHTML = 'Nenhum serviço disponível para o CEP informado';
+			}
+		}
+	}
+
+	$(".address-detail").each(function (index, element) {
+		if (element.id == "item_address_" + obj.value) {
+			$("#" + element.id).removeClass("m--hide").addClass("m--visible");
+		} else {
+			$("#" + element.id).removeClass("m--visible").addClass("m--hide");
+		}
+	});
+
+	$("#tab-pagamento").removeClass("m--hide").addClass("m--visible");
+
+	// Calcula a entrega
+	valorFormaEntrega = parseFloat(obj.getAttribute('cost'));
+	if (valorFormaEntrega > 0) {
+		$("#showValorFrete").removeClass("m--hidden-desktop m--hidden-tablet-and-mobile");
+	} else {
+		$("#showValorFrete").addClass("m--hidden-desktop m--hidden-tablet-and-mobile");
+	}
+	document.getElementById('infoValorFrete').innerHTML = 'R$ ' + number_format(valorFormaEntrega, 2, ',', '.');
+	atualizaValorFinal();
+
+	if (document.getElementById('frmDireto')) {
+		if (valorTotal == 0) {
+			document.getElementById('frmDireto').style.display = 'block';
+		} else {
+			document.getElementById('frmDireto').style.display = 'none';
+		}
+	}
+
+	if (document.frmFechamento) {
+		alteraFormaPgto();
+	}
+}
+
+function changeGarantiaReembolso(reembolso) {
+	if (reembolso > 0) {
+		$("#showGarantiaReembolso").removeClass("m--hidden-desktop m--hidden-tablet-and-mobile");
+	} else {
+		$("#showGarantiaReembolso").addClass("m--hidden-desktop m--hidden-tablet-and-mobile");
+	}
+
+	valorGarantiaReembolso = parseFloat(reembolso);
+	document.getElementById('infoValorGarantiaReembolso').innerHTML = 'R$ ' + number_format(reembolso, 2, ',', '.');
+	atualizaValorFinal();
+	alteraFormaPgto();
+}
+
+function atualizaValorFinal() {
+	if (document.getElementById('showProcessamentoJuros').classList.contains('m--hidden-desktop')) {
+		valorTotal = parseFloat(document.getElementById('valorProdutos').value) + valorFormaEntrega + valorGarantiaReembolso;
+	} else {
+		valorTotal = parseFloat(document.getElementById('valorProdutos').value) + valorFormaEntrega + valorGarantiaReembolso + valorTaxaProcessamento + valorTaxaAdministrativa + valorTaxaJuros;
+	}
+
+	document.getElementById('infoValorTotal').innerHTML = 'R$ ' + number_format(valorTotal, 2, ',', '.');
+}
+
+function validaFechamento() {
+	var forma = false;
+	var cost = 0;
+	var formaPagamento = false;
+
+	if (!document.frmFechamento.forma_entrega.length) {
+		forma = document.frmFechamento.forma_entrega.checked;
+		cost = document.frmFechamento.forma_entrega.getAttribute('cost');
+	} else {
+		for (var i = 0, t = document.frmFechamento.forma_entrega.length; i < t; i++) {
+			if (document.frmFechamento.forma_entrega[i].checked) {
+				forma = document.frmFechamento.forma_entrega[i].value;
+				cost = document.frmFechamento.forma_entrega[i].getAttribute('cost');
+				break;
+			}
+		}
+	}
+
+	if (!document.frmFechamento.formapgto.length) {
+		formaPagamento = document.frmFechamento.formapgto.value;
+	} else {
+		for (var i = 0, t = document.frmFechamento.formapgto.length; i < t; i++) {
+			if (document.frmFechamento.formapgto[i].checked) {
+				formaPagamento = document.frmFechamento.formapgto[i].value;
+				break;
+			}
+		}
+	}
+
+	try {
+		if (!forma) throw 'Informe a Forma de Entrega.';
+		if (!formaPagamento) throw 'Informe a Forma de Pagamento.';
+		if (!document.getElementById('cboParcelas').value) throw 'Informe a Parcela.';
+
+		switch (forma) {
+			case 'M':
+				if (!cost || cost <= 0) throw 'Serviço indisponível para o CEP informado';
+				break;
+		}
+	} catch (e) {
+		window.alert(e);
+		return false;
+	}
+
+	return true;
+}
+
+// CARRINHO
+function cep() {
+	var cep = document.getElementById('cep1').value + document.getElementById('cep2').value;
+	if (cep.length != 8) {
+		window.alert('Preencha o CEP corretamente.');
+		return false;
+	}
+	document.location.href = 'carrinho/frete/cep/' + cep;
+}
+
+function alteraFormaPgto() {
+	var formaEntrega = false;
+	if (document.frmFechamento.formapgto) {
+		for (var i = 0, t = document.frmFechamento.formapgto.length; i < t; i++) {
+			if (document.frmFechamento.formapgto[i].checked) {
+				formaEntrega = document.frmFechamento.formapgto[i].value;
+			}
+		}
+	}
+
+	if (formaEntrega === false) {
+		return;
+	}
+
+	switch (formaEntrega) {
+		case 'Visa':
+		case 'Master':
+		case 'Amex':
+		case 'Diners':
+		case 'Elo':
+		case 'Jcb':
+		case 'Discover':
+		case 'Aura':
+		case 'Hiper':
+			if (document.getElementById('showProcessamentoJuros').classList.contains('m--hidden-desktop')) {
+				var valorPedido = valorTotal;
+			} else {
+				var valorPedido = valorTotal - valorTaxaProcessamento - valorTaxaAdministrativa - valorTaxaJuros;
+			}
+			console.log(valorPedido);
+			$('#cboParcelas').html('');
+
+			// Taxa Administrativa
+			var arrayTaxaAdministrativa = [];
+			var txtAdministrativa = 0;
+			var txtProcessamento = 0;
+			for (const proc of regrasAdministrativas) {
+				if (proc.bandeira == formaEntrega) {
+					proc.regras.map(function (item) {
+						for (i = item.parcelaMin; i <= item.parcelaMax; i++) {
+							arrayTaxaAdministrativa[i] = item.taxa;
+						}
+					});
+				}
+			}
+
+			for (var i = 1, t = parcelas['op' + formaEntrega]; i <= t; i++) {
+				var valorParcela = valorPedido / i;
+
+				if (valorTaxaProcessamento > 0) {
+					txtProcessamento = (valorTaxaProcessamento / i);
+				}
+
+				if (typeof arrayTaxaAdministrativa[i] != "undefined") {
+					txtAdministrativa = (valorPedido * (arrayTaxaAdministrativa[i] / 100));
+				}
+
+				var strOption = i + 'x de R$ ' + number_format((valorPedido + txtAdministrativa + (txtProcessamento * i)) / i, 2, ',', '.');
+
+				var lastParcela = i;
+
+				if (valorParcela >= valorMinimoParcela) {
+					$('#cboParcelas').append($('<label class="m-radio m-radio--check-bold"><input type="radio" name="parcelas" value="' + i + '" data-taxa-juros="0" data-taxa-administrativa="' + number_format(txtAdministrativa, 2, '.', '') + '" data-taxa-processamento="' + number_format(txtProcessamento * i, 2, '.', '') + '"><div name="txtParcela">' + strOption + '</div><span></span></label>'));
+				}
+			}
+
+			// Parcelamento com juros
+			txtJuros = 0;
+			txtAdministrativa = 0;
+			txtProcessamento = 0;
+			if (typeof maxParcelas != "undefined" && typeof regrasJuros != "undefined") {
+
+				for (const regra of regrasJuros) {
+					if (valorPedido >= regra.valorMinimo && valorPedido <= regra.valorMaximo) {
+						taxaJuros = regra.taxa;
+						break;
+					}
+				}
+
+				for (var i = (lastParcela + 1); i <= maxParcelas; i++) {
+					var valorParcelasSemJuros = valorPedido / i;
+					var cf = (taxaJuros / 100) / (1 - (1 / Math.pow(1 + (taxaJuros / 100), i)));
+					var valorParcela = cf * valorPedido;
+
+					txtJuros = (valorParcela - valorParcelasSemJuros) * i;
+
+					if (valorTaxaProcessamento > 0) {
+						txtProcessamento = (valorTaxaProcessamento / i);
+					}
+
+					if (typeof arrayTaxaAdministrativa[i] != "undefined") {
+						txtAdministrativa = ((valorPedido + txtJuros) * (arrayTaxaAdministrativa[i] / 100));
+					}
+
+					let strValorParcela = number_format((valorPedido + txtJuros + txtAdministrativa + (txtProcessamento * i)) / i, 2, ',', '.');
+					// let strValorParcela = number_format((valorPedido + txtAdministrativa + (txtProcessamento * i)) / i, 2, ',', '.');
+					let strJurosParcela = number_format(txtJuros / i, 2, ',', '.');
+					var strOption = `${i}x de R$ ${strValorParcela} (+R$ ${strJurosParcela} p/ parcela)`;
+
+					if (i > 1 && valorParcela < valorMinimoParcela) {
+						continue;
+					}
+
+					$('#cboParcelas').append($('<label class="m-radio m-radio--check-bold"><input type="radio" name="parcelas" value="' + i + '" data-taxa-juros="' + number_format(txtJuros, 2, '.', '') + '" data-taxa-administrativa="' + number_format(txtAdministrativa, 2, '.', '') + '" data-taxa-processamento="' + number_format(txtProcessamento * i, 2, '.', '') + '"><div name="txtParcela">' + strOption + '</div><span></span></label>'));
+				}
+			}
+
+			// var primeiraParcelaJuros = (lastParcela < 6) ? 6 : lastParcela + 1;
+			// var elParcelaDefault = $($("input:radio[name=parcelas]").get(primeiraParcelaJuros - 1) ?? $("input:radio[name=parcelas]").get(0));
+			// var elJurosTexto = elParcelaDefault.parent().find('i[name="txtJuros"]');
+			// elJurosTexto.text(elJurosTexto.text() + ' (Mais popular)');
+			// elParcelaDefault.parent().find('div[name="txtParcela"]').wrapInner("<strong />");
+			document.getElementById('divParcelas').style.display = 'block';
+			break;
+		default:
+			if (document.getElementById('divParcelas')) document.getElementById('divParcelas').style.display = 'none';
+			$('#infoTaxaProcessamentoJuros').html('R$ ' + number_format(valorTaxaProcessamento, 2, ',', '.'));
+			break;
+	}
+}
+
+function number_format(a, b, c, d) {
+	a = Math.round(a * Math.pow(10, b)) / Math.pow(10, b);
+	et = a + '';
+	f = et.split('.');
+
+	if (!f[0]) {
+		f[0] = '0';
+	}
+	if (!f[1]) {
+		f[1] = '';
+	}
+	if (f[1].length < b) {
+		g = f[1];
+		for (i = f[1].length + 1; i <= b; i++) {
+			g += '0';
+		}
+		f[1] = g;
+	}
+	if (d != '' && f[0].length > 3) {
+		h = f[0];
+		f[0] = '';
+		for (j = 3; j < h.length; j += 3) {
+			i = h.slice(h.length - j, h.length - j + 3);
+			f[0] = d + i + f[0] + '';
+		}
+		j = h.substr(0, (h.length % 3 == 0) ? 3 : (h.length % 3));
+		f[0] = j + f[0];
+	}
+	c = (b <= 0) ? '' : c;
+	return f[0] + c + f[1];
+}
+
+/**
+ * Luhn algorithm in JavaScript: validate credit card number supplied as string of numbers
+ */
+var luhnChk = (function (arr) {
+	return function (ccNum) {
+		var
+			len = ccNum.length,
+			bit = 1,
+			sum = 0,
+			val;
+
+		while (len) {
+			val = parseInt(ccNum.charAt(--len), 10);
+			sum += (bit ^= 1) ? arr[val] : val;
+		}
+
+		return sum && sum % 10 === 0;
+	};
+}([0, 2, 4, 6, 8, 1, 3, 5, 7, 9]));
