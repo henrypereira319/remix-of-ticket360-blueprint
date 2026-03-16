@@ -210,7 +210,7 @@ const SeatMap = ({
   const availableFrameWidth = Math.max(fullBleedFrameSize.width - 64, 320);
   const availableFrameHeight = Math.max(fullBleedFrameSize.height - 176, 280);
   const fitScale = Math.min(availableFrameWidth / viewport.width, availableFrameHeight / viewport.height);
-  const fullBleedScale = clamp(Number.isFinite(fitScale) ? fitScale : 1, 0.42, 1.1);
+  const fullBleedScale = clamp(Number.isFinite(fitScale) ? fitScale : 1, 0.36, 1.1);
 
   useEffect(() => {
     if (!useFullBleedTheater) {
