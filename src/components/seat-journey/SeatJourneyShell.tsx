@@ -14,7 +14,7 @@ interface SeatJourneyShellProps {
  */
 const SeatJourneyShell = ({ mapSection, checkoutSection, floatingBar }: SeatJourneyShellProps) => {
   return (
-    <div className="relative min-h-screen bg-slate-100">
+    <div className="relative min-h-screen bg-background">
       {/* Sticky map area - stays pinned while user scrolls */}
       <div className="relative" style={{ height: "200vh" }}>
         <div className="sticky top-0 h-screen w-full">

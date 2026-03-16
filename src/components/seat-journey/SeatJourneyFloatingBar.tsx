@@ -23,16 +23,16 @@ const SeatJourneyFloatingBar = ({
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center p-4">
-      <div className="pointer-events-auto flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white/92 px-5 py-3 shadow-2xl backdrop-blur-lg">
+      <div className="pointer-events-auto flex items-center gap-4 rounded-2xl border border-border bg-card/95 px-5 py-3 shadow-2xl backdrop-blur-lg">
         <div className="flex items-center gap-3">
           <div className="text-center">
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Assentos</p>
-            <p className="text-lg font-bold text-slate-900">{itemCount}</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Assentos</p>
+            <p className="text-lg font-bold text-foreground">{itemCount}</p>
           </div>
-          <div className="h-8 w-px bg-slate-200" />
+          <div className="h-8 w-px bg-border" />
           <div className="text-center">
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Total</p>
-            <p className="text-lg font-bold text-slate-900">{formatCurrency(total)}</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total</p>
+            <p className="text-lg font-bold text-foreground">{formatCurrency(total)}</p>
           </div>
         </div>
 

@@ -52,7 +52,7 @@ const SeatJourneyCheckout = ({
   const hasSelection = items.length > 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 px-4 pb-28 pt-12 sm:px-6 sm:pb-32 sm:pt-16">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary px-4 pb-28 pt-12 sm:px-6 sm:pb-32 sm:pt-16">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
