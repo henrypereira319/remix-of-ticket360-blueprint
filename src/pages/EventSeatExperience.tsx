@@ -49,17 +49,6 @@ const EventSeatExperience = () => {
     return <NotFound />;
   }
 
-  const searchKey = searchParams.toString();
-
-  useEffect(() => {
-    const params = new URLSearchParams(searchKey);
-    const nextSeatIds = sanitizeSelectedSeatIds(event, parseSeatIdsParam(params.get("assentos")));
-    setSelectedSeatIds(nextSeatIds);
-    setSelectedTicketCategories(
-      sanitizeTicketCategories(event, nextSeatIds, parseTicketCategoriesParam(params.get("tipos"))),
-    );
-  }, [event.id, searchKey]);
-
   const updateSelectedSeatIds = (updater: (current: string[]) => string[]) => {
     setSelectedSeatIds((currentSelection) => {
       const nextSelection = updater(currentSelection);
