@@ -33,17 +33,10 @@ const EventSeatExperience = () => {
   const event = getEventBySlug(slug);
   const mapSectionRef = useRef<HTMLElement | null>(null);
   const checkoutSectionRef = useRef<HTMLElement | null>(null);
-
-  if (!event) {
-    return <NotFound />;
-  }
-
-  const initialSeatIds = sanitizeSelectedSeatIds(event, parseSeatIdsParam(searchParams.get("assentos")));
-  const initialTicketCategories = sanitizeTicketCategories(
-    event,
-    initialSeatIds,
-    parseTicketCategoriesParam(searchParams.get("tipos")),
-  );
+  const initialSeatIds = event ? sanitizeSelectedSeatIds(event, parseSeatIdsParam(searchParams.get("assentos"))) : [];
+  const initialTicketCategories = event
+    ? sanitizeTicketCategories(event, initialSeatIds, parseTicketCategoriesParam(searchParams.get("tipos")))
+    : {};
 
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>(initialSeatIds);
   const [selectedTicketCategories, setSelectedTicketCategories] =
@@ -52,6 +45,10 @@ const EventSeatExperience = () => {
   const searchKey = searchParams.toString();
 
   useEffect(() => {
+    if (!event) {
+      return;
+    }
+
     const params = new URLSearchParams(searchKey);
     const nextSeatIds = sanitizeSelectedSeatIds(event, parseSeatIdsParam(params.get("assentos")));
 
@@ -59,7 +56,11 @@ const EventSeatExperience = () => {
     setSelectedTicketCategories(
       sanitizeTicketCategories(event, nextSeatIds, parseTicketCategoriesParam(params.get("tipos"))),
     );
-  }, [event.id, searchKey]);
+  }, [event?.id, searchKey]);
+
+  if (!event) {
+    return <NotFound />;
+  }
 
   const scrollToSection = (section: "map" | "checkout") => {
     const target = section === "map" ? mapSectionRef.current : checkoutSectionRef.current;
@@ -133,7 +134,7 @@ const EventSeatExperience = () => {
               </Badge>
             </div>
 
-            <h1 className="mt-4 text-xl font-semibold sm:text-2xl">{event.name}</h1>
+            <h1 className="mt-4 text-xl font-semibold sm:text-2xl">{event.title}</h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
               O mapa ganhou mais respiro visual e agora o scroll interno desta tela leva direto para a revisao final do
               checkout, sem abrir painis por cima da planta.

@@ -193,10 +193,10 @@ const SeatMap = ({
 
   const denseTheaterMap = theaterLayout && seatMap.seats.length > 400;
   const seatButtonSize = theaterLayout
-    ? clamp((denseTheaterMap ? 14 : 44) + zoomLevel * (denseTheaterMap ? 4 : 6), denseTheaterMap ? 10 : 34, denseTheaterMap ? 34 : 72)
+    ? clamp((denseTheaterMap ? 10 : 44) + zoomLevel * (denseTheaterMap ? 3 : 6), denseTheaterMap ? 7 : 34, denseTheaterMap ? 24 : 72)
     : clamp(40 + zoomLevel * 6, 34, 72);
   const viewport = seatMap.viewport ?? { width: 1000, height: 760 };
-  const theaterSeatFontSize = seatButtonSize >= 28 ? "9px" : seatButtonSize >= 20 ? "8px" : "7px";
+  const theaterSeatFontSize = seatButtonSize >= 28 ? "9px" : seatButtonSize >= 18 ? "7px" : "6px";
   const hasPartialViewSeats = seatMap.seats.some((seat) => seat.tags?.includes("partial-view"));
   const hasReducedMobilitySeats = seatMap.seats.some((seat) => seat.tags?.includes("reduced-mobility"));
   const hasExpandedSeats = seatMap.seats.some((seat) => seat.tags?.includes("plus-size"));
@@ -210,7 +210,7 @@ const SeatMap = ({
   const availableFrameWidth = Math.max(fullBleedFrameSize.width - 64, 320);
   const availableFrameHeight = Math.max(fullBleedFrameSize.height - 176, 280);
   const fitScale = Math.min(availableFrameWidth / viewport.width, availableFrameHeight / viewport.height);
-  const fullBleedScale = clamp(Number.isFinite(fitScale) ? fitScale : 1, 0.42, 1.1);
+  const fullBleedScale = clamp(Number.isFinite(fitScale) ? fitScale : 1, 0.36, 1.1);
 
   useEffect(() => {
     if (!useFullBleedTheater) {
@@ -321,9 +321,9 @@ const SeatMap = ({
 
   const renderTheaterCanvas = (className: string, style?: CSSProperties) => (
     <div className={className} style={style}>
-      <div className="absolute inset-x-[14%] top-[5%] z-10 rounded-b-[2rem] border border-border/60 bg-foreground px-6 py-4 text-center text-card shadow-lg">
-        <p className="text-[11px] uppercase tracking-[0.28em] text-card/70">Palco</p>
-        <p className="mt-1 text-sm font-medium text-card">{seatMap.stageLabel}</p>
+      <div className="absolute inset-x-[18%] top-[1.5%] z-10 rounded-b-[1.5rem] border border-border/60 bg-foreground px-5 py-2.5 text-center text-card shadow-lg">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-card/70">Palco</p>
+        <p className="mt-0.5 text-xs font-medium text-card">{seatMap.stageLabel}</p>
       </div>
 
       <svg
@@ -339,13 +339,13 @@ const SeatMap = ({
         </defs>
 
         <path
-          d={`M 180 86 Q ${viewport.width / 2} 14 820 86 L 754 140 Q ${viewport.width / 2} 96 246 140 Z`}
+          d={`M ${viewport.width * 0.18} ${viewport.height * 0.055} Q ${viewport.width / 2} ${viewport.height * 0.005} ${viewport.width * 0.82} ${viewport.height * 0.055} L ${viewport.width * 0.76} ${viewport.height * 0.1} Q ${viewport.width / 2} ${viewport.height * 0.065} ${viewport.width * 0.24} ${viewport.height * 0.1} Z`}
           fill={useFullBleedTheater ? "rgba(15, 23, 42, 0.08)" : "rgba(15, 23, 42, 0.12)"}
           stroke={useFullBleedTheater ? "rgba(15, 23, 42, 0.26)" : "rgba(15, 23, 42, 0.16)"}
           strokeWidth={useFullBleedTheater ? 3 : 2}
         />
         <path
-          d={`M 180 86 Q ${viewport.width / 2} 14 820 86`}
+          d={`M ${viewport.width * 0.18} ${viewport.height * 0.055} Q ${viewport.width / 2} ${viewport.height * 0.005} ${viewport.width * 0.82} ${viewport.height * 0.055}`}
           fill="none"
           stroke={useFullBleedTheater ? "rgba(15, 23, 42, 0.45)" : "rgba(15, 23, 42, 0.25)"}
           strokeWidth={useFullBleedTheater ? 4 : 3}
