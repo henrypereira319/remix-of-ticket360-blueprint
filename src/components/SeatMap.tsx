@@ -339,13 +339,13 @@ const SeatMap = ({
         </defs>
 
         <path
-          d={`M ${viewport.width * 0.15} ${viewport.height * 0.096} Q ${viewport.width / 2} ${viewport.height * 0.016} ${viewport.width * 0.683} ${viewport.height * 0.096} L ${viewport.width * 0.628} ${viewport.height * 0.156} Q ${viewport.width / 2} ${viewport.height * 0.107} ${viewport.width * 0.205} ${viewport.height * 0.156} Z`}
+          d={`M ${viewport.width * 0.18} ${viewport.height * 0.055} Q ${viewport.width / 2} ${viewport.height * 0.005} ${viewport.width * 0.82} ${viewport.height * 0.055} L ${viewport.width * 0.76} ${viewport.height * 0.1} Q ${viewport.width / 2} ${viewport.height * 0.065} ${viewport.width * 0.24} ${viewport.height * 0.1} Z`}
           fill={useFullBleedTheater ? "rgba(15, 23, 42, 0.08)" : "rgba(15, 23, 42, 0.12)"}
           stroke={useFullBleedTheater ? "rgba(15, 23, 42, 0.26)" : "rgba(15, 23, 42, 0.16)"}
           strokeWidth={useFullBleedTheater ? 3 : 2}
         />
         <path
-          d={`M ${viewport.width * 0.15} ${viewport.height * 0.096} Q ${viewport.width / 2} ${viewport.height * 0.016} ${viewport.width * 0.683} ${viewport.height * 0.096}`}
+          d={`M ${viewport.width * 0.18} ${viewport.height * 0.055} Q ${viewport.width / 2} ${viewport.height * 0.005} ${viewport.width * 0.82} ${viewport.height * 0.055}`}
           fill="none"
           stroke={useFullBleedTheater ? "rgba(15, 23, 42, 0.45)" : "rgba(15, 23, 42, 0.25)"}
           strokeWidth={useFullBleedTheater ? 4 : 3}
