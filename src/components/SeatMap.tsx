@@ -193,10 +193,10 @@ const SeatMap = ({
 
   const denseTheaterMap = theaterLayout && seatMap.seats.length > 400;
   const seatButtonSize = theaterLayout
-    ? clamp((denseTheaterMap ? 14 : 44) + zoomLevel * (denseTheaterMap ? 4 : 6), denseTheaterMap ? 10 : 34, denseTheaterMap ? 34 : 72)
+    ? clamp((denseTheaterMap ? 10 : 44) + zoomLevel * (denseTheaterMap ? 3 : 6), denseTheaterMap ? 7 : 34, denseTheaterMap ? 24 : 72)
     : clamp(40 + zoomLevel * 6, 34, 72);
   const viewport = seatMap.viewport ?? { width: 1000, height: 760 };
-  const theaterSeatFontSize = seatButtonSize >= 28 ? "9px" : seatButtonSize >= 20 ? "8px" : "7px";
+  const theaterSeatFontSize = seatButtonSize >= 28 ? "9px" : seatButtonSize >= 18 ? "7px" : "6px";
   const hasPartialViewSeats = seatMap.seats.some((seat) => seat.tags?.includes("partial-view"));
   const hasReducedMobilitySeats = seatMap.seats.some((seat) => seat.tags?.includes("reduced-mobility"));
   const hasExpandedSeats = seatMap.seats.some((seat) => seat.tags?.includes("plus-size"));
