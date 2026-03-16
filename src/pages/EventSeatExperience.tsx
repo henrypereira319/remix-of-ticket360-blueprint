@@ -29,20 +29,25 @@ const EventSeatExperience = () => {
   const event = getEventBySlug(slug);
   const checkoutRef = useRef<HTMLDivElement>(null);
 
+  const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
+  const [selectedTicketCategories, setSelectedTicketCategories] =
+    useState<Record<string, TicketCategory>>({});
+
+  const searchKey = searchParams.toString();
+
+  useEffect(() => {
+    if (!event) return;
+    const params = new URLSearchParams(searchKey);
+    const nextSeatIds = sanitizeSelectedSeatIds(event, parseSeatIdsParam(params.get("assentos")));
+    setSelectedSeatIds(nextSeatIds);
+    setSelectedTicketCategories(
+      sanitizeTicketCategories(event, nextSeatIds, parseTicketCategoriesParam(params.get("tipos"))),
+    );
+  }, [event?.id, searchKey]);
+
   if (!event) {
     return <NotFound />;
   }
-
-  const initialSeatIds = sanitizeSelectedSeatIds(event, parseSeatIdsParam(searchParams.get("assentos")));
-  const initialTicketCategories = sanitizeTicketCategories(
-    event,
-    initialSeatIds,
-    parseTicketCategoriesParam(searchParams.get("tipos")),
-  );
-
-  const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>(initialSeatIds);
-  const [selectedTicketCategories, setSelectedTicketCategories] =
-    useState<Record<string, TicketCategory>>(initialTicketCategories);
 
   const searchKey = searchParams.toString();
 
