@@ -65,7 +65,7 @@ const AccountDashboard = () => {
 
   const handleSubmit = (values: ProfileValues) => {
     try {
-      auth.updateProfile(values);
+      auth.updateProfile(values as { fullName: string; email: string; document: string; phone: string; city: string });
       toast({
         title: "Cadastro atualizado",
         description: "Os dados da sua conta foram salvos neste ambiente local.",

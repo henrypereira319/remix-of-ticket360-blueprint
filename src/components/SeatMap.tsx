@@ -193,10 +193,10 @@ const SeatMap = ({
 
   const denseTheaterMap = theaterLayout && seatMap.seats.length > 400;
   const seatButtonSize = theaterLayout
-    ? clamp((denseTheaterMap ? 14 : 44) + zoomLevel * (denseTheaterMap ? 4 : 6), denseTheaterMap ? 10 : 34, denseTheaterMap ? 34 : 72)
+    ? clamp((denseTheaterMap ? 10 : 44) + zoomLevel * (denseTheaterMap ? 3 : 6), denseTheaterMap ? 7 : 34, denseTheaterMap ? 24 : 72)
     : clamp(40 + zoomLevel * 6, 34, 72);
   const viewport = seatMap.viewport ?? { width: 1000, height: 760 };
-  const theaterSeatFontSize = seatButtonSize >= 28 ? "9px" : seatButtonSize >= 20 ? "8px" : "7px";
+  const theaterSeatFontSize = seatButtonSize >= 28 ? "9px" : seatButtonSize >= 18 ? "7px" : "6px";
   const hasPartialViewSeats = seatMap.seats.some((seat) => seat.tags?.includes("partial-view"));
   const hasReducedMobilitySeats = seatMap.seats.some((seat) => seat.tags?.includes("reduced-mobility"));
   const hasExpandedSeats = seatMap.seats.some((seat) => seat.tags?.includes("plus-size"));
@@ -210,7 +210,7 @@ const SeatMap = ({
   const availableFrameWidth = Math.max(fullBleedFrameSize.width - 64, 320);
   const availableFrameHeight = Math.max(fullBleedFrameSize.height - 176, 280);
   const fitScale = Math.min(availableFrameWidth / viewport.width, availableFrameHeight / viewport.height);
-  const fullBleedScale = clamp(Number.isFinite(fitScale) ? fitScale : 1, 0.42, 1.1);
+  const fullBleedScale = clamp(Number.isFinite(fitScale) ? fitScale : 1, 0.36, 1.1);
 
   useEffect(() => {
     if (!useFullBleedTheater) {
@@ -339,13 +339,13 @@ const SeatMap = ({
         </defs>
 
         <path
-          d={`M 180 86 Q ${viewport.width / 2} 14 820 86 L 754 140 Q ${viewport.width / 2} 96 246 140 Z`}
+          d={`M ${viewport.width * 0.15} ${viewport.height * 0.096} Q ${viewport.width / 2} ${viewport.height * 0.016} ${viewport.width * 0.683} ${viewport.height * 0.096} L ${viewport.width * 0.628} ${viewport.height * 0.156} Q ${viewport.width / 2} ${viewport.height * 0.107} ${viewport.width * 0.205} ${viewport.height * 0.156} Z`}
           fill={useFullBleedTheater ? "rgba(15, 23, 42, 0.08)" : "rgba(15, 23, 42, 0.12)"}
           stroke={useFullBleedTheater ? "rgba(15, 23, 42, 0.26)" : "rgba(15, 23, 42, 0.16)"}
           strokeWidth={useFullBleedTheater ? 3 : 2}
         />
         <path
-          d={`M 180 86 Q ${viewport.width / 2} 14 820 86`}
+          d={`M ${viewport.width * 0.15} ${viewport.height * 0.096} Q ${viewport.width / 2} ${viewport.height * 0.016} ${viewport.width * 0.683} ${viewport.height * 0.096}`}
           fill="none"
           stroke={useFullBleedTheater ? "rgba(15, 23, 42, 0.45)" : "rgba(15, 23, 42, 0.25)"}
           strokeWidth={useFullBleedTheater ? 4 : 3}
@@ -563,77 +563,43 @@ const SeatMap = ({
             }}
           >
             {renderTheaterCanvas(
-              "relative h-full w-full overflow-hidden rounded-[2rem] border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,1),_rgba(248,250,252,1)_38%,_rgba(241,245,249,1)_100%)] shadow-[0_24px_72px_rgba(148,163,184,0.22)]",
+              "relative h-full w-full overflow-hidden rounded-[2rem] border border-border bg-[radial-gradient(circle_at_top,_rgba(255,255,255,1),_rgba(248,250,252,1)_38%,_rgba(241,245,249,1)_100%)] shadow-[0_24px_72px_rgba(148,163,184,0.22)]",
             )}
           </div>
         </div>
 
+        {/* Minimal zoom control — top right */}
         <div className="pointer-events-none absolute right-4 top-4 z-40 sm:right-6 sm:top-6">
-          <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-slate-200/90 bg-white/88 px-2 py-1 text-slate-900 shadow-xl backdrop-blur">
+          <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-border bg-card/90 px-2 py-1 text-foreground shadow-lg backdrop-blur">
             <button
               type="button"
               aria-label="Diminuir mapa de assentos"
               onClick={() => setZoomLevel((currentZoom) => clamp(currentZoom - 1, -1, 3))}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-slate-100"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-muted"
             >
               <Minus className="h-4 w-4" />
             </button>
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Zoom</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Zoom</span>
             <button
               type="button"
               aria-label="Aumentar mapa de assentos"
               onClick={() => setZoomLevel((currentZoom) => clamp(currentZoom + 1, -1, 3))}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-slate-100"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-muted"
             >
               <Plus className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 p-4 sm:p-6">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-            <div className="pointer-events-auto max-w-xl rounded-[1.75rem] border border-slate-200/90 bg-white/88 p-4 text-slate-900 shadow-xl backdrop-blur">
-              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Assento em foco</p>
-
-              {featuredSeat && featuredSection ? (
-                <div className="mt-3 space-y-3">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="text-lg font-semibold">Assento {featuredSeat.label}</p>
-                      <p className="text-sm text-slate-600">
-                        {featuredSection.name}
-                        {featuredSeat.area ? ` | ${featuredSeat.area}` : ""}
-                      </p>
-                    </div>
-                    <p className="text-sm font-semibold">{formatCurrency(featuredSection.price)}</p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium">
-                      {statusLabels[featuredSeat.status]}
-                    </span>
-                    {featuredSeat.tags?.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium"
-                      >
-                        {seatTagLabels[tag]}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  Navegue pelo mapa, use os filtros de setor e selecione um assento para inspecionar a leitura de
-                  disponibilidade, acessibilidade e preco.
-                </p>
-              )}
-            </div>
-
-            <div className="pointer-events-auto rounded-[1.75rem] border border-slate-200/90 bg-white/88 p-4 shadow-xl backdrop-blur">
-              <p className="mb-3 text-xs uppercase tracking-[0.18em] text-slate-500">Leitura rapida</p>
-              {renderFullBleedLegend()}
-            </div>
+        {/* Minimal legend — bottom left, compact */}
+        <div className="pointer-events-none absolute bottom-4 left-4 z-40 sm:bottom-6 sm:left-6">
+          <div className="pointer-events-auto flex flex-wrap gap-1.5 rounded-2xl border border-border bg-card/90 px-3 py-2 shadow-lg backdrop-blur">
+            <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
+              {selectedCount} selecionado(s)
+            </span>
+            <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
+              {selectableSeatCount} disponíveis
+            </span>
           </div>
         </div>
       </div>

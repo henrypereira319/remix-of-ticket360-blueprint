@@ -69,7 +69,7 @@ const AccountAccess = () => {
 
   const handleLogin = (values: LoginValues) => {
     try {
-      auth.login(values);
+      auth.login(values as { email: string; password: string });
       toast({
         title: "Acesso liberado",
         description: "Sua conta foi autenticada com sucesso.",
