@@ -808,8 +808,8 @@ const createTheaterSeatMap = (options: { hallName: string; stageLabel: string })
   seats: buildTheaterSeats(),
   variant: "theater",
   viewport: {
-    width: 1200,
-    height: 900,
+    width: 1400,
+    height: 1050,
   },
   notes: [
     "O mapa de sala agora replica a contagem-base extraida do HTML salvo do Theatro Municipal, com 1531 assentos mapeados.",
