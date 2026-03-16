@@ -321,9 +321,9 @@ const SeatMap = ({
 
   const renderTheaterCanvas = (className: string, style?: CSSProperties) => (
     <div className={className} style={style}>
-      <div className="absolute inset-x-[14%] top-[5%] z-10 rounded-b-[2rem] border border-border/60 bg-foreground px-6 py-4 text-center text-card shadow-lg">
-        <p className="text-[11px] uppercase tracking-[0.28em] text-card/70">Palco</p>
-        <p className="mt-1 text-sm font-medium text-card">{seatMap.stageLabel}</p>
+      <div className="absolute inset-x-[18%] top-[1.5%] z-10 rounded-b-[1.5rem] border border-border/60 bg-foreground px-5 py-2.5 text-center text-card shadow-lg">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-card/70">Palco</p>
+        <p className="mt-0.5 text-xs font-medium text-card">{seatMap.stageLabel}</p>
       </div>
 
       <svg
