@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
-import useEmblaCarousel from "embla-carousel-react";
+import { useCallback } from "react";
 import Autoplay from "embla-carousel-autoplay";
+import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { BannerData } from "@/data/events";
 
@@ -9,10 +9,7 @@ interface HeroBannerProps {
 }
 
 const HeroBanner = ({ banners }: HeroBannerProps) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true },
-    [Autoplay({ delay: 5000, stopOnInteraction: false })]
-  );
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5000, stopOnInteraction: false })]);
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
@@ -47,7 +44,7 @@ const HeroBanner = ({ banners }: HeroBannerProps) => {
       <button
         onClick={scrollNext}
         className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-foreground/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-        aria-label="Próximo"
+        aria-label="Proximo"
       >
         <ChevronRight className="w-5 h-5 text-card" />
       </button>

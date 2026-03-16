@@ -1,0 +1,62 @@
+function getOrCreateDeviceID() {
+    let deviceId = localStorage.getItem("device360_id");
+
+    if (!deviceId) {
+        deviceId = 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0,
+                v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+
+        localStorage.setItem("device360_id", deviceId);
+        document.cookie = "device360_id=" + deviceId + "; path=/; max-age=31536000";
+    }
+
+    return deviceId;
+}
+
+async function getFingerprint() {
+    const data = [
+        navigator.userAgent,
+        navigator.language,
+        screen.colorDepth,
+        screen.width + "x" + screen.height,
+        new Date().getTimezoneOffset(),
+        navigator.hardwareConcurrency || "na",
+        navigator.deviceMemory || "na",
+        Intl.DateTimeFormat().resolvedOptions().timeZone,
+        navigator.platform || "",
+        navigator.vendor || "",
+        window.devicePixelRatio || "",
+        !!window.TouchEvent,
+        !!window.indexedDB,
+        typeof (WebGLRenderingContext)
+    ].join("###");
+
+    // Gera hash SHA-256
+    const msgUint8 = new TextEncoder().encode(data);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function sendDeviceInfo(urlService) {
+    const jsFingerprint = await getFingerprint();
+    const deviceId = getOrCreateDeviceID();
+
+    fetch(urlService, {
+        method: "POST",
+        headers: {
+            "User-Agent": navigator.userAgent,
+            "Accept": "application/json, text/plain, */*",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Referer": window.location.origin,
+        },
+        credentials: "same-origin",
+        body: "device_id=" + encodeURIComponent(deviceId) +
+            "&fp=" + encodeURIComponent(jsFingerprint)
+    })
+        .then(r => r.json())
+        .then(console.log);
+}

@@ -1,32 +1,33 @@
 import { Search, ShoppingCart, Bell, User, ChevronDown, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
 
 const categories = [
   "Casas & Clubs",
-  "Música",
+  "Musica",
   "Artistas",
   "Eventos",
   "Artes e Teatro",
   "Especiais",
   "Estados",
-  "Turnê",
+  "Turne",
 ];
 
 const SiteHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { currentAccount, isAuthenticated } = useAuth();
+  const firstName = currentAccount?.fullName.split(" ")[0] ?? "Visitante";
 
   return (
     <header className="sticky top-0 z-50 bg-card border-b border-border">
-      {/* Top bar */}
       <div className="container flex items-center justify-between h-16 gap-4">
-        {/* Logo */}
-        <a href="/" className="flex-shrink-0">
+        <Link to="/" className="flex-shrink-0">
           <span className="font-display text-2xl font-bold text-primary">
             Event<span className="text-foreground">Hub</span>
           </span>
-        </a>
+        </Link>
 
-        {/* Search - hidden on mobile */}
         <div className="hidden md:flex flex-1 max-w-xl">
           <div className="relative w-full">
             <input
@@ -38,7 +39,6 @@ const SiteHeader = () => {
           </div>
         </div>
 
-        {/* Right icons */}
         <div className="flex items-center gap-3">
           <button className="relative p-2 rounded-full hover:bg-muted transition-colors" aria-label="Carrinho">
             <ShoppingCart className="w-5 h-5 text-foreground" />
@@ -46,15 +46,25 @@ const SiteHeader = () => {
               0
             </span>
           </button>
-          <button className="p-2 rounded-full hover:bg-muted transition-colors hidden sm:flex" aria-label="Notificações">
+          <button className="p-2 rounded-full hover:bg-muted transition-colors hidden sm:flex" aria-label="Notificacoes">
             <Bell className="w-5 h-5 text-foreground" />
           </button>
+
           <div className="hidden sm:flex items-center gap-1.5 pl-2 border-l border-border">
             <User className="w-5 h-5 text-muted-foreground" />
-            <span className="text-sm font-body">
-              Olá, <span className="text-primary font-medium">Visitante!</span>
-            </span>
+            <div className="text-sm font-body leading-tight">
+              <span>
+                Ola, <span className="text-primary font-medium">{firstName}!</span>
+              </span>
+              <Link
+                to={isAuthenticated ? "/conta" : "/conta/acesso"}
+                className="block text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {isAuthenticated ? "Minha conta" : "Entrar ou cadastrar"}
+              </Link>
+            </div>
           </div>
+
           <button
             className="md:hidden p-2 rounded-full hover:bg-muted transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -65,7 +75,6 @@ const SiteHeader = () => {
         </div>
       </div>
 
-      {/* Category nav - desktop */}
       <nav className="hidden md:block bg-foreground">
         <div className="container flex items-center gap-1 h-10 overflow-x-auto">
           {categories.map((cat) => (
@@ -81,10 +90,8 @@ const SiteHeader = () => {
         </div>
       </nav>
 
-      {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden border-t border-border bg-card">
-          {/* Mobile search */}
           <div className="p-3">
             <div className="relative">
               <input
@@ -95,6 +102,17 @@ const SiteHeader = () => {
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             </div>
           </div>
+
+          <div className="px-3 pb-2">
+            <Link
+              to={isAuthenticated ? "/conta" : "/conta/acesso"}
+              className="block rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+              onClick={() => setMenuOpen(false)}
+            >
+              {isAuthenticated ? "Abrir minha conta" : "Entrar ou cadastrar"}
+            </Link>
+          </div>
+
           <div className="px-3 pb-3 flex flex-wrap gap-2">
             {categories.map((cat) => (
               <a

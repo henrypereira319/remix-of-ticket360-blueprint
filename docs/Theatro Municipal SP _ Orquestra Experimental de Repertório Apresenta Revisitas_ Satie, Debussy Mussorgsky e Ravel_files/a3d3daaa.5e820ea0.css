@@ -1,0 +1,1 @@
+#notificationBar .q-alert{border-radius:0!important;-webkit-box-shadow:none!important;box-shadow:none!important}#notificationBar{-webkit-transition:margin-top 1.5s;transition:margin-top 1.5s}#notificationBar.hideAlert{margin-top:-58px}@media only screen and (max-width:600px){#notificationBar.hideAlert{margin-top:-92px}}
