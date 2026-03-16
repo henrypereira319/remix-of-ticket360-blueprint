@@ -432,7 +432,7 @@ const theaterSectionBlueprints: TheaterSectionBlueprint[] = [
         width: 828,
         height: 175,
         labelX: 700,
-        labelY: 208,
+        labelY: 243,
       },
     },
     layout: "arc",
