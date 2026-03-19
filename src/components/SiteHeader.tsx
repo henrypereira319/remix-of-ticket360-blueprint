@@ -40,13 +40,6 @@ const SiteHeader = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link
-            to={isAuthenticated ? "/admin" : "/conta/acesso"}
-            className="hidden rounded-full border border-border bg-background px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-muted lg:inline-flex"
-          >
-            Workspace Admin
-          </Link>
-
           <button className="relative p-2 rounded-full hover:bg-muted transition-colors" aria-label="Carrinho">
             <ShoppingCart className="w-5 h-5 text-foreground" />
             <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[0.6rem] font-bold rounded-full flex items-center justify-center">
@@ -111,14 +104,6 @@ const SiteHeader = () => {
           </div>
 
           <div className="px-3 pb-2">
-            <Link
-              to={isAuthenticated ? "/admin" : "/conta/acesso"}
-              className="mb-2 block rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-              onClick={() => setMenuOpen(false)}
-            >
-              {isAuthenticated ? "Abrir workspace admin" : "Entrar para acessar o admin"}
-            </Link>
-
             <Link
               to={isAuthenticated ? "/conta" : "/conta/acesso"}
               className="block rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"

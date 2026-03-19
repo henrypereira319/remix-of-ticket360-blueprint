@@ -10,7 +10,6 @@ interface SeatMapProps {
   onToggleSeat: (seatId: string) => void;
   immersive?: boolean;
   fullBleed?: boolean;
-  initialFocusedSectionId?: string | null;
 }
 
 const toneClasses = {
@@ -105,23 +104,7 @@ const getSeatDisplayLabel = (seat: EventSeat) => {
   return seat.label.split("-").slice(1).join("-");
 };
 
-const getSeatStatusClassName = (
-  seat: EventSeat,
-  section: EventSeatSection,
-  hasReferenceBackground = false,
-) => {
-  if (hasReferenceBackground) {
-    if (seat.status === "sold" || seat.status === "reserved") {
-      return "border border-transparent bg-transparent text-transparent opacity-55";
-    }
-
-    if (seat.status === "accessible") {
-      return "border border-transparent bg-transparent text-transparent hover:border-violet-500/55 hover:bg-violet-500/10";
-    }
-
-    return "border border-transparent bg-transparent text-transparent hover:border-primary/40 hover:bg-primary/10";
-  }
-
+const getSeatStatusClassName = (seat: EventSeat, section: EventSeatSection) => {
   if (seat.status === "sold") {
     return "border border-transparent bg-muted text-muted-foreground line-through";
   }
@@ -141,6 +124,16 @@ const buildSeatTooltip = (seat: EventSeat, section: EventSeatSection) => {
   const tags = seat.tags?.map((tag) => seatTagLabels[tag]).join(", ");
 
   return [section.name, seat.area, `Assento ${seat.label}`, tags].filter(Boolean).join(" | ");
+};
+
+const getSectionMetrics = (seatMap: EventSeatMap, sectionId: string) => {
+  const sectionSeats = seatMap.seats.filter((seat) => seat.sectionId === sectionId);
+  const availableSeats = sectionSeats.filter((seat) => selectableStatuses.has(seat.status)).length;
+
+  return {
+    capacity: sectionSeats.length,
+    availableSeats,
+  };
 };
 
 const createFanPath = (area: NonNullable<EventSeatSection["mapArea"]>) => {
@@ -178,121 +171,46 @@ const SeatMap = ({
   onToggleSeat,
   immersive = false,
   fullBleed = false,
-  initialFocusedSectionId = null,
 }: SeatMapProps) => {
   const theaterLayout = seatMap.variant === "theater";
-  const [focusedSectionId, setFocusedSectionId] = useState<string | null>(initialFocusedSectionId);
+  const [focusedSectionId, setFocusedSectionId] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState(0);
   const [inspectedSeatId, setInspectedSeatId] = useState<string | null>(null);
   const fullBleedViewportRef = useRef<HTMLDivElement | null>(null);
   const [fullBleedFrameSize, setFullBleedFrameSize] = useState({ width: 0, height: 0 });
-  const sectionById = new Map(seatMap.sections.map((section) => [section.id, section]));
-  const seatsById = new Map(seatMap.seats.map((seat) => [seat.id, seat]));
-  const seatsBySection = new Map<string, EventSeat[]>();
-  const sectionMetricsById = new Map<string, { capacity: number; availableSeats: number }>();
-  const selectedSeatIdSet = new Set(selectedSeatIds);
-  let hasPartialViewSeats = false;
-  let hasReducedMobilitySeats = false;
-  let hasExpandedSeats = false;
-  let hasAccessibilityTags = false;
-  let selectableSeatCount = 0;
-
-  seatMap.sections.forEach((section) => {
-    seatsBySection.set(section.id, []);
-    sectionMetricsById.set(section.id, { capacity: 0, availableSeats: 0 });
-  });
-
-  seatMap.seats.forEach((seat) => {
-    seatsBySection.get(seat.sectionId)?.push(seat);
-
-    const currentMetrics = sectionMetricsById.get(seat.sectionId);
-    if (currentMetrics) {
-      currentMetrics.capacity += 1;
-      if (selectableStatuses.has(seat.status)) {
-        currentMetrics.availableSeats += 1;
-      }
-    }
-
-    if (selectableStatuses.has(seat.status)) {
-      selectableSeatCount += 1;
-    }
-
-    if (seat.tags?.includes("partial-view")) {
-      hasPartialViewSeats = true;
-    }
-
-    if (seat.tags?.includes("reduced-mobility")) {
-      hasReducedMobilitySeats = true;
-    }
-
-    if (seat.tags?.includes("plus-size")) {
-      hasExpandedSeats = true;
-    }
-
-    if (seat.tags?.some((tag) => tag === "wheelchair" || tag === "low-vision" || tag === "reduced-mobility")) {
-      hasAccessibilityTags = true;
-    }
-  });
 
   const visibleSections = focusedSectionId
     ? seatMap.sections.filter((section) => section.id === focusedSectionId)
     : seatMap.sections;
 
   const featuredSeat =
-    (inspectedSeatId ? seatsById.get(inspectedSeatId) : undefined) ??
-    seatsById.get(selectedSeatIds[selectedSeatIds.length - 1]);
+    seatMap.seats.find((seat) => seat.id === inspectedSeatId) ??
+    seatMap.seats.find((seat) => seat.id === selectedSeatIds[selectedSeatIds.length - 1]);
 
   const featuredSection = featuredSeat
-    ? sectionById.get(featuredSeat.sectionId) ?? null
+    ? seatMap.sections.find((section) => section.id === featuredSeat.sectionId) ?? null
     : null;
 
-  const hasReferenceBackground = theaterLayout && Boolean(seatMap.backgroundImage);
-  const compactTheaterMap = theaterLayout && (seatMap.seats.length > 400 || hasReferenceBackground);
-  const denseTheaterMap = theaterLayout && seatMap.seats.length > 400 && !hasReferenceBackground;
+  const denseTheaterMap = theaterLayout && seatMap.seats.length > 400;
   const seatButtonSize = theaterLayout
-    ? clamp(
-        (hasReferenceBackground ? 12 : compactTheaterMap ? 14 : 44) + zoomLevel * (hasReferenceBackground ? 2 : compactTheaterMap ? 4 : 6),
-        hasReferenceBackground ? 8 : compactTheaterMap ? 8 : 34,
-        hasReferenceBackground ? 18 : compactTheaterMap ? 26 : 72,
-      )
+    ? clamp((denseTheaterMap ? 10 : 44) + zoomLevel * (denseTheaterMap ? 3 : 6), denseTheaterMap ? 7 : 34, denseTheaterMap ? 24 : 72)
     : clamp(40 + zoomLevel * 6, 34, 72);
   const viewport = seatMap.viewport ?? { width: 1000, height: 760 };
   const theaterSeatFontSize = seatButtonSize >= 28 ? "9px" : seatButtonSize >= 18 ? "7px" : "6px";
+  const hasPartialViewSeats = seatMap.seats.some((seat) => seat.tags?.includes("partial-view"));
+  const hasReducedMobilitySeats = seatMap.seats.some((seat) => seat.tags?.includes("reduced-mobility"));
+  const hasExpandedSeats = seatMap.seats.some((seat) => seat.tags?.includes("plus-size"));
+  const hasAccessibilityTags = seatMap.seats.some((seat) =>
+    seat.tags?.some((tag) => tag === "wheelchair" || tag === "low-vision" || tag === "reduced-mobility"),
+  );
   const selectedCount = selectedSeatIds.length;
+  const selectableSeatCount = seatMap.seats.filter((seat) => selectableStatuses.has(seat.status)).length;
   const shouldRenderDenseSeatLabels = !denseTheaterMap || Boolean(focusedSectionId) || zoomLevel >= 2;
   const useFullBleedTheater = theaterLayout && fullBleed;
-  const enableHoverInspection = !denseTheaterMap || Boolean(focusedSectionId) || zoomLevel >= 2 || !useFullBleedTheater;
-  const isDenseOverviewMode = denseTheaterMap && !focusedSectionId;
   const availableFrameWidth = Math.max(fullBleedFrameSize.width - 64, 320);
-  const availableFrameHeight = Math.max(fullBleedFrameSize.height - (hasReferenceBackground ? 72 : 176), 280);
+  const availableFrameHeight = Math.max(fullBleedFrameSize.height - 176, 280);
   const fitScale = Math.min(availableFrameWidth / viewport.width, availableFrameHeight / viewport.height);
-  const fullBleedScale = clamp(Number.isFinite(fitScale) ? fitScale : 1, hasReferenceBackground ? 0.8 : 0.36, hasReferenceBackground ? 1.85 : 1.1);
-  const inspectSeat = (seatId: string) => {
-    setInspectedSeatId((currentSeatId) => (currentSeatId === seatId ? currentSeatId : seatId));
-  };
-
-  const clearInspectedSeat = () => {
-    setInspectedSeatId((currentSeatId) => (currentSeatId === null ? currentSeatId : null));
-  };
-  const renderedSeats = (() => {
-    if (denseTheaterMap) {
-      return selectedSeatIds
-        .map((seatId) => seatsById.get(seatId))
-        .filter((seat): seat is EventSeat => Boolean(seat));
-    }
-
-    return seatMap.seats;
-  })();
-  const selectedSeatStateClass = hasReferenceBackground
-    ? "border-primary/70 bg-primary/20 ring-2 ring-primary/65 shadow-[0_0_0_2px_rgba(255,255,255,0.94)]"
-    : "border-foreground bg-foreground text-card hover:bg-foreground";
-  const inspectedSeatStateClass = hasReferenceBackground
-    ? "border-primary/55 bg-primary/10 ring-2 ring-primary/50 shadow-[0_0_0_2px_rgba(255,255,255,0.94)] scale-[1.16]"
-    : "ring-2 ring-primary/35";
-
-  useEffect(() => {
-    setFocusedSectionId(initialFocusedSectionId);
-  }, [initialFocusedSectionId]);
+  const fullBleedScale = clamp(Number.isFinite(fitScale) ? fitScale : 1, 0.36, 1.1);
 
   useEffect(() => {
     if (!useFullBleedTheater) {
@@ -403,51 +321,40 @@ const SeatMap = ({
 
   const renderTheaterCanvas = (className: string, style?: CSSProperties) => (
     <div className={className} style={style}>
-      {hasReferenceBackground ? (
-        <img
-          src={seatMap.backgroundImage}
-          alt={`Planta oficial de ${seatMap.hallName}`}
-          className="pointer-events-none absolute inset-0 h-full w-full select-none object-fill"
-          draggable={false}
+      <div className="absolute inset-x-[18%] top-[1.5%] z-10 rounded-b-[1.5rem] border border-border/60 bg-foreground px-5 py-2.5 text-center text-card shadow-lg">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-card/70">Palco</p>
+        <p className="mt-0.5 text-xs font-medium text-card">{seatMap.stageLabel}</p>
+      </div>
+
+      <svg
+        viewBox={`0 0 ${viewport.width} ${viewport.height}`}
+        className="absolute inset-0 h-full w-full"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="stage-sheen" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.55)" />
+            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+          </linearGradient>
+        </defs>
+
+        <path
+          d={`M ${viewport.width * 0.18} ${viewport.height * 0.055} Q ${viewport.width / 2} ${viewport.height * 0.005} ${viewport.width * 0.82} ${viewport.height * 0.055} L ${viewport.width * 0.76} ${viewport.height * 0.1} Q ${viewport.width / 2} ${viewport.height * 0.065} ${viewport.width * 0.24} ${viewport.height * 0.1} Z`}
+          fill={useFullBleedTheater ? "rgba(15, 23, 42, 0.08)" : "rgba(15, 23, 42, 0.12)"}
+          stroke={useFullBleedTheater ? "rgba(15, 23, 42, 0.26)" : "rgba(15, 23, 42, 0.16)"}
+          strokeWidth={useFullBleedTheater ? 3 : 2}
         />
-      ) : (
-        <>
-          <div className="absolute inset-x-[18%] top-[1.5%] z-10 rounded-b-[1.5rem] border border-border/60 bg-foreground px-5 py-2.5 text-center text-card shadow-lg">
-            <p className="text-[10px] uppercase tracking-[0.28em] text-card/70">Palco</p>
-            <p className="mt-0.5 text-xs font-medium text-card">{seatMap.stageLabel}</p>
-          </div>
+        <path
+          d={`M ${viewport.width * 0.18} ${viewport.height * 0.055} Q ${viewport.width / 2} ${viewport.height * 0.005} ${viewport.width * 0.82} ${viewport.height * 0.055}`}
+          fill="none"
+          stroke={useFullBleedTheater ? "rgba(15, 23, 42, 0.45)" : "rgba(15, 23, 42, 0.25)"}
+          strokeWidth={useFullBleedTheater ? 4 : 3}
+        />
 
-          <svg
-            viewBox={`0 0 ${viewport.width} ${viewport.height}`}
-            className="absolute inset-0 h-full w-full"
-            aria-hidden="true"
-          >
-            <defs>
-              <linearGradient id="stage-sheen" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="rgba(255,255,255,0.55)" />
-                <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-              </linearGradient>
-            </defs>
+        {seatMap.sections.map((section) => renderSectionBackdrop(section))}
+      </svg>
 
-            <path
-              d={`M ${viewport.width * 0.18} ${viewport.height * 0.055} Q ${viewport.width / 2} ${viewport.height * 0.005} ${viewport.width * 0.82} ${viewport.height * 0.055} L ${viewport.width * 0.76} ${viewport.height * 0.1} Q ${viewport.width / 2} ${viewport.height * 0.065} ${viewport.width * 0.24} ${viewport.height * 0.1} Z`}
-              fill={useFullBleedTheater ? "rgba(15, 23, 42, 0.08)" : "rgba(15, 23, 42, 0.12)"}
-              stroke={useFullBleedTheater ? "rgba(15, 23, 42, 0.26)" : "rgba(15, 23, 42, 0.16)"}
-              strokeWidth={useFullBleedTheater ? 3 : 2}
-            />
-            <path
-              d={`M ${viewport.width * 0.18} ${viewport.height * 0.055} Q ${viewport.width / 2} ${viewport.height * 0.005} ${viewport.width * 0.82} ${viewport.height * 0.055}`}
-              fill="none"
-              stroke={useFullBleedTheater ? "rgba(15, 23, 42, 0.45)" : "rgba(15, 23, 42, 0.25)"}
-              strokeWidth={useFullBleedTheater ? 4 : 3}
-            />
-
-            {seatMap.sections.map((section) => renderSectionBackdrop(section))}
-          </svg>
-        </>
-      )}
-
-      {!hasReferenceBackground && (!useFullBleedTheater || isDenseOverviewMode)
+      {!useFullBleedTheater
         ? seatMap.sections
             .filter((section) => section.mapArea)
             .map((section) => {
@@ -479,24 +386,23 @@ const SeatMap = ({
         : null}
 
       <div className="absolute inset-0 z-30">
-        {renderedSeats.map((seat) => {
+        {seatMap.seats.map((seat) => {
           if (!seat.position) {
             return null;
           }
 
-          const section = sectionById.get(seat.sectionId);
+          const section = seatMap.sections.find((item) => item.id === seat.sectionId);
 
           if (!section) {
             return null;
           }
 
-          const isSelected = selectedSeatIdSet.has(seat.id);
+          const isSelected = selectedSeatIds.includes(seat.id);
           const isSelectable = selectableStatuses.has(seat.status);
           const isInspected = featuredSeat?.id === seat.id;
           const isDimmed = Boolean(focusedSectionId && focusedSectionId !== section.id);
-          const showSeatLabel = hasReferenceBackground
-            ? false
-            : !theaterLayout || shouldRenderDenseSeatLabels || isSelected || isInspected || seatButtonSize >= 24;
+          const showSeatLabel =
+            !theaterLayout || shouldRenderDenseSeatLabels || isSelected || isInspected || seatButtonSize >= 24;
 
           return (
             <button
@@ -505,20 +411,18 @@ const SeatMap = ({
               title={buildSeatTooltip(seat, section)}
               aria-label={`${section.name} Assento ${seat.label}${seat.area ? ` - ${seat.area}` : ""}`}
               disabled={!isSelectable}
-              onMouseEnter={enableHoverInspection ? () => inspectSeat(seat.id) : undefined}
-              onFocus={() => inspectSeat(seat.id)}
-              onMouseLeave={enableHoverInspection ? clearInspectedSeat : undefined}
+              onMouseEnter={() => setInspectedSeatId(seat.id)}
+              onFocus={() => setInspectedSeatId(seat.id)}
+              onMouseLeave={() => setInspectedSeatId(null)}
               onClick={() => {
-                inspectSeat(seat.id);
+                setInspectedSeatId(seat.id);
                 onToggleSeat(seat.id);
               }}
               className={[
-                hasReferenceBackground
-                  ? "absolute flex items-center justify-center rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-                  : "absolute flex items-center justify-center rounded-full font-semibold shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                getSeatStatusClassName(seat, section, hasReferenceBackground),
-                isSelected && selectedSeatStateClass,
-                isInspected && !isSelected && inspectedSeatStateClass,
+                "absolute flex items-center justify-center rounded-full font-semibold shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                getSeatStatusClassName(seat, section),
+                isSelected && "border-foreground bg-foreground text-card hover:bg-foreground",
+                isInspected && !isSelected && "ring-2 ring-primary/35",
                 isDimmed && "opacity-35",
                 !isSelectable && "cursor-not-allowed",
               ]
@@ -538,17 +442,6 @@ const SeatMap = ({
           );
         })}
       </div>
-
-      {isDenseOverviewMode ? (
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 z-20 flex -translate-y-1/2 justify-center px-6">
-          <div className="max-w-md rounded-[1.5rem] border border-slate-200 bg-white px-5 py-4 text-center shadow-lg">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Visao por setor</p>
-            <p className="mt-2 text-sm leading-6 text-slate-700">
-              Selecione um setor no mapa ou nos filtros para carregar os assentos com mais fluidez.
-            </p>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 
@@ -556,28 +449,24 @@ const SeatMap = ({
     <div className="space-y-4">
       <div className="rounded-[1.75rem] border border-border bg-background p-4 shadow-sm">
         {renderTheaterCanvas(
-          hasReferenceBackground
-            ? "relative overflow-hidden rounded-[1.5rem] border border-border/70 bg-white"
-            : "relative overflow-hidden rounded-[1.5rem] border border-border/70 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.92),_rgba(248,250,252,0.98)_35%,_rgba(241,245,249,1)_100%)]",
+          "relative overflow-hidden rounded-[1.5rem] border border-border/70 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.92),_rgba(248,250,252,0.98)_35%,_rgba(241,245,249,1)_100%)]",
           { aspectRatio: `${viewport.width} / ${viewport.height}` },
         )}
 
         <div className="mt-4 rounded-2xl border border-border/70 bg-card px-4 py-3">
           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Leitura do mapa</p>
           <p className="mt-2 text-sm leading-6 text-foreground">
-            {hasReferenceBackground
-              ? "A planta usa o PDF oficial do venue como fundo, com hotspots de assento por cima para manter a leitura real da sala e permitir selecao direta no desenho homologado."
-              : "A planta destaca frisas laterais, anfiteatro superior e plateia central, seguindo a referencia do Theatro Municipal para a etapa 2D antes da evolucao 3D. O checkout fica liberado apenas depois da leitura do mapa e da selecao dos lugares."}
+            A planta destaca frisas laterais, anfiteatro superior e plateia central, seguindo a referencia do
+            Theatro Municipal para a etapa 2D antes da evolucao 3D. O checkout fica liberado apenas depois da leitura
+            do mapa e da selecao dos lugares.
           </p>
         </div>
       </div>
 
-      {renderDenseSectionSeatPicker()}
-
       {immersive ? (
         <div className="flex flex-wrap gap-2">
           {visibleSections.map((section) => {
-            const metrics = sectionMetricsById.get(section.id) ?? { capacity: 0, availableSeats: 0 };
+            const metrics = getSectionMetrics(seatMap, section.id);
 
             return (
               <span
@@ -592,7 +481,7 @@ const SeatMap = ({
       ) : (
         <div className="grid gap-3 md:grid-cols-3">
           {visibleSections.map((section) => {
-            const metrics = sectionMetricsById.get(section.id) ?? { capacity: 0, availableSeats: 0 };
+            const metrics = getSectionMetrics(seatMap, section.id);
             const tone = toneClasses[section.tone];
 
             return (
@@ -660,90 +549,6 @@ const SeatMap = ({
     </div>
   );
 
-  const renderDenseSectionSeatPicker = () => {
-    if (!denseTheaterMap) {
-      return null;
-    }
-
-    if (!focusedSectionId) {
-      return (
-        <div className="rounded-2xl border border-border bg-background p-4">
-          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Escolha um setor</p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Use os filtros ou toque no rótulo do setor no mapa para abrir uma grade leve de assentos sem travar a tela.
-          </p>
-        </div>
-      );
-    }
-
-    const section = sectionById.get(focusedSectionId);
-
-    if (!section) {
-      return null;
-    }
-
-    const sectionSeats = seatsBySection.get(section.id) ?? [];
-    const rows = [...new Set(sectionSeats.map((seat) => seat.row))];
-    const seatsPerRow = Math.max(...sectionSeats.map((seat) => seat.number));
-    const tone = toneClasses[section.tone];
-
-    return (
-      <div className="rounded-2xl border border-border bg-background p-4">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div>
-            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${tone.badge}`}>
-              {section.shortLabel}
-            </span>
-            <h4 className="mt-3 text-lg font-semibold text-foreground">{section.name}</h4>
-          </div>
-
-          <div className="text-right">
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">A partir de</p>
-            <p className="text-sm font-semibold text-foreground">{formatCurrency(section.price)}</p>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          {rows.map((row) => {
-            const rowSeats = sectionSeats.filter((seat) => seat.row === row);
-
-            return (
-              <div key={`${section.id}-${row}`} className="grid grid-cols-[1.5rem_1fr] items-center gap-3">
-                <span className="text-xs font-semibold uppercase text-muted-foreground">{row}</span>
-                <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${seatsPerRow}, minmax(0, 1fr))` }}>
-                  {rowSeats.map((seat) => {
-                    const isSelected = selectedSeatIdSet.has(seat.id);
-                    const isSelectable = selectableStatuses.has(seat.status);
-
-                    return (
-                      <button
-                        key={seat.id}
-                        type="button"
-                        aria-label={`${section.name} Assento ${seat.label}`}
-                        disabled={!isSelectable}
-                        onClick={() => onToggleSeat(seat.id)}
-                        className={[
-                          "h-10 rounded-md text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                          getSeatStatusClassName(seat, section),
-                          isSelected && "border-foreground bg-foreground text-card hover:bg-foreground",
-                          !isSelectable && "cursor-not-allowed",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                      >
-                        {seat.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
   if (useFullBleedTheater) {
     return (
       <div className="relative h-full w-full overflow-hidden bg-[linear-gradient(180deg,_rgba(255,255,255,1)_0%,_rgba(248,250,252,1)_52%,_rgba(241,245,249,1)_100%)]">
@@ -758,15 +563,13 @@ const SeatMap = ({
             }}
           >
             {renderTheaterCanvas(
-              hasReferenceBackground
-                ? "relative h-full w-full overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_24px_72px_rgba(148,163,184,0.22)]"
-                : "relative h-full w-full overflow-hidden rounded-[2rem] border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,1),_rgba(248,250,252,1)_38%,_rgba(241,245,249,1)_100%)] shadow-[0_24px_72px_rgba(148,163,184,0.22)]",
+              "relative h-full w-full overflow-hidden rounded-[2rem] border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,1),_rgba(248,250,252,1)_38%,_rgba(241,245,249,1)_100%)] shadow-[0_24px_72px_rgba(148,163,184,0.22)]",
             )}
           </div>
         </div>
 
         <div className="pointer-events-none absolute right-4 top-4 z-40 sm:right-6 sm:top-6">
-          <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 text-slate-900 shadow-lg">
+          <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-slate-200/90 bg-white/88 px-2 py-1 text-slate-900 shadow-xl backdrop-blur">
             <button
               type="button"
               aria-label="Diminuir mapa de assentos"
@@ -789,7 +592,7 @@ const SeatMap = ({
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 p-4 sm:p-6">
           <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-            <div className="pointer-events-auto max-w-xl rounded-[1.75rem] border border-slate-200 bg-white p-4 text-slate-900 shadow-lg">
+            <div className="pointer-events-auto max-w-xl rounded-[1.75rem] border border-slate-200/90 bg-white/88 p-4 text-slate-900 shadow-xl backdrop-blur">
               <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Assento em foco</p>
 
               {featuredSeat && featuredSection ? (
@@ -827,7 +630,7 @@ const SeatMap = ({
               )}
             </div>
 
-            <div className="pointer-events-auto rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-lg">
+            <div className="pointer-events-auto rounded-[1.75rem] border border-slate-200/90 bg-white/88 p-4 shadow-xl backdrop-blur">
               <p className="mb-3 text-xs uppercase tracking-[0.18em] text-slate-500">Leitura rapida</p>
               {renderFullBleedLegend()}
             </div>
@@ -840,7 +643,7 @@ const SeatMap = ({
   const renderStandardSeatGrid = () => (
     <div className="grid gap-4 xl:grid-cols-2">
       {visibleSections.map((section) => {
-        const sectionSeats = seatsBySection.get(section.id) ?? [];
+        const sectionSeats = seatMap.seats.filter((seat) => seat.sectionId === section.id);
         const rows = [...new Set(sectionSeats.map((seat) => seat.row))];
         const seatsPerRow = Math.max(...sectionSeats.map((seat) => seat.number));
         const tone = toneClasses[section.tone];
@@ -869,7 +672,7 @@ const SeatMap = ({
                     <span className="text-xs font-semibold uppercase text-muted-foreground">{row}</span>
                     <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${seatsPerRow}, minmax(0, 1fr))` }}>
                       {rowSeats.map((seat) => {
-                        const isSelected = selectedSeatIdSet.has(seat.id);
+                        const isSelected = selectedSeatIds.includes(seat.id);
                         const isSelectable = selectableStatuses.has(seat.status);
 
                         return (
@@ -969,7 +772,7 @@ const SeatMap = ({
               </button>
 
               {seatMap.sections.map((section) => {
-                const metrics = sectionMetricsById.get(section.id) ?? { capacity: 0, availableSeats: 0 };
+                const metrics = getSectionMetrics(seatMap, section.id);
 
                 return (
                   <button
@@ -1072,8 +875,8 @@ const SeatMap = ({
                 </div>
               ) : (
                 <p className="text-sm leading-6 text-muted-foreground">
-                  Selecione um assento ou navegue pelo teclado para ver o contexto do setor, a faixa de preco e
-                  marcadores especiais.
+                  Passe o mouse, navegue pelo teclado ou selecione um assento para ver o contexto do setor, a faixa de
+                  preco e marcadores especiais.
                 </p>
               )}
             </div>

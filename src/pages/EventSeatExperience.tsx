@@ -106,112 +106,92 @@ const EventSeatExperience = () => {
   const selection = getSelectionSummary(event, selectedSeatIds, selectedTicketCategories);
   const pricing = getCheckoutPricing(selection.total, selection.items.length);
   const hasSelection = selection.items.length > 0;
-  const requestedSectionId = searchParams.get("setor");
-  const initialFocusedSectionId = event.seatMap.sections.some((section) => section.id === requestedSectionId)
-    ? requestedSectionId
-    : null;
-  const selectedSessionId = searchParams.get("sessao");
-  const selectedSession =
-    event.sessions?.find((session) => session.id === selectedSessionId) ?? event.sessions?.[0] ?? null;
-  const shouldUseFullBleedMap =
-    !event.seatMap.backgroundImage && (event.seatMap.variant !== "theater" || event.seatMap.seats.length <= 400);
 
   const checkoutParams = new URLSearchParams();
   checkoutParams.set("assentos", serializeSeatIds(selectedSeatIds));
   checkoutParams.set("tipos", serializeTicketCategories(selectedSeatIds, selectedTicketCategories));
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <main className="relative">
-        <section ref={mapSectionRef} className="relative px-4 py-4 sm:px-6 sm:py-6">
-          <div className="mx-auto max-w-7xl space-y-4">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-3">
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50 hover:text-slate-900"
-                  >
-                    <Link to={`/eventos/${event.slug}`}>
-                      <ArrowLeft className="h-4 w-4" />
-                      Voltar ao evento
-                    </Link>
-                  </Button>
-
-                  <Badge className="border border-slate-200 bg-white text-slate-700 hover:bg-white">
-                    Jornada de assentos
-                  </Badge>
-                  {selectedSession ? (
-                    <Badge className="border border-slate-200 bg-white text-slate-700 hover:bg-white">
-                      {selectedSession.weekday}, {selectedSession.day} {selectedSession.month} | {selectedSession.time}
-                    </Badge>
-                  ) : null}
-                  {initialFocusedSectionId ? (
-                    <Badge className="border border-slate-200 bg-white text-slate-700 hover:bg-white">
-                      {event.seatMap.sections.find((section) => section.id === initialFocusedSectionId)?.name}
-                    </Badge>
-                  ) : null}
-                </div>
-
-                <div>
-                  <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl">{event.title}</h1>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                    Escolha seus lugares dentro da sessão e do setor selecionados e, depois, siga para a revisão final
-                    sem painéis cobrindo a planta.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-4 rounded-[1.5rem] border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Selecionados</p>
-                  <p className="mt-1 text-2xl font-semibold">{selection.items.length}</p>
-                </div>
-
-                <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Total estimado</p>
-                  <p className="mt-1 text-2xl font-semibold">{formatCurrency(pricing.total)}</p>
-                </div>
-
-                <Button type="button" size="sm" onClick={() => scrollToSection("checkout")} className="whitespace-nowrap">
-                  <ScanSearch className="h-4 w-4" />
-                  Ir para o checkout
-                </Button>
-              </div>
-            </div>
-
-            <div className={shouldUseFullBleedMap ? "h-[92vh] min-h-[760px]" : undefined}>
-              <SeatMap
-                immersive
-                fullBleed={shouldUseFullBleedMap}
-                seatMap={event.seatMap}
-                selectedSeatIds={selectedSeatIds}
-                initialFocusedSectionId={initialFocusedSectionId}
-                onToggleSeat={handleToggleSeat}
-              />
-            </div>
-
-            <div className="flex justify-center">
+    <div className="relative h-screen overflow-hidden bg-slate-100">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-50 p-4 sm:p-6">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+          <div className="pointer-events-auto max-w-2xl rounded-[1.75rem] border border-slate-200/90 bg-white/88 p-4 text-slate-900 shadow-xl backdrop-blur">
+            <div className="flex flex-wrap items-center gap-3">
               <Button
-                type="button"
+                asChild
                 size="sm"
-                variant="outline"
-                onClick={() => scrollToSection("checkout")}
-                className="border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50"
+                variant="secondary"
+                className="border border-slate-200 bg-slate-50 text-slate-900 hover:bg-slate-100 hover:text-slate-900"
               >
-                <CreditCard className="h-4 w-4" />
-                Revisar e fechar a compra
+                <Link to={`/eventos/${event.slug}`}>
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar ao evento
+                </Link>
               </Button>
+
+              <Badge className="border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-50">
+                Jornada de assentos
+              </Badge>
             </div>
+
+            <h1 className="mt-4 text-xl font-semibold sm:text-2xl">{event.title}</h1>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
+              O mapa ganhou mais respiro visual e agora o scroll interno desta tela leva direto para a revisao final do
+              checkout, sem abrir painis por cima da planta.
+            </p>
+          </div>
+
+          <div className="pointer-events-auto flex flex-wrap items-center gap-4 rounded-[1.75rem] border border-slate-200/90 bg-white/88 px-4 py-3 text-slate-900 shadow-xl backdrop-blur">
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Selecionados</p>
+              <p className="mt-1 text-2xl font-semibold">{selection.items.length}</p>
+            </div>
+
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Total estimado</p>
+              <p className="mt-1 text-2xl font-semibold">{formatCurrency(pricing.total)}</p>
+            </div>
+
+            <Button type="button" size="sm" onClick={() => scrollToSection("checkout")} className="whitespace-nowrap">
+              <ScanSearch className="h-4 w-4" />
+              Ir para o checkout
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <main className="relative h-full overflow-y-auto overscroll-contain scroll-smooth">
+        <section
+          ref={mapSectionRef}
+          className="relative h-screen px-4 pb-4 pt-[8.5rem] sm:px-6 sm:pb-6 sm:pt-[9.25rem]"
+        >
+          <div className="h-full">
+            <SeatMap
+              immersive
+              fullBleed
+              seatMap={event.seatMap}
+              selectedSeatIds={selectedSeatIds}
+              onToggleSeat={handleToggleSeat}
+            />
+          </div>
+
+          <div className="pointer-events-none absolute inset-x-0 bottom-4 z-40 flex justify-center px-4 sm:bottom-6">
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => scrollToSection("checkout")}
+              className="pointer-events-auto border border-slate-200/90 bg-white/88 text-slate-900 shadow-xl backdrop-blur hover:bg-slate-50"
+            >
+              <CreditCard className="h-4 w-4" />
+              Role para revisar e fechar a compra
+            </Button>
           </div>
         </section>
 
         <section
           ref={checkoutSectionRef}
           id="checkout-final"
-          className="relative min-h-screen bg-[linear-gradient(180deg,_rgb(248,250,252)_0%,_rgb(241,245,249)_100%)] px-4 pb-10 pt-6 sm:px-6 sm:pb-12 sm:pt-8"
+          className="relative min-h-screen bg-[linear-gradient(180deg,_rgb(248,250,252)_0%,_rgb(241,245,249)_100%)] px-4 pb-10 pt-[8.5rem] sm:px-6 sm:pb-12 sm:pt-[9.25rem]"
         >
           <div className="mx-auto max-w-7xl space-y-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

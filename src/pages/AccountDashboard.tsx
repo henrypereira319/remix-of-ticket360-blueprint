@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { BadgeCheck, LogOut, ShieldCheck, UserRound } from "lucide-react";
@@ -222,21 +222,6 @@ const AccountDashboard = () => {
           </Card>
 
           <div className="space-y-4">
-            <Card className="border-border bg-card">
-              <CardContent className="space-y-3 p-6">
-                <div className="flex items-center gap-2 text-foreground">
-                  <ShieldCheck className="w-4 h-4 text-primary" />
-                  <p className="font-semibold">Workspace administrativo</p>
-                </div>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  Monte eventos com venues homologados, mapas de sala existentes e notas operacionais da publicacao.
-                </p>
-                <Button asChild className="w-full">
-                  <Link to="/admin/eventos/novo">Abrir builder de evento</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
             <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="font-display text-2xl">Registros da conta</CardTitle>
