@@ -8,8 +8,10 @@ import SiteHeader from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { banners, events, highlights } from "@/data/events";
+import { useAuth } from "@/hooks/use-auth";
 
 const Index = () => {
+  const { isAuthenticated } = useAuth();
   const mapPreviewEvent = events.find((event) => event.seatMap.variant === "theater") ?? events[0];
 
   return (
@@ -77,6 +79,31 @@ const Index = () => {
             </div>
           </CardContent>
         </Card>
+
+        {isAuthenticated ? (
+          <Card className="border-border bg-card">
+            <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Workspace administrativo</p>
+                <h2 className="font-display text-2xl font-semibold text-foreground">
+                  Builder de evento indexado na navegação principal
+                </h2>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  O atalho para montar eventos agora também fica acessível pela home e pelo header, além da conta.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <Button asChild size="lg">
+                  <Link to="/admin">Abrir workspace admin</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link to="/admin/eventos/novo">Ir direto para novo evento</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
 
         <SectionSeparator title="Proximos Eventos" />
         <EventGrid events={events} />

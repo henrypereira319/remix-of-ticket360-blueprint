@@ -17,6 +17,7 @@ import event5 from "@/assets/event-5.jpg";
 import event6 from "@/assets/event-6.jpg";
 import event7 from "@/assets/event-7.jpg";
 import event8 from "@/assets/event-8.jpg";
+import { teatroMunicipalImageMapData } from "@/data/teatroMunicipalImageMap";
 
 export type EventSeatStatus = "available" | "reserved" | "sold" | "accessible";
 export type EventSeatTag = "partial-view" | "wheelchair" | "low-vision" | "reduced-mobility" | "plus-size";
@@ -67,6 +68,7 @@ export interface EventSeatMap {
     width: number;
     height: number;
   };
+  backgroundImage?: string;
 }
 
 export interface EventDetailsContent {
@@ -80,6 +82,16 @@ export interface EventDetailsContent {
   infoParagraphs: string[];
   importantNotice: string;
   ticketPolicies: string[];
+}
+
+export interface EventSession {
+  id: string;
+  weekday: string;
+  day: string;
+  month: string;
+  time: string;
+  label?: string;
+  soldOut?: boolean;
 }
 
 export interface EventData {
@@ -98,6 +110,7 @@ export interface EventData {
   summary: string;
   description: string;
   priceFrom: number;
+  sessions?: EventSession[];
   securityNotes: string[];
   seatMap: EventSeatMap;
   details: EventDetailsContent;
@@ -123,6 +136,14 @@ type EventDetailsOverrides = Pick<EventDetailsContent, "organizer" | "address" |
 type EventSeed = Omit<EventData, "details"> & {
   detailsOverrides: EventDetailsOverrides;
 };
+
+const createDefaultEventSession = (event: Pick<EventData, "day" | "month" | "weekday" | "time">): EventSession => ({
+  id: "session-1",
+  weekday: event.weekday,
+  day: event.day,
+  month: event.month,
+  time: event.time,
+});
 
 const seatSections: EventSeatSection[] = [
   { id: "premium", name: "Premium", shortLabel: "Premium", price: 260, tone: "orange" },
@@ -212,6 +233,8 @@ type TheaterSectionBlueprint = {
   gridColumns?: number;
 };
 
+type TheaterSeatStatusStrategy = "synthetic" | "all-available";
+
 const theaterSectionBlueprints: TheaterSectionBlueprint[] = [
   {
     section: {
@@ -223,30 +246,30 @@ const theaterSectionBlueprints: TheaterSectionBlueprint[] = [
       description: "Bloco principal com maior proximidade do palco e recursos dedicados de acessibilidade.",
       mapArea: {
         kind: "fan",
-        x: 297,
-        y: 420,
-        width: 806,
-        height: 549,
-        labelX: 700,
-        labelY: 543,
+        x: 257,
+        y: 245,
+        width: 328,
+        height: 230,
+        labelX: 421,
+        labelY: 392,
       },
     },
     layout: "fan",
     defaultAreaLabel: "Plateia",
     rows: [
-      { row: "A", count: 26, rules: [{ start: 1, end: 4, areaLabel: "Plateia - Baixa visao", tags: ["low-vision"], status: "accessible" }] },
-      { row: "B", count: 26 },
-      { row: "C", count: 28 },
-      { row: "D", count: 26 },
-      { row: "E", count: 28 },
-      { row: "F", count: 28 },
-      { row: "G", count: 28 },
+      { row: "A", count: 25, rules: [{ start: 1, end: 4, areaLabel: "Plateia - Baixa visao", tags: ["low-vision"], status: "accessible" }] },
+      { row: "B", count: 25 },
+      { row: "C", count: 27 },
+      { row: "D", count: 25 },
+      { row: "E", count: 27 },
+      { row: "F", count: 27 },
+      { row: "G", count: 27 },
       { row: "H", count: 28 },
       { row: "I", count: 28, rules: [{ start: 1, end: 2, areaLabel: "Plateia - Cadeirante", tags: ["wheelchair"], status: "accessible" }] },
       { row: "J", count: 28 },
       { row: "K", count: 28 },
       { row: "L", count: 28 },
-      { row: "M", count: 26 },
+      { row: "M", count: 25 },
       { row: "N", count: 24 },
       {
         row: "O",
@@ -273,13 +296,13 @@ const theaterSectionBlueprints: TheaterSectionBlueprint[] = [
       description: "Laterais com alta capacidade e leitura pratica da sala antes do checkout.",
       mapArea: {
         kind: "paired-boxes",
-        x: 82,
-        y: 630,
-        width: 1237,
-        height: 292,
-        labelX: 700,
-        labelY: 654,
-        boxWidthRatio: 0.27,
+        x: 108,
+        y: 210,
+        width: 628,
+        height: 276,
+        labelX: 421,
+        labelY: 267,
+        boxWidthRatio: 0.145,
       },
     },
     layout: "mirrored",
@@ -310,13 +333,13 @@ const theaterSectionBlueprints: TheaterSectionBlueprint[] = [
       description: "Boxes laterais da sala, com forte presenca de pontos de visao parcial como na referencia salva.",
       mapArea: {
         kind: "paired-boxes",
-        x: 53,
-        y: 350,
-        width: 1295,
-        height: 280,
-        labelX: 700,
-        labelY: 371,
-        boxWidthRatio: 0.18,
+        x: 205,
+        y: 233,
+        width: 432,
+        height: 214,
+        labelX: 421,
+        labelY: 292,
+        boxWidthRatio: 0.125,
       },
     },
     layout: "boxed",
@@ -336,11 +359,11 @@ const theaterSectionBlueprints: TheaterSectionBlueprint[] = [
       { row: "12", count: 5, side: "right", rules: [{ start: 1, end: 5, areaLabel: "Frisa - Visao parcial", tags: ["partial-view"] }] },
       {
         row: "13",
-        count: 17,
+        count: 16,
         side: "right",
         rules: [
-          { start: 1, end: 16, areaLabel: "Frisa - Visao parcial", tags: ["partial-view"] },
-          { start: 17, end: 17, areaLabel: "Frisa - Assento ampliado", tags: ["partial-view", "plus-size"] },
+          { start: 1, end: 15, areaLabel: "Frisa - Visao parcial", tags: ["partial-view"] },
+          { start: 16, end: 16, areaLabel: "Frisa - Assento ampliado", tags: ["partial-view", "plus-size"] },
         ],
       },
       { row: "14", count: 5, side: "right", rules: [{ start: 1, end: 5, areaLabel: "Frisa - Visao parcial", tags: ["partial-view"] }] },
@@ -358,12 +381,12 @@ const theaterSectionBlueprints: TheaterSectionBlueprint[] = [
       description: "Faixa central superior com mistura de lugares frontais e trechos de visao parcial.",
       mapArea: {
         kind: "arc-band",
-        x: 373,
-        y: 280,
-        width: 654,
-        height: 158,
-        labelX: 700,
-        labelY: 367,
+        x: 197,
+        y: 105,
+        width: 445,
+        height: 118,
+        labelX: 420,
+        labelY: 169,
       },
     },
     layout: "arc",
@@ -391,13 +414,13 @@ const theaterSectionBlueprints: TheaterSectionBlueprint[] = [
       description: "Balcao lateral com grande volume de assentos e fileiras com leitura parcial do palco.",
       mapArea: {
         kind: "paired-boxes",
-        x: 123,
-        y: 292,
-        width: 1155,
-        height: 292,
-        labelX: 700,
-        labelY: 313,
-        boxWidthRatio: 0.25,
+        x: 82,
+        y: 111,
+        width: 680,
+        height: 266,
+        labelX: 421,
+        labelY: 202,
+        boxWidthRatio: 0.18,
       },
     },
     layout: "mirrored",
@@ -409,10 +432,10 @@ const theaterSectionBlueprints: TheaterSectionBlueprint[] = [
       { row: "C", count: 36, rules: [{ start: 24, end: 36, areaLabel: "Balcao Simples - Visao parcial", tags: ["partial-view"] }] },
       {
         row: "D",
-        count: 55,
+        count: 56,
         rules: [
-          { start: 44, end: 54, areaLabel: "Balcao Simples - Visao parcial", tags: ["partial-view"] },
-          { start: 55, end: 55, areaLabel: "Balcao Simples - Assento ampliado", tags: ["plus-size"] },
+          { start: 44, end: 55, areaLabel: "Balcao Simples - Visao parcial", tags: ["partial-view"] },
+          { start: 56, end: 56, areaLabel: "Balcao Simples - Assento ampliado", tags: ["plus-size"] },
         ],
       },
     ],
@@ -427,12 +450,12 @@ const theaterSectionBlueprints: TheaterSectionBlueprint[] = [
       description: "Anel superior com leitura panoramica e faixas de visao parcial, como no mapa do Theatro Municipal.",
       mapArea: {
         kind: "arc-band",
-        x: 286,
-        y: 152,
-        width: 828,
-        height: 175,
-        labelX: 700,
-        labelY: 243,
+        x: 214,
+        y: 12,
+        width: 405,
+        height: 62,
+        labelX: 421,
+        labelY: 48,
       },
     },
     layout: "arc",
@@ -456,19 +479,19 @@ const theaterSectionBlueprints: TheaterSectionBlueprint[] = [
       description: "Setor mais alto da sala, com ampla capacidade e muitos lugares de visao prejudicada.",
       mapArea: {
         kind: "arc-band",
-        x: 257,
-        y: 70,
-        width: 887,
-        height: 140,
-        labelX: 700,
-        labelY: 145,
+        x: 170,
+        y: 56,
+        width: 491,
+        height: 82,
+        labelX: 421,
+        labelY: 95,
       },
     },
     layout: "arc",
     defaultAreaLabel: "Galeria",
     rows: [
       { row: "A", count: 63, rules: [{ start: 38, end: 63, areaLabel: "Galeria - Visao prejudicada", tags: ["partial-view"] }] },
-      { row: "B", count: 38, rules: [{ start: 29, end: 38, areaLabel: "Galeria - Visao parcial", tags: ["partial-view"] }] },
+      { row: "B", count: 39, rules: [{ start: 29, end: 39, areaLabel: "Galeria - Visao parcial", tags: ["partial-view"] }] },
       {
         row: "C",
         count: 72,
@@ -481,45 +504,271 @@ const theaterSectionBlueprints: TheaterSectionBlueprint[] = [
   },
   {
     section: {
-      id: "camarote-vip",
-      name: "Camarote VIP",
-      shortLabel: "VIP",
+      id: "camarotes",
+      name: "Camarotes",
+      shortLabel: "Camarotes",
       price: 300,
       tone: "orange",
-      description: "Camarotes superiores e um ponto tecnico nao comercial para manter a contagem do template salvo.",
+      description: "Camarotes internos em curva, distribuidos ao redor da plateia conforme a planta oficial do Municipal.",
+      mapArea: {
+        kind: "arc-band",
+        x: 258,
+        y: 171,
+        width: 326,
+        height: 92,
+        labelX: 421,
+        labelY: 226,
+      },
+    },
+    layout: "arc",
+    defaultAreaLabel: "Camarote",
+    rows: [
+      { row: "1", count: 10 },
+      { row: "2", count: 10 },
+      { row: "3", count: 10 },
+      { row: "4", count: 10 },
+      { row: "5", count: 10 },
+    ],
+  },
+];
+
+const bradescoTheaterSectionBlueprints: TheaterSectionBlueprint[] = [
+  {
+    section: {
+      id: "balcao-nobre",
+      name: "Balcao Nobre e 3°/4° andar",
+      shortLabel: "B. Nobre",
+      price: 210,
+      tone: "emerald",
+      description: "Anel superior consolidado a partir do SVG do Teatro Bradesco, com leitura mais panoramica da sala.",
+      mapArea: {
+        kind: "arc-band",
+        x: 248,
+        y: 118,
+        width: 904,
+        height: 168,
+        labelX: 700,
+        labelY: 156,
+      },
+    },
+    layout: "arc",
+    defaultAreaLabel: "Balcao Nobre",
+    rows: [23, 26, 27, 27, 27, 27].map((count, index) => {
+      const row = String.fromCharCode(65 + index);
+      return {
+        row,
+        count,
+        rules:
+          row === "A"
+            ? [{ start: 1, end: 2, areaLabel: "Balcao Nobre - Baixa visao", tags: ["low-vision"], status: "accessible" }]
+            : row === "F"
+              ? [
+                  { start: 16, end: count, areaLabel: "Balcao Nobre - Visao parcial", tags: ["partial-view"] },
+                  { start: count, end: count, areaLabel: "Balcao Nobre - Assento ampliado", tags: ["partial-view", "plus-size"] },
+                ]
+              : row === "D" || row === "E"
+                ? [{ start: 18, end: count, areaLabel: "Balcao Nobre - Visao parcial", tags: ["partial-view"] }]
+                : undefined,
+      };
+    }),
+  },
+  {
+    section: {
+      id: "camarote-prime",
+      name: "Camarote Prime 2° andar",
+      shortLabel: "Camarote Prime",
+      price: 260,
+      tone: "violet",
+      description: "Camarotes superiores laterais com leitura premium e distribuicao em boxes, normalizados a partir do mapa do Bradesco.",
       mapArea: {
         kind: "paired-boxes",
-        x: 82,
-        y: 175,
-        width: 1237,
-        height: 140,
+        x: 86,
+        y: 210,
+        width: 1228,
+        height: 172,
         labelX: 700,
-        labelY: 198,
+        labelY: 246,
+        boxWidthRatio: 0.24,
+      },
+    },
+    layout: "boxed",
+    defaultAreaLabel: "Camarote Prime 2° andar",
+    gridColumns: 5,
+    rows: [
+      ...[9, 9, 9, 9, 9, 9, 9].map((count, index) => ({
+        row: `${index + 1}`,
+        count,
+        side: "left" as const,
+        rules: [
+          { start: Math.max(1, count - 1), end: count, areaLabel: "Camarote Prime - Visao parcial", tags: ["partial-view"] },
+          ...(index === 0
+            ? [{ start: 1, end: 1, areaLabel: "Camarote Prime - Mobilidade reduzida", tags: ["reduced-mobility"], status: "accessible" }]
+            : []),
+        ],
+      })),
+      ...[8, 8, 8, 9, 9, 9, 9].map((count, index) => ({
+        row: `${index + 8}`,
+        count,
+        side: "right" as const,
+        rules: [
+          { start: Math.max(1, count - 1), end: count, areaLabel: "Camarote Prime - Visao parcial", tags: ["partial-view"] },
+          ...(index === 6
+            ? [{ start: count, end: count, areaLabel: "Camarote Prime - Assento ampliado", tags: ["partial-view", "plus-size"] }]
+            : []),
+        ],
+      })),
+    ],
+  },
+  {
+    section: {
+      id: "frisas",
+      name: "Frisas",
+      shortLabel: "Frisas",
+      price: 240,
+      tone: "orange",
+      description: "Boxes laterais junto ao palco, com leitura angular da cena e mais ocorrencias de visao parcial.",
+      mapArea: {
+        kind: "paired-boxes",
+        x: 54,
+        y: 320,
+        width: 1292,
+        height: 190,
+        labelX: 700,
+        labelY: 356,
         boxWidthRatio: 0.18,
       },
     },
     layout: "boxed",
-    defaultAreaLabel: "Camarote",
+    defaultAreaLabel: "Frisas",
     gridColumns: 4,
     rows: [
-      { row: "1", count: 6, side: "left" },
-      { row: "2", count: 6, side: "left" },
-      { row: "3", count: 6, side: "left" },
-      { row: "4", count: 4, side: "left" },
-      { row: "5", count: 4, side: "left" },
-      { row: "6", count: 4, side: "right" },
-      { row: "7", count: 4, side: "right" },
-      { row: "8", count: 4, side: "right" },
-      { row: "9", count: 4, side: "right" },
-      { row: "10", count: 4, side: "right" },
-      { row: "11", count: 4, side: "right" },
-      { row: "P.E.", count: 1, side: "right", rules: [{ start: 1, end: 1, areaLabel: "P. E.", status: "sold" }] },
+      ...[6, 6, 6, 6, 7, 7, 7, 7].map((count, index) => ({
+        row: `${index + 1}`,
+        count,
+        side: "left" as const,
+        rules: [
+          { start: 1, end: count, areaLabel: "Frisas - Visao parcial", tags: ["partial-view"] },
+          ...(index === 7 ? [{ start: count, end: count, areaLabel: "Frisas - Assento ampliado", tags: ["partial-view", "plus-size"] }] : []),
+        ],
+      })),
+      ...[6, 6, 6, 6, 7, 7, 7, 7].map((count, index) => ({
+        row: `${index + 9}`,
+        count,
+        side: "right" as const,
+        rules: [
+          { start: 1, end: count, areaLabel: "Frisas - Visao parcial", tags: ["partial-view"] },
+          ...(index === 0
+            ? [{ start: 1, end: 1, areaLabel: "Frisas - Mobilidade reduzida", tags: ["reduced-mobility"], status: "accessible" }]
+            : []),
+        ],
+      })),
     ],
+  },
+  {
+    section: {
+      id: "plateia-prime",
+      name: "Plateia Prime",
+      shortLabel: "P. Prime",
+      price: 320,
+      tone: "orange",
+      description: "Bloco central mais nobre do Teatro Bradesco, convertido do mapa vetorial salvo em docs.",
+      mapArea: {
+        kind: "fan",
+        x: 232,
+        y: 394,
+        width: 936,
+        height: 428,
+        labelX: 700,
+        labelY: 526,
+      },
+    },
+    layout: "fan",
+    defaultAreaLabel: "Plateia Prime",
+    rows: [24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 46, 46, 46, 44, 42, 40, 38, 36, 34, 32, 28, 22].map((count, index) => {
+      const row = String.fromCharCode(65 + index);
+      return {
+        row,
+        count,
+        rules:
+          row === "A"
+            ? [{ start: 1, end: 4, areaLabel: "Plateia Prime - Baixa visao", tags: ["low-vision"], status: "accessible" }]
+            : row === "B"
+              ? [{ start: count, end: count, areaLabel: "Plateia Prime - Assento ampliado", tags: ["plus-size"] }]
+              : row === "V"
+                ? [
+                    { start: Math.max(1, count - 1), end: count, areaLabel: "Plateia Prime - Mobilidade reduzida", tags: ["reduced-mobility"], status: "accessible" },
+                  ]
+                : undefined,
+      };
+    }),
+  },
+  {
+    section: {
+      id: "plateia",
+      name: "Plateia",
+      shortLabel: "Plateia",
+      price: 280,
+      tone: "slate",
+      description: "Faixa posterior da plateia principal, com boa leitura central e contingente acessivel dedicado.",
+      mapArea: {
+        kind: "fan",
+        x: 328,
+        y: 820,
+        width: 744,
+        height: 182,
+        labelX: 700,
+        labelY: 864,
+      },
+    },
+    layout: "fan",
+    defaultAreaLabel: "Plateia",
+    rows: [18, 20, 22, 24, 26, 30, 32, 34, 37].map((count, index) => {
+      const row = String.fromCharCode(65 + index);
+      return {
+        row,
+        count,
+        rules:
+          row === "A"
+            ? [{ start: 1, end: 2, areaLabel: "Plateia - Cadeirante", tags: ["wheelchair"], status: "accessible" }]
+            : row === "B"
+              ? [{ start: 1, end: 2, areaLabel: "Plateia - Cadeirante", tags: ["wheelchair"], status: "accessible" }]
+              : row === "I"
+                ? [
+                    { start: count - 1, end: count, areaLabel: "Plateia - Mobilidade reduzida", tags: ["reduced-mobility"], status: "accessible" },
+                    { start: count, end: count, areaLabel: "Plateia - Assento ampliado", tags: ["reduced-mobility", "plus-size"], status: "accessible" },
+                  ]
+                : undefined,
+      };
+    }),
   },
 ];
 
 const hashSeatId = (value: string) =>
   value.split("").reduce((accumulator, character) => accumulator + character.charCodeAt(0), 0);
+
+const resolveGeneratedSeatStatus = (
+  seatId: string,
+  currentStatus: EventSeatStatus,
+  statusStrategy: TheaterSeatStatusStrategy,
+  soldModulo: number,
+  reservedModulo: number,
+): EventSeatStatus => {
+  if (currentStatus !== "available" || statusStrategy === "all-available") {
+    return currentStatus;
+  }
+
+  const hashed = hashSeatId(seatId);
+
+  if (hashed % soldModulo === 0) {
+    return "sold";
+  }
+
+  if (hashed % reservedModulo === 0) {
+    return "reserved";
+  }
+
+  return currentStatus;
+};
 
 const resolveSeatRule = (
   rowBlueprint: TheaterRowBlueprint,
@@ -638,10 +887,13 @@ const createGridPosition = (options: {
   };
 };
 
-const buildTheaterSeats = () => {
+const buildTheaterSeats = (
+  sectionBlueprints: TheaterSectionBlueprint[],
+  statusStrategy: TheaterSeatStatusStrategy = "synthetic",
+) => {
   const seats: EventSeat[] = [];
 
-  theaterSectionBlueprints.forEach((sectionBlueprint) => {
+  sectionBlueprints.forEach((sectionBlueprint) => {
     const { section, rows, layout, defaultAreaLabel } = sectionBlueprint;
 
     if (!section.mapArea) {
@@ -659,16 +911,7 @@ const buildTheaterSeats = () => {
               : createArcPosition(section.mapArea!, rowIndex, rows.length, index, rowBlueprint.count);
 
           const seatId = `${section.id}-${rowBlueprint.row.toLowerCase().replace(/[^a-z0-9]+/g, "")}-${seatNumber}`;
-          const hashed = hashSeatId(seatId);
-          let status = metadata.status;
-
-          if (status === "available") {
-            if (hashed % 47 === 0) {
-              status = "sold";
-            } else if (hashed % 31 === 0) {
-              status = "reserved";
-            }
-          }
+          const status = resolveGeneratedSeatStatus(seatId, metadata.status, statusStrategy, 47, 31);
 
           seats.push({
             id: seatId,
@@ -720,16 +963,7 @@ const buildTheaterSeats = () => {
                 });
 
           const seatId = `${section.id}-${rowBlueprint.row.toLowerCase().replace(/[^a-z0-9]+/g, "")}-${seatNumber}`;
-          const hashed = hashSeatId(seatId);
-          let status = metadata.status;
-
-          if (status === "available") {
-            if (hashed % 53 === 0) {
-              status = "sold";
-            } else if (hashed % 37 === 0) {
-              status = "reserved";
-            }
-          }
+          const status = resolveGeneratedSeatStatus(seatId, metadata.status, statusStrategy, 53, 37);
 
           seats.push({
             id: seatId,
@@ -771,16 +1005,7 @@ const buildTheaterSeats = () => {
             columns: sectionBlueprint.gridColumns ?? 4,
           });
           const seatId = `${section.id}-${rowBlueprint.row.toLowerCase().replace(/[^a-z0-9]+/g, "")}-${seatNumber}`;
-          const hashed = hashSeatId(seatId);
-          let status = metadata.status;
-
-          if (status === "available") {
-            if (hashed % 59 === 0) {
-              status = "sold";
-            } else if (hashed % 41 === 0) {
-              status = "reserved";
-            }
-          }
+          const status = resolveGeneratedSeatStatus(seatId, metadata.status, statusStrategy, 59, 41);
 
           seats.push({
             id: seatId,
@@ -801,20 +1026,93 @@ const buildTheaterSeats = () => {
   return seats;
 };
 
-const createTheaterSeatMap = (options: { hallName: string; stageLabel: string }): EventSeatMap => ({
+const createBlueprintTheaterSeatMap = (options: {
+  hallName: string;
+  stageLabel: string;
+  sectionBlueprints: TheaterSectionBlueprint[];
+  viewport?: EventSeatMap["viewport"];
+  backgroundImage?: string;
+  statusStrategy?: TheaterSeatStatusStrategy;
+  notes: string[];
+}): EventSeatMap => ({
   hallName: options.hallName,
   stageLabel: options.stageLabel,
-  sections: theaterSectionBlueprints.map((item) => item.section),
-  seats: buildTheaterSeats(),
+  sections: options.sectionBlueprints.map((item) => item.section),
+  seats: buildTheaterSeats(options.sectionBlueprints, options.statusStrategy),
   variant: "theater",
-  viewport: {
+  viewport: options.viewport ?? {
     width: 1400,
     height: 1050,
   },
+  backgroundImage: options.backgroundImage,
+  notes: options.notes,
+});
+
+const createImageDetectedTheaterSeatMap = (options: {
+  hallName: string;
+  stageLabel: string;
+  source: typeof teatroMunicipalImageMapData;
+  backgroundImage: string;
+  notes: string[];
+}): EventSeatMap => {
+  const sections = options.source.sections.map((section) => ({ ...section }));
+  const sectionNameById = new Map(sections.map((section) => [section.id, section.name]));
+  const rowCounterByKey = new Map<string, number>();
+
+  const seats = options.source.seats.map((seat) => {
+    const rowKey = `${seat.sectionId}:${seat.row}`;
+    const number = (rowCounterByKey.get(rowKey) ?? 0) + 1;
+    rowCounterByKey.set(rowKey, number);
+
+    return {
+      id: `${seat.sectionId}-${seat.row.toLowerCase().replace(/[^a-z0-9]+/g, "")}-${number}`,
+      label: `${seat.row}-${number}`,
+      row: seat.row,
+      number,
+      sectionId: seat.sectionId,
+      status: seat.status as EventSeatStatus,
+      area: sectionNameById.get(seat.sectionId) ?? seat.area,
+      tags: seat.tags?.length ? [...seat.tags] as EventSeatTag[] : undefined,
+      position: {
+        x: seat.position.x,
+        y: seat.position.y,
+        rotation: seat.position.rotation,
+      },
+    };
+  });
+
+  return {
+    hallName: options.hallName,
+    stageLabel: options.stageLabel,
+    sections,
+    seats,
+    variant: "theater",
+    viewport: options.source.viewport,
+    backgroundImage: options.backgroundImage,
+    notes: options.notes,
+  };
+};
+
+export const teatroMunicipalSeatMap = createImageDetectedTheaterSeatMap({
+  hallName: "Teatro Municipal - Sala principal",
+  stageLabel: "Palco italiano",
+  source: teatroMunicipalImageMapData,
+  backgroundImage: "/seatmaps/teatro-municipal-page-1.png",
   notes: [
-    "O mapa de sala agora replica a contagem-base extraida do HTML salvo do Theatro Municipal, com 1531 assentos mapeados.",
-    "O fluxo correto continua sendo: explorar o mapa, escolher o setor, selecionar assentos e so depois seguir para o checkout.",
-    "Lugares com visao parcial, baixa visao, cadeirante, mobilidade reduzida e assento ampliado ficam sinalizados no painel do mapa.",
+    "Mapa refeito a partir do arquivo docs/teatro-municipal.pdf com hotspots detectados diretamente na planta oficial do venue.",
+    "Os assentos agora usam o proprio desenho homologado do Teatro Municipal como referencia visual, sem distribuir bolhas sinteticas fora da planta.",
+    "Lugares de acessibilidade e visao prejudicada continuam sinalizados no painel de foco, mantendo o mapa funcional para selecao e checkout.",
+  ],
+});
+
+export const teatroBradescoSeatMap = createBlueprintTheaterSeatMap({
+  hallName: "Teatro Bradesco",
+  stageLabel: "Palco Teatro Bradesco",
+  sectionBlueprints: bradescoTheaterSectionBlueprints,
+  notes: [
+    "Mapa homologado a partir do arquivo vetorial salvo em docs/1201111055_mapa_teatro_braesco_alterado.svg.",
+    "A distribuicao prioriza Plateia Prime, Plateia, Frisas, Camarote Prime 2° andar e o anel superior do Balcao Nobre com o bloco de 3°/4° andar agregado.",
+    "Assentos especiais para baixa visao, cadeirante, mobilidade reduzida, visao parcial e assento ampliado ficam sinalizados no resumo da sala.",
   ],
 });
 
@@ -841,7 +1139,7 @@ const createEventDetailsContent = (event: Omit<EventData, "details">, overrides:
 export const highlights: HighlightData[] = [
   { id: "h1", title: "Samba na Praca - Edicao Especial", image: highlight1, href: "/eventos/roda-de-samba-verao" },
   { id: "h2", title: "DJ Festival Eletronico 2026", image: highlight2, href: "/eventos/jazz-blues-night" },
-  { id: "h3", title: "Noite Sertaneja - Villa Arena", image: highlight3, href: "/eventos/pop-stars-live-arena-tour" },
+  { id: "h3", title: "Noite Sertaneja - Teatro Municipal", image: highlight3, href: "/eventos/pop-stars-live-arena-tour" },
   { id: "h4", title: "Stand-Up Comedy Night", image: highlight4, href: "/eventos/rap-nacional-em-cena" },
   { id: "h5", title: "MPB ao Vivo - Grandes Vozes", image: highlight5, href: "/eventos/forro-pe-de-serra-arraial-urbano" },
   { id: "h6", title: "Rock Legacy Festival 2026", image: highlight6, href: "/eventos/hamlet-cia-teatro-novo" },
@@ -849,7 +1147,7 @@ export const highlights: HighlightData[] = [
 
 export const banners: BannerData[] = [
   { id: "b1", title: "Duo Acustico - Turne Nacional", image: banner1, href: "/eventos/roda-de-samba-verao" },
-  { id: "b2", title: "Rock in Concert - Edicao Azul", image: banner2, href: "/eventos/pop-stars-live-arena-tour" },
+  { id: "b2", title: "Noite Sertaneja - Teatro Municipal", image: banner2, href: "/eventos/pop-stars-live-arena-tour" },
   { id: "b3", title: "Grande Teatro Imperial - Temporada 2026", image: banner3, href: "/eventos/hamlet-cia-teatro-novo" },
 ];
 
@@ -925,7 +1223,7 @@ const eventSeeds: EventSeed[] = [
   {
     id: "e3",
     slug: "pop-stars-live-arena-tour",
-    title: "Pop Stars Live - Arena Tour",
+    title: "Noite Sertaneja - Teatro Municipal",
     image: event3,
     bannerImage: banner2,
     month: "Mar",
@@ -933,27 +1231,35 @@ const eventSeeds: EventSeed[] = [
     weekday: "Dom",
     time: "19:00",
     city: "Sao Paulo / SP",
-    venueName: "Arena Central",
-    summary: "Show de arena com mapa setorizado e resumo lateral da selecao do usuario.",
+    venueName: "Teatro Municipal",
+    summary: "Show sertanejo com assento numerado e o mapa oficial do Teatro Municipal aplicado de forma definitiva na jornada de assentos.",
     description:
-      "O detalhe do evento concentra o mapa da sala, observacoes de seguranca e um resumo de assentos escolhidos sem alterar a linguagem visual da home.",
-    priceFrom: 150,
+      "A jornada de detalhes agora usa a planta refeita a partir do PDF do Teatro Municipal, deixando a escolha de setores e assentos alinhada ao venue definitivo do evento.",
+    priceFrom: 170,
+    sessions: [
+      { id: "sertanejo-1", weekday: "Qua", day: "18", month: "Mar", time: "20:00", label: "Sessao extra" },
+      { id: "sertanejo-2", weekday: "Qui", day: "19", month: "Mar", time: "20:00" },
+      { id: "sertanejo-3", weekday: "Sex", day: "20", month: "Mar", time: "20:30" },
+      { id: "sertanejo-4", weekday: "Sab", day: "21", month: "Mar", time: "16:00" },
+      { id: "sertanejo-5", weekday: "Sab", day: "21", month: "Mar", time: "20:30" },
+      { id: "sertanejo-6", weekday: "Dom", day: "22", month: "Mar", time: "15:00" },
+      { id: "sertanejo-7", weekday: "Dom", day: "22", month: "Mar", time: "19:30" },
+      { id: "sertanejo-8", weekday: "Qui", day: "26", month: "Mar", time: "20:00" },
+    ],
     securityNotes: [
       "Validacao administrativa antes da emissao do QR final.",
       "Operador deve revisar score, assentos e dados mascarados.",
       "Eventos de alta demanda pedem fila de aprovacao mais rigida.",
     ],
-    seatMap: createSeatMap({
-      hallName: "Arena Central - Anel inferior",
-      stageLabel: "Palco arena",
-      soldSeatIds: ["premium-c5", "plateia-a-d1", "plateia-b-h7"],
-      reservedSeatIds: ["plateia-a-e5", "plateia-b-i2", "acessivel-j1"],
-    }),
+    seatMap: teatroMunicipalSeatMap,
     detailsOverrides: {
-      organizer: "Arena Touring Brasil",
-      address: "Avenida Paulista, 900 - Bela Vista - Sao Paulo / SP",
+      organizer: "Circuito Sertanejo Brasil",
+      address: "Praca Ramos de Azevedo, s/n - Centro - Sao Paulo / SP",
       openingTime: "17:30",
       ageRating: "16 anos",
+      agePolicy: "Menores de 16 anos devem estar acompanhados pelos pais ou responsaveis legais.",
+      importantNotice:
+        "Este evento usa a configuracao definitiva do Teatro Municipal refeita a partir do PDF homologado. Alteracoes de bloqueio ou contingente devem ser revisadas pela operacao antes da emissao final.",
     },
   },
   {
@@ -1040,15 +1346,18 @@ const eventSeeds: EventSeed[] = [
     description:
       "O modulo de mapa da sala entra dentro da pagina de detalhes do evento, mantendo a home atual como vitrine principal da plataforma.",
     priceFrom: 170,
+    sessions: [
+      { id: "hamlet-1", weekday: "Sex", day: "28", month: "Mar", time: "19:30", label: "Estreia" },
+      { id: "hamlet-2", weekday: "Sab", day: "29", month: "Mar", time: "17:00" },
+      { id: "hamlet-3", weekday: "Sab", day: "29", month: "Mar", time: "20:30" },
+      { id: "hamlet-4", weekday: "Dom", day: "30", month: "Mar", time: "18:00" },
+    ],
     securityNotes: [
       "Explicitar no fluxo que o ticket digital depende de validacao.",
       "Assentos acessiveis devem ser identificados com clareza.",
       "Toda aprovacao precisa ser rastreavel no ambiente administrativo.",
     ],
-    seatMap: createTheaterSeatMap({
-      hallName: "Teatro Municipal - Sala principal",
-      stageLabel: "Palco italiano",
-    }),
+    seatMap: teatroMunicipalSeatMap,
     detailsOverrides: {
       organizer: "Cia Teatro Novo",
       address: "Praca Ramos de Azevedo, s/n - Centro - Sao Paulo / SP",
@@ -1131,6 +1440,7 @@ const eventSeeds: EventSeed[] = [
 
 export const events: EventData[] = eventSeeds.map(({ detailsOverrides, ...event }) => ({
   ...event,
+  sessions: event.sessions?.length ? event.sessions : [createDefaultEventSession(event)],
   details: createEventDetailsContent(event, detailsOverrides),
 }));
 
