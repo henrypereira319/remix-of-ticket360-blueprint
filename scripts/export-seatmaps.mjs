@@ -13,6 +13,10 @@ const geometryModulePath = pathToFileURL(path.join(rootDir, "src", "data", "teat
 const { teatroMunicipalSeatMap } = await import(geometryModulePath);
 
 const selectableStatuses = new Set(["available", "accessible"]);
+const sanitizeSvgMarkup = (markup) =>
+  String(markup ?? "")
+    .replace(/&nbsp;|&#160;|\u00a0/g, " ")
+    .trim();
 
 const sectionStats = Object.fromEntries(
   teatroMunicipalSeatMap.sections.map((section) => {
@@ -49,7 +53,7 @@ const geometryPayload = {
 
 delete geometryPayload.backgroundMarkup;
 
-const backgroundSvg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${teatroMunicipalSeatMap.viewport?.width ?? 2400} ${teatroMunicipalSeatMap.viewport?.height ?? 2000}">\n${teatroMunicipalSeatMap.backgroundMarkup ?? ""}\n</svg>\n`;
+const backgroundSvg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${teatroMunicipalSeatMap.viewport?.width ?? 2400} ${teatroMunicipalSeatMap.viewport?.height ?? 2000}">\n${sanitizeSvgMarkup(teatroMunicipalSeatMap.backgroundMarkup)}\n</svg>\n`;
 
 await fs.mkdir(geometryOutputDir, { recursive: true });
 await fs.mkdir(backgroundOutputDir, { recursive: true });

@@ -127,6 +127,12 @@ const collapseEmptyGroups = (root) => {
   }
 };
 
+const sanitizeSvgMarkup = (markup) =>
+  String(markup ?? "")
+    .replace(/&nbsp;|&#160;|\u00a0/g, " ")
+    .replace(/\s+\n/g, "\n")
+    .trim();
+
 const rawSvg = readFileSync(sourcePath, "utf8");
 const dom = new JSDOM(rawSvg);
 const document = dom.window.document;
@@ -147,6 +153,8 @@ const viewport = {
 };
 
 const backgroundGroup = viewportGroup.cloneNode(true);
+backgroundGroup.removeAttribute("style");
+backgroundGroup.removeAttribute("class");
 backgroundGroup.querySelectorAll("*").forEach((element) => {
   if (shouldDropFromBackdrop(element)) {
     element.remove();
@@ -159,7 +167,7 @@ backgroundGroup.querySelectorAll("*").forEach((element) => {
 
 collapseEmptyGroups(backgroundGroup);
 
-const backgroundMarkup = backgroundGroup.innerHTML.replace(/\s+\n/g, "\n").trim();
+const backgroundMarkup = sanitizeSvgMarkup(backgroundGroup.innerHTML);
 
 const sectionAggregates = new Map();
 const generatedSeatIds = new Set();

@@ -70,6 +70,7 @@
 - [x] Geometria pesada carregada sob demanda.
 - [x] Assentos separados de disponibilidade/inventário.
 - [x] Fundo vetorial pesado externalizado como asset estático separado da geometria clicável.
+- [x] Exportação do fundo vetorial em SVG válido, sem entidades HTML que corrompam o asset externo.
 - [x] Performance de pan, zoom e clique aceitável em venues pesados.
 - [x] Estados de assento: disponível, reservado, vendido, acessível.
 - [x] Resumo de seleção sem poluir a leitura do mapa.
