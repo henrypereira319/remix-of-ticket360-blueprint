@@ -10,9 +10,14 @@
       <text transform="matrix(0.7088 0.7054 -0.7054 0.7088 1482.0444 1134.1572)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="18">Técnica</text>
     </g>
   </g>
-  <g id="Anfiteatro">
-    <g id="Anfiteatro_Area_de_Assentos" data-seatarea="true">
-     
+  <g id="Anfiteatro"><g id="Anfiteatro_Setor" data-zoomable="true" data-sector="true">
+      <path data-sectorarea="true" id="Anfiteatro_Area" fill="#ED1C24" d="M793.173,185.597c8.292,17.643,17.32,36.816,17.32,36.816s-140.67,55.619-191.404,173.259 c29.793,21.457,64.368,44.795,97.734,66.36c47.873-21.76,224.219-120.104,480.005-122.729 c209.25-6.019,452.14,100.299,490.698,126.386c34.915-22.629,71.219-48.561,106.626-72.193 c-65.329-118.464-213.692-169.467-213.692-169.467s9.963-20.25,18.937-38.345C1376.823,64.032,1009.823,79.032,793.173,185.597z"></path>
+      <g id="Anfiteatro_Extras" data-extra="true">
+        <g id="Anfiteatro_Nome">
+          <text transform="matrix(1 0 0 1 1145.6177 219.5801)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Anfiteatro</text>
+        </g>
+      </g>
+    </g>
       <g id="Anfiteatro_Legendas">
         <text transform="matrix(1 0 0 1 1145.6177 139.5801)" fill="#000000" font-family="'MyriadPro-Bold'" font-size="24">Anfiteatro</text>
         <g>
@@ -24,12 +29,15 @@
           <path d="M1194.84,315.234l-0.893,3.286h-3.002l3.914-12.804h3.781l3.989,12.804h-3.115l-0.988-3.286H1194.84z M1198.089,313.068 l-0.798-2.717c-0.209-0.76-0.438-1.729-0.627-2.47h-0.058c-0.171,0.76-0.38,1.729-0.569,2.47l-0.779,2.717H1198.089z"></path>
         </g>
       </g>
-    </g>
-    
   </g>
-  <g id="Galeria">
-    <g id="Galeria_Area_de_Assentos" data-seatarea="true">
-     
+  <g id="Galeria"><g id="Galeria_Setor" data-zoomable="true" data-sector="true">
+      <path data-sectorarea="true" id="Galeria_Area" fill="#C1272D" d="M1199.914,346.161c-287.091,4.872-470.091,114.872-573.972,175.991 c-153.119,89.88-351.119,212.88-454.119,393.88c-107,258-85,539-72.353,671.565c50.353-2.565,83.353-50.565,86.353-112.565 c-7-157,27-490,72.639-539.901c47.361,6.901,97.361-42.099,145.493-94.496c61.496-67.496,218.869-182.603,288.486-223.989 c97.383-60.614,284.383-156.614,509.475-153.992c237.908-0.623,450.908,116.377,526.474,157.492 c99.435,58.886,230.435,178.886,275.435,221.886c59.993,62.997,107.455,76.4,138,76c57,121,88,372,78,524 c0,57,14.965,120.433,77,118c36-217,4-556-81-696c-96-122-273-252-425-339C1620.823,434.032,1427.823,347.032,1199.914,346.161z"></path>
+      <g id="Galeria_Extras" data-extra="true">
+        <g id="Galeria_Nome">
+          <text transform="matrix(1 0 0 1 1162.2017 396.5801)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Galeria</text>
+        </g>
+      </g>
+    </g>
       <g id="Galeria_Legendas">
         <text transform="matrix(1 0 0 1 2100.2017 880.5801)" fill="#000000" font-family="'MyriadPro-Bold'" font-size="24">Galeria</text>
         <text transform="matrix(1 0 0 1 232.2017 880.5801)" fill="#000000" font-family="'MyriadPro-Bold'" font-size="24">Galeria</text>
@@ -56,12 +64,15 @@
           <path d="M147.533,1071.266c0.155,0.548,0.245,1.798-0.021,3.313c-0.762,4.361-3.886,6.129-7.498,5.497 c-4.304-0.753-6.144-4.236-5.477-8.055c0.259-1.478,0.754-2.549,1.104-3.009l2.142,0.993c-0.341,0.518-0.707,1.283-0.888,2.313 c-0.393,2.246,0.667,4.243,3.493,4.737c2.526,0.441,4.378-0.777,4.819-3.304c0.153-0.879,0.149-1.845,0.008-2.468 L147.533,1071.266z"></path>
         </g>
       </g>
-    </g>
-    
   </g>
-  <g id="Balcao_Simples_Setor_3">
-    <g id="Balcao_Simples_Setor_3_Area_de_Assentos" data-seatarea="true">
-     
+  <g id="Balcao_Simples_Setor_3"><g id="Balcao_Simples_Setor_3_Setor" data-zoomable="true" data-sector="true">
+      <path data-sectorarea="true" id="Balcao_Simples_Setor_3_Area" fill="#F7931E" d="M794.49,620.699c63-34.667,196.333-106,411.802-110.676c171.939-3.731,347.864,75.343,411.416,106.868 c19.08,8.888,55.701,31.005,71.163,40.692l-63.048,89.45c0,0,180,104,268,221c21,21,44,28,69,22c185,186,124,549,117,628 c-50,179,61,215,61,215s39.248-205.045,37-380c-1.938-87.057,1.411-195.043-32-354c-47-218-395.885-454.191-442-477 c-101-53-308-153-504.531-147.01c-244.42,5.167-422.903,106.458-494.146,148.004c-79.13,45.228-364.787,237.743-443.389,452.986 c-53.022,177.015-40.227,299.51-32.31,385.284c7.917,158.353,44.867,286.758,44.867,286.758s97.651-32.073,93.692-117.848 c2.816-63.175-66.184-452.175,98.971-632.093c40.908-13.196,29.031-5.279,60.702-32.99 c124.743-140.093,262.478-221.425,262.478-221.425l-66.667-76C742.157,654.032,755.157,643.032,794.49,620.699z"></path>
+      <g id="Balcao_Simples_Setor_3_Extras" data-extra="true">
+        <g id="Balcao_Simples_Setor_3_Nome">
+          <text transform="matrix(0.7351 -0.678 0.678 0.7351 471.9355 895.2329)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Balcão Simples - Setor 3</text>
+        </g>
+      </g>
+    </g>
       <g id="Balcao_Simples_Setor_3_Legendas">
         <text transform="matrix(0.7351 -0.678 0.678 0.7351 261.9355 1155.2329)" fill="#000000" font-family="'MyriadPro-Bold'" font-size="24">Balcão Simples</text>
         <text transform="matrix(0.7351 -0.678 0.678 0.7351 291.9355 1175.2329)" fill="#000000" font-family="'MyriadPro-Bold'" font-size="24">Setor 3</text>
@@ -84,12 +95,15 @@
           <path d="M273.427,1268.132c-0.057-0.773,0-2.299,0.182-3.75c0.22-1.752,0.524-2.806,1.188-3.66 c0.582-0.827,1.526-1.341,2.696-1.194c1.111,0.14,2.064,0.929,2.436,2.411l0.037,0.006c0.56-1.405,1.806-2.341,3.446-2.135 c1.168,0.146,2.007,0.788,2.529,1.657c0.619,1.016,0.841,2.612,0.524,5.14c-0.178,1.413-0.403,2.457-0.578,3.086 L273.427,1268.132z M278.628,1265.892l0.118-0.941c0.19-1.527-0.332-2.396-1.274-2.515c-0.961-0.12-1.562,0.55-1.725,1.851 c-0.08,0.641-0.088,1.004-0.06,1.237L278.628,1265.892z M284.264,1266.599c0.092-0.276,0.135-0.615,0.195-1.105 c0.163-1.301-0.201-2.514-1.539-2.682c-1.282-0.16-1.936,0.925-2.115,2.357l-0.122,0.98L284.264,1266.599z"></path>
         </g>
       </g>
-    </g>
-    
   </g>
-  <g id="Balcao_Simples_Setor_2">
-    <g id="Balcao_Simples_Setor_2_Area_de_Assentos" data-seatarea="true">
-     
+  <g id="Balcao_Simples_Setor_2"><g id="Balcao_Simples_Setor_2_Setor" data-zoomable="true" data-sector="true">
+      <path data-sectorarea="true" id="Balcao_Simples_Setor_2_Area" fill="#FBB03B" d="M795.559,738.143c0,0,170.265-106.111,413.586-112.708c216.679-2.069,409.606,116.688,409.606,116.688 l59.301-83.09c0,0-34.562-22.667-61.344-35.142c-63.552-31.524-241.552-114.191-413.416-107.868 c-228.136,3.01-374.136,95.676-408.712,112.889c-37.759,19.756-59.344,39.079-59.344,39.079L795.559,738.143z"></path>
+      <g id="Balcao_Simples_Setor_2_Extras" data-extra="true">
+        <g id="Balcao_Simples_Setor_2_Nome">
+          <text transform="matrix(1 0 0 1 1082.9551 559.5801)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Balcão Simples - Setor 2</text>
+        </g>
+      </g>
+    </g>
       <g id="Balcao_Simples_Setor_2_Legendas">
         <text transform="matrix(1 0 0 1 1112.9551 620.5801)" fill="#000000" font-family="'MyriadPro-Bold'" font-size="18">Balcão Simples - Setor 2</text>
         <g>
@@ -103,12 +117,15 @@
           <path d="M1605.238,708.958l-2.702,2.072l-2.387-1.818l10.872-7.813l3.007,2.292l-4.586,12.602l-2.479-1.889l1.206-3.212 L1605.238,708.958z M1609.136,709.204l1.012-2.645c0.294-0.731,0.699-1.641,0.998-2.345l-0.046-0.035 c-0.597,0.501-1.351,1.146-1.95,1.619l-2.266,1.688L1609.136,709.204z"></path>
         </g>
       </g>
-    </g>
-    
   </g>
-  <g id="Foyer_Setor_3">
-    <g id="Foyer_Setor_3_Area_de_Assentos" data-seatarea="true">
-     
+  <g id="Foyer_Setor_3"><g id="Foyer_Setor_3_Setor" data-zoomable="true" data-sector="true">
+      <path data-sectorarea="true" id="Foyer_Setor_3_Area" fill="#9E005D" d="m 510.243,1326.032 c -32,-5 -83,-17 -106,-20 -28,148 -10,456 30,563 81,-12 97,-39 91,-89 -30,-175 -32,-331 -15,-454 z m 1394.58,-2 c 32,-5 82,-14 105,-17 28,148 10,455 -30,562 -81,-12 -97,-39 -91,-89 30,-175 33,-333 16,-456 z"></path>
+      <g id="Foyer_Setor_3_Extras" data-extra="true">
+        <g id="Foyer_Setor_3_Nome">
+          <text transform="matrix(-0.0482 0.9988 -0.9988 -0.0482 1979.9521 1494.812)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Foyer - Setor 3</text>
+        </g>
+      </g>
+    </g>
       <g id="Foyer_Setor_3_Legendas">
         <text transform="matrix(-0.0482 0.9988 -0.9988 -0.0482 1950.9521 1724.812)" fill="#000000" font-family="'MyriadPro-Bold'" font-size="18">Foyer - Setor 3</text>
         <g>
@@ -124,12 +141,15 @@
           <path d="M485.948,1428.783l3.228,1.085l-0.178,2.998l-12.55-4.664l0.224-3.774l13.018-3.226l-0.185,3.109l-3.339,0.793 L485.948,1428.783z M483.979,1425.412l-2.761,0.636c-0.77,0.164-1.75,0.335-2.502,0.48l-0.003,0.057 c0.749,0.216,1.703,0.482,2.431,0.715l2.667,0.938L483.979,1425.412z"></path>
         </g>
       </g>
-    </g>
-    
   </g>
-  <g id="Foyer_Setor_2">
-    <g id="Foyer_Setor_2_Area_de_Assentos" data-seatarea="true">
-     
+  <g id="Foyer_Setor_2"><g id="Foyer_Setor_2_Setor" data-zoomable="true" data-sector="true">
+      <path data-sectorarea="true" id="Foyer_Setor_2_Area" fill="#93278F" d="m 1874.823,995.032 c -27,24 -61,54 -85,74 43,55 91,144 113,247 42,-6 73,-11 106,-17 -14,-123 -91,-260 -134,-304 z m -1339,6 c 32,24 62,45 86,65 -43,55 -87,150 -109,253 -40,-8 -88.545,-18.271 -107,-22 14,-123 87,-252 130,-296 z"></path>
+      <g id="Foyer_Setor_2_Extras" data-extra="true">
+        <g id="Foyer_Setor_2_Nome">
+          <text transform="matrix(0.4421 0.897 -0.897 0.4421 1879.5352 1084.3135)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Foyer - Setor 2</text>
+        </g>
+      </g>
+    </g>
       <g id="Foyer_Setor_2_Legendas">
           <text transform="matrix(0.4421 0.897 -0.897 0.4421 1920.5352 1087.3135)" fill="#000000" font-family="'MyriadPro-Bold'" font-size="18">Foyer - Setor 2</text>
         <g>
@@ -139,12 +159,15 @@
           <path d="M1994.763,1279.339c0.326,1.031,0.601,2.393,0.788,3.824c0.318,2.43,0.13,4.064-0.635,5.391 c-0.808,1.447-2.281,2.482-4.541,2.779c-2.43,0.318-4.223-0.348-5.417-1.418c-1.285-1.191-2.082-3.176-2.408-5.662 c-0.194-1.488-0.242-2.574-0.239-3.283L1994.763,1279.339z M1984.796,1283.558c-0.023,0.252,0.031,0.666,0.075,1.004 c0.323,2.621,1.979,4.148,5.013,3.752c2.73-0.357,3.828-2.074,3.502-4.561c-0.081-0.621-0.194-1.047-0.283-1.285 L1984.796,1283.558z"></path>
         </g>
       </g>
-    </g>
-    
   </g>
-  <g id="Foyer_Setor_1">
-    <g id="Foyer_Setor_1_Area_de_Assentos" data-seatarea="true">
-     
+  <g id="Foyer_Setor_1"><g id="Foyer_Setor_1_Setor" data-zoomable="true" data-sector="true">
+      <path data-sectorarea="true" id="Foyer_Setor_1_Area" fill="#662D91" d="M540.823,992.032c0,0,95-132,229-214c76-46,225-122,439-123c213.998-1,339,72,429,123 c147,92,233,212,233,212l-112,98c0,0-93-123-207-184c-79-40-184-88-335-91c-184.966-3.675-289,51-376,104c-108,66-182,166-182,166 L540.823,992.032z"></path>
+      <g id="Foyer_Setor_1_Extras" data-extra="true">
+        <g id="Foyer_Setor_1_Nome">
+          <text transform="matrix(1 0 0 1 1132.6221 729.5801)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Foyer - Setor 1</text>
+        </g>
+      </g>
+    </g>
       <g id="Foyer_Setor_1_Legendas">
           <text transform="matrix(1 0 0 1 1142.6221 805.5801)" fill="#000000" font-family="'MyriadPro-Bold'" font-size="18">Foyer - Setor 1</text>
         <g>
@@ -160,13 +183,25 @@
           <path d="M854.668,879.892l1.414,3.097l-2.308,1.92l-5.179-12.346l2.906-2.418l11.254,7.292l-2.395,1.992l-2.861-1.895 L854.668,879.892z M855.779,876.149l-2.351-1.579c-0.646-0.451-1.441-1.049-2.062-1.498l-0.044,0.037 c0.354,0.693,0.813,1.572,1.142,2.263l1.139,2.587L855.779,876.149z"></path>
         </g>
       </g>
-    </g>
-    
   </g>
- 
-  <g id="Balcao_Nobre_Setor_1">
-    <g id="Balcao_Nobre_Setor_1_Area_de_Assentos" data-seatarea="true">
-     
+  <g id="Balcao_Nobre_Setor_2"><g id="Balcao_Nobre_Setor_2_Setor" data-zoomable="true" data-sector="true">
+          <text transform="matrix(-0.1444 -0.9895 0.9895 -0.1444 578.0249 1655.7324)" fill="#00000" font-family="'MyriadPro-Bold'" font-size="16">Balcão Nobre - Setor 2</text>
+      <path data-sectorarea="true" id="Balcao_Nobre_Setor_2_Area" fill="#4A4AA5" d="m 1868.667,1385.833 c 0,0 -98.699,0.711 -123.699,1.21 16.334,200.833 -16.486,293.99 -26.486,353.323 -16,87.333 32.668,94.667 72.668,106 37,-71.125 61.666,-168.709 72.666,-280.021 11,-111.312 4.851,-180.512 4.851,-180.512 z m -1322.656,2.984 c 0,0 97.59,-1.164 123.007,-1.164 -16.333,200.833 16.139,293.38 26.139,352.713 16,87.333 -32.667,94.667 -72.667,106 -37,-71.125 -61.667,-168.709 -72.667,-280.021 -11,-111.312 -3.812,-177.528 -3.812,-177.528 z"></path>
+      <g id="Balcao_Nobre_Setor_2_Extras" data-extra="true">
+        <g id="Balcao_Nobre_Setor_2_Nome">
+          <text transform="matrix(-0.1444 -0.9895 0.9895 -0.1444 627.0249 1715.7324)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Balcão Nobre - Setor 2</text>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g id="Balcao_Nobre_Setor_1"><g id="Balcao_Nobre_Setor_1_Setor" data-zoomable="true" data-sector="true">
+      <path data-sectorarea="true" id="Balcao_Nobre_Setor_1_Area" fill="#2E3192" d="m 1868.167,1377.333 -124,2.167 c 0,0 -11.167,-99.167 -47.605,-167.984 -19.823,-0.215 -32.962,-6.275 -47.738,-21.951 21.229,-28.565 67.896,-87.899 89.181,-113.067 110.328,125.169 130.162,300.835 130.162,300.835 z m -1303.834,-74 c -6.406,21.048 -18.323,78.888 -18.323,78.888 l 123.395,-1.358 c 0,0 3.595,-33.53 10.595,-65.196 4.755,-21.513 23.823,-76.151 37.823,-104.151 19.824,-0.215 32.962,-6.275 47.738,-21.951 C 744.332,1161 697.665,1101.666 676.381,1076.498 606,1160.333 576,1265 564.333,1303.333 Z"></path>
+      <g id="Balcao_Nobre_Setor_1_Extras" data-extra="true">
+        <g id="Balcao_Nobre_Setor_1_Nome">
+          <text transform="matrix(0.334 -0.9426 0.9426 0.334 602.9189 1360.0547)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Balcão Nobre - Setor 1</text>
+        </g>
+      </g>
+    </g>
       <g id="Balcao_Nobre_Setor_1_Legendas">
           <text transform="matrix(0.334 -0.9426 0.9426 0.334 600.9189 1325.0547)" fill="#000000" font-family="'MyriadPro-Bold'" font-size="18">Balcão Nobre - Setor 1</text>
         <g>
@@ -180,12 +215,15 @@
           <path d="M1764.081,1364.707l-3.337-0.681l-0.192-2.996l13.029,3.087l0.24,3.774l-12.523,4.799l-0.199-3.109l3.218-1.196 L1764.081,1364.707z M1766.449,1367.811l2.66-0.969c0.744-0.258,1.697-0.548,2.425-0.783l-0.003-0.058 c-0.77-0.123-1.75-0.27-2.502-0.411l-2.76-0.604L1766.449,1367.811z"></path>
         </g>
       </g>
-    </g>
-    
   </g>
-  <g id="Camarotes">
-    <g id="Camarotes_Area_de_Assentos" data-seatarea="true">
-     
+  <g id="Camarotes"><g id="Camarotes_Setor" data-zoomable="true" data-sector="true">
+      <path data-sectorarea="true" id="Camarotes_Area" fill="#1B1464" d="M772.823,1181.274c40-51.125,85-100.184,169-155.121c48-23,130.97-75.012,267-74.061 c134,0.938,208,48.938,263,72.97c91,50.969,154.725,136.926,172,158.985c26.677-34.547,68.677-89.547,88.227-114.488 c-61.602-67.788-98.636-102.649-193.227-161.527c-97-51-227-91-334-88c-121,3-238,33-323,84c-88,52-139,90.234-199,164.484 C705,1095.667,752.333,1157,772.823,1181.274z"></path>
+      <g id="Camarotes_Extras" data-extra="true">
+        <g id="Camarotes_Nome">
+          <text transform="matrix(1 0 0 1 1149.978 884.5801)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Camarotes</text>
+        </g>
+      </g>
+    </g>
       <g id="Camarotes_Legendas">
           <text transform="matrix(1 0 0 1 1149.978 854.5801)" fill="#00000" font-family="'MyriadPro-Bold'" font-size="24">Camarotes</text>
         <g>
@@ -224,12 +262,15 @@
           <path d="M1681.999,1093.898l-0.028-0.025l-2.489-0.779l1.123-1.911l3.443,1.118l1.743,1.613l-8.392,9.06l-2.049-1.897 L1681.999,1093.898z"></path>
         </g>
       </g>
-    </g>
-    
   </g>
-  <g id="Frisas_Setor_2">
-    <g id="Frisas_Setor_2_Area_de_Assentos" data-seatarea="true">
-     
+  <g id="Frisas_Setor_2"><g id="Frisas_Setor_2_Setor" data-zoomable="true" data-sector="true">
+      <path data-sectorarea="true" id="Frisas_Setor_2_Area" fill="#29ABE2" d="m 1695.032,1473.062 -106.438,-0.386 c 0,0 -13.271,134.856 -32.498,228.633 -4.623,51.057 19.145,99.568 71.811,110.792 30.832,-13.621 49.51,-115.724 58.455,-186.791 9.121,-72.454 8.67,-152.248 8.67,-152.248 z m -977.434,0 108.438,-0.386 c 0,0 11.138,125.273 36.498,228.633 4.623,51.057 -23.145,99.568 -75.81,110.792 -30.832,-13.621 -49.51,-115.724 -58.456,-186.791 -9.12,-72.454 -10.67,-152.248 -10.67,-152.248 z"></path>
+      <g id="Frisas_Setor_2_Extras" data-extra="true">
+        <g id="Frisas_Setor_2_Nome">
+          <text transform="matrix(-0.1305 -0.9915 0.9915 -0.1305 789.999 1689.9385)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Frisas - Setor 2</text>
+        </g>
+      </g>
+    </g>
       <g id="Frisas_Setor_2_Legendas">
           <text transform="matrix(-0.1305 -0.9915 0.9915 -0.1305 750.999 1680.9385)" fill="#000000" font-family="'MyriadPro-Bold'" font-size="18">Frisas - Setor 2</text>
         <g>
@@ -257,12 +298,15 @@
           <path d="M1658.661,1595.792c0.035,0.586,0.267,1.835,0.899,2.828c0.806,1.266,1.824,1.519,2.593,1.029 c1.041-0.664,0.854-1.985,0.18-3.043l-0.633-0.993l1.746-1.112l0.603,0.945c0.521,0.817,1.493,1.639,2.375,1.077 c0.625-0.397,0.773-1.19,0.11-2.231c-0.541-0.85-1.48-1.513-2.004-1.766l1.447-1.619c0.799,0.369,1.969,1.357,2.836,2.721 c1.409,2.211,1.024,4.189-0.401,5.098c-1.104,0.704-2.384,0.641-3.634-0.365l-0.031,0.02c0.57,1.394,0.27,3.004-1.109,3.883 c-1.826,1.163-4.203,0.402-5.887-2.242c-0.857-1.346-1.23-2.707-1.25-3.551L1658.661,1595.792z"></path>
         </g>
       </g>
-    </g>
-    
   </g>
-  <g id="Frisas_Setor_1">
-    <g id="Frisas_Setor_1_Area_de_Assentos" data-seatarea="true">
-     
+  <g id="Frisas_Setor_1"><g id="Frisas_Setor_1_Setor" data-zoomable="true" data-sector="true">
+      <path data-sectorarea="true" id="Frisas_Setor_1_Area" fill="#00A99D" d="m 944.058,1177.635 -55.24,-57.944 c 0,0 -78.159,63.607 -133.495,172.842 -38.5,76 -37.806,172.033 -37.806,172.033 l 107.162,0.86 c 0,0 -2.356,-90.894 30.644,-160.894 37,-82.5 88.735,-126.897 88.735,-126.897 z m 571.46,41.588 63.94,-43.128 c 0,0 65.338,62.963 92.765,148.72 21.925,68.553 23.337,139.751 23.337,139.751 l -107.162,0.86 c 0,0 -5.408,-88.462 -21.341,-138.134 -13.903,-50.378 -51.539,-108.069 -51.539,-108.069 z"></path>
+      <g id="Frisas_Setor_1_Extras" data-extra="true">
+        <g id="Frisas_Setor_1_Nome">
+          <text transform="matrix(0.4368 -0.8996 0.8996 0.4368 772.6865 1359.9258)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Frisas - Setor 1</text>
+        </g>
+      </g>
+    </g>
       <g id="Frisas_Setor_1_Legendas">
           <text transform="matrix(0.4368 -0.8996 0.8996 0.4368 825.6865 1359.9258)" fill="#000000" font-family="'MyriadPro-Bold'" font-size="18">Frisas - Setor 1</text>
         <g>
@@ -294,12 +338,15 @@
           <path d="M1648.407,1382.063c0.156,0.352,0.336,0.598,0.674,1.058c0.512,0.733,1.216,1.343,1.957,1.659 c0.889,0.402,1.863,0.413,2.76,0.09l-0.004-0.043c-0.787-0.175-1.488-0.674-2.101-1.635c-1.122-1.763-0.844-4.013,1.19-5.309 c2.035-1.297,4.791-0.754,6.25,1.537c1.705,2.676,0.461,5.247-1.975,6.799c-2.18,1.389-4.188,1.699-5.944,1.242 c-1.546-0.412-2.904-1.484-4.01-3.078c-0.287-0.379-0.537-0.807-0.704-1.105L1648.407,1382.063z M1657.305,1380.474 c-0.521-0.817-1.646-0.957-2.734-0.263c-0.897,0.571-1.351,1.559-0.728,2.536c0.438,0.688,1.029,0.943,1.55,0.949 c0.212-0.022,0.394-0.092,0.696-0.286c1.116-0.688,1.93-1.815,1.227-2.921L1657.305,1380.474z"></path>
         </g>
       </g>
-    </g>
-    
   </g>
-  <g id="Plateia">
-    <g id="Plateia_Area_de_Assentos" data-seatarea="true">
-     
+  <g id="Plateia"><g id="Plateia_Setor" data-zoomable="true" data-sector="true">
+      <path data-sectorarea="true" id="Plateia_Area" fill="#8CC63F" d="M838.884,1494.226c-25.643-205.146,115.227-314.383,115.227-314.383l-58.613-66.856 c0,0,116.311-114.479,318.71-113.563c172.177,10.99,266.508,89.752,266.508,89.752l-33.886,54.034 c0,0,151.691,145.617,129.712,348.933c-5.844,95.454-43.145,285.945-43.145,285.945s-152.021-28.4-322.483-31.498 c-170.462-3.098-320.983,30.999-320.983,30.999S858.116,1671.897,838.884,1494.226z"></path>
+      <g id="Plateia_Extras" data-extra="true">
+        <g id="Plateia_Nome">
+          <text transform="matrix(1 0 0 1 1168.5693 1410.5801)" fill="#FFFFFF" font-family="'MyriadPro-Bold'" font-size="24">Plateia</text>
+        </g>
+      </g>
+    </g>
       <g id="Plateia_Legendas">
           <text transform="matrix(1 0 0 1 1168.5693 1450.5801)" fill="#00000" font-family="'MyriadPro-Bold'" font-size="24">Plateia</text>
          <g>
@@ -328,7 +375,5 @@
           <path d="M1204.073,1066.356c0.76,0.399,1.977,0.798,3.211,0.798c1.329,0,2.032-0.551,2.032-1.405 c0-0.779-0.607-1.254-2.146-1.786c-2.127-0.76-3.533-1.938-3.533-3.818c0-2.185,1.842-3.837,4.844-3.837 c1.463,0,2.508,0.284,3.268,0.646l-0.646,2.317c-0.494-0.247-1.425-0.607-2.66-0.607c-1.254,0-1.861,0.589-1.861,1.234 c0,0.817,0.703,1.178,2.375,1.824c2.261,0.836,3.305,2.014,3.305,3.837c0,2.146-1.633,3.971-5.147,3.971 c-1.463,0-2.907-0.399-3.629-0.798L1204.073,1066.356z"></path>
         </g>
       </g>
-    </g>
-    
   </g>
 </svg>

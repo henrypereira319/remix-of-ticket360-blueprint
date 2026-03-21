@@ -71,6 +71,7 @@
 - [x] Assentos separados de disponibilidade/inventário.
 - [x] Fundo vetorial pesado externalizado como asset estático separado da geometria clicável.
 - [x] Exportação do fundo vetorial em SVG válido, sem entidades HTML que corrompam o asset externo.
+- [x] Fundo do Teatro Municipal recomposto a partir do SVG original preservando palco, áreas setoriais e legendas, sem hotspots de assentos no asset estático.
 - [x] Performance de pan, zoom e clique aceitável em venues pesados.
 - [x] Estados de assento: disponível, reservado, vendido, acessível.
 - [x] Resumo de seleção sem poluir a leitura do mapa.

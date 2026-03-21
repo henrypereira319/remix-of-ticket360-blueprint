@@ -78,22 +78,7 @@ const resolveSeatStatus = ({ available, locked, tags }) => {
 };
 
 const shouldDropFromBackdrop = (element) => {
-  if (element.matches("[data-seat-id]")) {
-    return true;
-  }
-
-  if (element.matches("[data-sector='true'], [data-info='true']")) {
-    return true;
-  }
-
-  const className = element.getAttribute("class") ?? "";
-  const style = element.getAttribute("style") ?? "";
-
-  if (/\bhide\b/i.test(className)) {
-    return true;
-  }
-
-  if (/display\s*:\s*none/i.test(style)) {
+  if (element.matches("[data-seat-id], [data-seatgroup], [data-info='true']")) {
     return true;
   }
 
@@ -125,6 +110,22 @@ const collapseEmptyGroups = (root) => {
       hasChanges = true;
     });
   }
+};
+
+const unwrapSeatAreas = (root) => {
+  root.querySelectorAll("[data-seatarea='true']").forEach((seatArea) => {
+    const parent = seatArea.parentNode;
+
+    if (!parent) {
+      return;
+    }
+
+    while (seatArea.firstChild) {
+      parent.insertBefore(seatArea.firstChild, seatArea);
+    }
+
+    seatArea.remove();
+  });
 };
 
 const sanitizeSvgMarkup = (markup) =>
@@ -165,6 +166,8 @@ backgroundGroup.querySelectorAll("*").forEach((element) => {
   element.removeAttribute("class");
 });
 
+collapseEmptyGroups(backgroundGroup);
+unwrapSeatAreas(backgroundGroup);
 collapseEmptyGroups(backgroundGroup);
 
 const backgroundMarkup = sanitizeSvgMarkup(backgroundGroup.innerHTML);
