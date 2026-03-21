@@ -223,6 +223,7 @@
 - [ ] Cache de APIs.
 - [ ] Stale-while-revalidate quando fizer sentido.
 - [x] Code splitting por rota.
+- [x] Servidor estático explícito com fallback SPA e cache control para assets com hash.
 - [ ] Política de imagens.
 
 ### 21. Analytics e BI
@@ -280,6 +281,7 @@
 - [x] Build e testes passando.
 - [ ] Rollback possível.
 - [x] Documentação operacional atualizada.
+- [x] Deploy estático validado com fallback SPA e política de cache coerente.
 
 ## Ordem recomendada de execução
 

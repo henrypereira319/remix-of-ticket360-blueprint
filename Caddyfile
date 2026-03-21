@@ -1,0 +1,21 @@
+:{$PORT} {
+  root * /app/dist
+  encode zstd gzip
+
+  @immutableAssets {
+    path /assets/* /maps/* /seatmaps/* /favicon.svg /favicon.ico
+  }
+
+  header @immutableAssets Cache-Control "public, max-age=31536000, immutable"
+
+  @appShell {
+    not path /assets/*
+    not path /maps/*
+    not path /seatmaps/*
+  }
+
+  header @appShell Cache-Control "no-cache, no-store, must-revalidate"
+
+  try_files {path} {path}/ /index.html
+  file_server
+}

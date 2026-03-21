@@ -149,6 +149,12 @@ Status:
 - Search/indexing service
 - SEO pages per city/category/event
 
+6. Static deploy hardening
+- Explicit Caddy config now exists for Railway static serving.
+- SPA fallback is now defined at the web server layer instead of relying on platform inference.
+- Hashed assets, maps and seatmaps now receive immutable cache headers.
+- App shell routes now receive no-cache headers to reduce stale index/hash mismatch on deploy.
+
 Working rule from now on
 - Every relevant implementation should update checklist-roadmap.md.
 - Every milestone or meaningful change in completion level should update progress.txt.
