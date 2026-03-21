@@ -17,9 +17,17 @@ import event5 from "@/assets/event-5.jpg";
 import event6 from "@/assets/event-6.jpg";
 import event7 from "@/assets/event-7.jpg";
 import event8 from "@/assets/event-8.jpg";
+import { teatroMunicipalSeatMap as importedTeatroMunicipalSeatMap } from "@/data/teatroMunicipalGenerated";
 
 export type EventSeatStatus = "available" | "reserved" | "sold" | "accessible";
 export type EventSeatTag = "partial-view" | "wheelchair" | "low-vision" | "reduced-mobility" | "plus-size";
+export type EventCategory =
+  | "Shows"
+  | "Teatro e Musicais"
+  | "Festivais"
+  | "Comedia"
+  | "Experiencias"
+  | "Classicos";
 
 export interface EventSeatSection {
   id: string;
@@ -54,6 +62,9 @@ export interface EventSeat {
     y: number;
     rotation?: number;
   };
+  vectorPath?: string;
+  sourceFill?: string;
+  sourceOpacity?: number;
 }
 
 export interface EventSeatMap {
@@ -67,6 +78,7 @@ export interface EventSeatMap {
     width: number;
     height: number;
   };
+  backgroundMarkup?: string;
 }
 
 export interface EventDetailsContent {
@@ -88,6 +100,11 @@ export interface EventData {
   title: string;
   image: string;
   bannerImage: string;
+  category: EventCategory;
+  discoveryLabel: string;
+  tags: string[];
+  searchTerms: string[];
+  salesBadge?: string;
   month: string;
   day: string;
   weekday: string;
@@ -818,6 +835,8 @@ const createTheaterSeatMap = (options: { hallName: string; stageLabel: string })
   ],
 });
 
+const teatroMunicipalOfficialSeatMap: EventSeatMap = importedTeatroMunicipalSeatMap;
+
 const createEventDetailsContent = (event: Omit<EventData, "details">, overrides: EventDetailsOverrides): EventDetailsContent => ({
   organizer: overrides.organizer,
   address: overrides.address,
@@ -860,6 +879,11 @@ const eventSeeds: EventSeed[] = [
     title: "Roda de Samba - Edicao Verao",
     image: event1,
     bannerImage: banner1,
+    category: "Shows",
+    discoveryLabel: "Roda de samba",
+    tags: ["Samba", "Ao vivo", "Noite brasileira", "Mapa de sala"],
+    searchTerms: ["pagode", "samba", "roda de samba", "show em sao paulo", "evento com assento"],
+    salesBadge: "Mais buscado em samba",
     month: "Mar",
     day: "22",
     weekday: "Sab",
@@ -894,6 +918,11 @@ const eventSeeds: EventSeed[] = [
     title: "Jazz & Blues Night",
     image: event2,
     bannerImage: banner2,
+    category: "Shows",
+    discoveryLabel: "Jazz intimista",
+    tags: ["Jazz", "Blues", "Noite", "Club"],
+    searchTerms: ["jazz", "blues", "blue note", "show noturno", "rio de janeiro"],
+    salesBadge: "Clube premium",
     month: "Mar",
     day: "22",
     weekday: "Sab",
@@ -928,6 +957,11 @@ const eventSeeds: EventSeed[] = [
     title: "Pop Stars Live - Arena Tour",
     image: event3,
     bannerImage: banner2,
+    category: "Shows",
+    discoveryLabel: "Arena pop",
+    tags: ["Pop", "Arena", "Turne", "Grandes shows"],
+    searchTerms: ["pop", "arena", "show pop sao paulo", "tour", "ingressos arena"],
+    salesBadge: "Ultimos lotes",
     month: "Mar",
     day: "23",
     weekday: "Dom",
@@ -962,6 +996,11 @@ const eventSeeds: EventSeed[] = [
     title: "Rap Nacional em Cena",
     image: event4,
     bannerImage: banner3,
+    category: "Shows",
+    discoveryLabel: "Rap ao vivo",
+    tags: ["Rap", "Hip hop", "Cena urbana"],
+    searchTerms: ["rap", "hip hop", "show rap", "belo horizonte", "evento urbano"],
+    salesBadge: "Virando tendencia",
     month: "Mar",
     day: "25",
     weekday: "Ter",
@@ -996,6 +1035,11 @@ const eventSeeds: EventSeed[] = [
     title: "Forro Pe de Serra - Arraial Urbano",
     image: event5,
     bannerImage: banner1,
+    category: "Festivais",
+    discoveryLabel: "Forro e arraial",
+    tags: ["Forro", "Arraial", "Danca", "Festival"],
+    searchTerms: ["forro", "arraial", "pe de serra", "festival", "fortaleza"],
+    salesBadge: "Experiencia junina",
     month: "Mar",
     day: "27",
     weekday: "Qui",
@@ -1030,6 +1074,11 @@ const eventSeeds: EventSeed[] = [
     title: "Hamlet - Cia. Teatro Novo",
     image: event6,
     bannerImage: banner3,
+    category: "Teatro e Musicais",
+    discoveryLabel: "Teatro classico",
+    tags: ["Hamlet", "Teatro", "Mapa de sala", "Theatro Municipal"],
+    searchTerms: ["hamlet", "teatro municipal", "musical", "teatro sao paulo", "assento numerado"],
+    salesBadge: "Mapa de sala oficial",
     month: "Mar",
     day: "28",
     weekday: "Sex",
@@ -1045,10 +1094,7 @@ const eventSeeds: EventSeed[] = [
       "Assentos acessiveis devem ser identificados com clareza.",
       "Toda aprovacao precisa ser rastreavel no ambiente administrativo.",
     ],
-    seatMap: createTheaterSeatMap({
-      hallName: "Teatro Municipal - Sala principal",
-      stageLabel: "Palco italiano",
-    }),
+    seatMap: teatroMunicipalOfficialSeatMap,
     detailsOverrides: {
       organizer: "Cia Teatro Novo",
       address: "Praca Ramos de Azevedo, s/n - Centro - Sao Paulo / SP",
@@ -1063,6 +1109,11 @@ const eventSeeds: EventSeed[] = [
     title: "Festival Gastronomico & Musica",
     image: event7,
     bannerImage: banner1,
+    category: "Experiencias",
+    discoveryLabel: "Gastro + musica",
+    tags: ["Festival", "Gastronomia", "Musica", "Parque"],
+    searchTerms: ["festival gastronomico", "musica no parque", "curitiba", "experiencia ao ar livre"],
+    salesBadge: "Sabado em destaque",
     month: "Mar",
     day: "29",
     weekday: "Sab",
@@ -1098,6 +1149,11 @@ const eventSeeds: EventSeed[] = [
     title: "Orquestra Sinfonica - Temporada 2026",
     image: event8,
     bannerImage: banner3,
+    category: "Classicos",
+    discoveryLabel: "Classicos ao vivo",
+    tags: ["Orquestra", "Sinfonica", "Sala Sao Paulo", "Classicos"],
+    searchTerms: ["orquestra", "sinfonica", "classica", "sala sao paulo", "concerto"],
+    salesBadge: "Temporada 2026",
     month: "Mar",
     day: "30",
     weekday: "Dom",
@@ -1133,5 +1189,48 @@ export const events: EventData[] = eventSeeds.map(({ detailsOverrides, ...event 
   ...event,
   details: createEventDetailsContent(event, detailsOverrides),
 }));
+
+export const marketplaceCategories = Array.from(new Set(events.map((event) => event.category)));
+export const marketplaceCities = Array.from(new Set(events.map((event) => event.city)));
+export const trendingTags = Array.from(
+  new Set(events.flatMap((event) => event.tags).filter((tag) => tag.toLowerCase() !== "mapa de sala")),
+).slice(0, 10);
+
+export const searchEvents = (query: string) => {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return [];
+  }
+
+  return events
+    .map((event) => {
+      const haystack = [
+        event.title,
+        event.category,
+        event.discoveryLabel,
+        event.city,
+        event.venueName,
+        event.summary,
+        ...event.tags,
+        ...event.searchTerms,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      const titleScore = event.title.toLowerCase().includes(normalizedQuery) ? 4 : 0;
+      const categoryScore = event.category.toLowerCase().includes(normalizedQuery) ? 2 : 0;
+      const tagScore = event.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery)) ? 2 : 0;
+      const cityScore = event.city.toLowerCase().includes(normalizedQuery) ? 1 : 0;
+      const haystackScore = haystack.includes(normalizedQuery) ? 1 : 0;
+      const score = titleScore + categoryScore + tagScore + cityScore + haystackScore;
+
+      return { event, score };
+    })
+    .filter((item) => item.score > 0)
+    .sort((left, right) => right.score - left.score || left.event.priceFrom - right.event.priceFrom)
+    .map((item) => item.event)
+    .slice(0, 6);
+};
 
 export const getEventBySlug = (slug?: string) => events.find((event) => event.slug === slug);

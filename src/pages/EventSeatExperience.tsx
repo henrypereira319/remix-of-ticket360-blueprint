@@ -113,85 +113,46 @@ const EventSeatExperience = () => {
 
   return (
     <div className="relative h-screen overflow-hidden bg-slate-100">
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-50 p-4 sm:p-6">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-          <div className="pointer-events-auto max-w-2xl rounded-[1.75rem] border border-slate-200/90 bg-white/88 p-4 text-slate-900 shadow-xl backdrop-blur">
-            <div className="flex flex-wrap items-center gap-3">
-              <Button
-                asChild
-                size="sm"
-                variant="secondary"
-                className="border border-slate-200 bg-slate-50 text-slate-900 hover:bg-slate-100 hover:text-slate-900"
-              >
-                <Link to={`/eventos/${event.slug}`}>
-                  <ArrowLeft className="h-4 w-4" />
-                  Voltar ao evento
-                </Link>
-              </Button>
-
-              <Badge className="border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-50">
-                Jornada de assentos
-              </Badge>
-            </div>
-
-            <h1 className="mt-4 text-xl font-semibold sm:text-2xl">{event.title}</h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
-              O mapa ganhou mais respiro visual e agora o scroll interno desta tela leva direto para a revisao final do
-              checkout, sem abrir painis por cima da planta.
-            </p>
-          </div>
-
-          <div className="pointer-events-auto flex flex-wrap items-center gap-4 rounded-[1.75rem] border border-slate-200/90 bg-white/88 px-4 py-3 text-slate-900 shadow-xl backdrop-blur">
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Selecionados</p>
-              <p className="mt-1 text-2xl font-semibold">{selection.items.length}</p>
-            </div>
-
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Total estimado</p>
-              <p className="mt-1 text-2xl font-semibold">{formatCurrency(pricing.total)}</p>
-            </div>
-
-            <Button type="button" size="sm" onClick={() => scrollToSection("checkout")} className="whitespace-nowrap">
-              <ScanSearch className="h-4 w-4" />
-              Ir para o checkout
-            </Button>
-          </div>
-        </div>
-      </div>
-
       <main className="relative h-full overflow-y-auto overscroll-contain scroll-smooth">
-        <section
-          ref={mapSectionRef}
-          className="relative h-screen px-4 pb-4 pt-[8.5rem] sm:px-6 sm:pb-6 sm:pt-[9.25rem]"
-        >
-          <div className="h-full">
-            <SeatMap
-              immersive
-              fullBleed
-              seatMap={event.seatMap}
-              selectedSeatIds={selectedSeatIds}
-              onToggleSeat={handleToggleSeat}
-            />
+        <section ref={mapSectionRef} className="relative px-4 pb-4 pt-4 sm:px-6 sm:pb-6">
+          <div className="pointer-events-none absolute inset-x-4 top-4 z-20 sm:inset-x-6 sm:top-6">
+            <div className="mx-auto flex max-w-7xl justify-end">
+              <div className="pointer-events-auto flex flex-wrap items-center gap-4 rounded-[1.75rem] border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-lg">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Selecionados</p>
+                  <p className="mt-1 text-2xl font-semibold">{selection.items.length}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Total estimado</p>
+                  <p className="mt-1 text-2xl font-semibold">{formatCurrency(pricing.total)}</p>
+                </div>
+
+                <Button type="button" onClick={() => scrollToSection("checkout")} disabled={!hasSelection}>
+                  <ScanSearch className="h-4 w-4" />
+                  Ir para o checkout
+                </Button>
+              </div>
+            </div>
           </div>
 
-          <div className="pointer-events-none absolute inset-x-0 bottom-4 z-40 flex justify-center px-4 sm:bottom-6">
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => scrollToSection("checkout")}
-              className="pointer-events-auto border border-slate-200/90 bg-white/88 text-slate-900 shadow-xl backdrop-blur hover:bg-slate-50"
-            >
-              <CreditCard className="h-4 w-4" />
-              Role para revisar e fechar a compra
-            </Button>
+          <div className="mx-auto max-w-7xl">
+            <div className="h-[calc(100vh-2rem)] min-h-[560px] sm:h-[calc(100vh-3rem)]">
+              <SeatMap
+                immersive
+                fullBleed
+                seatMap={event.seatMap}
+                selectedSeatIds={selectedSeatIds}
+                onToggleSeat={handleToggleSeat}
+              />
+            </div>
           </div>
         </section>
 
         <section
           ref={checkoutSectionRef}
           id="checkout-final"
-          className="relative min-h-screen bg-[linear-gradient(180deg,_rgb(248,250,252)_0%,_rgb(241,245,249)_100%)] px-4 pb-10 pt-[8.5rem] sm:px-6 sm:pb-12 sm:pt-[9.25rem]"
+          className="relative min-h-screen bg-[linear-gradient(180deg,_rgb(248,250,252)_0%,_rgb(241,245,249)_100%)] px-4 pb-10 pt-8 sm:px-6 sm:pb-12 sm:pt-10"
         >
           <div className="mx-auto max-w-7xl space-y-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
