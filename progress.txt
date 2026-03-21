@@ -19,7 +19,7 @@ What is already materially implemented
 - Heavy geometry moved out of the main JS bundle into static JSON under public/maps.
 - Municipal background artwork is now externalized as a standalone SVG asset under public/seatmaps.
 - Municipal background export was sanitized to produce valid SVG markup for the external asset, avoiding broken rendering from HTML-only entities.
-- Municipal background backdrop now preserves the original sector floors, stage artwork and legends while stripping seat hotspots and seat-area wrappers from the static asset.
+- Municipal background backdrop now preserves the original sector floors, stage artwork and legends while stripping seat hotspots and seat-area wrappers from the static asset, and is rendered in its own image layer instead of a nested SVG `<image>` tag.
 - Runtime seat-map loader fetches geometry on demand.
 - Seat interactions were optimized for heavy SVG maps.
 - Event detail pages now rely on manifest totals instead of inline geometry, avoiding crashes before the heavy map loads.

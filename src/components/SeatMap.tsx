@@ -626,6 +626,16 @@ const SeatMap = ({
       onTouchMove={handleScrollActivity}
       onScroll={handleScrollActivity}
     >
+      {usesVectorBackdrop && seatMap.backgroundAssetPath ? (
+        <img
+          src={seatMap.backgroundAssetPath}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          className="pointer-events-none absolute inset-0 h-full w-full select-none"
+          style={{ objectFit: "contain", objectPosition: "center" }}
+        />
+      ) : null}
       <svg
         ref={svgRef}
         viewBox={`0 0 ${viewport.width} ${viewport.height}`}
@@ -633,17 +643,10 @@ const SeatMap = ({
         aria-hidden={usesVectorSeatPaths ? undefined : true}
       >
         {usesVectorBackdrop ? (
-          seatMap.backgroundAssetPath ? (
-            <image
-              href={seatMap.backgroundAssetPath}
-              x="0"
-              y="0"
-              width={viewport.width}
-              height={viewport.height}
-              preserveAspectRatio="xMidYMid meet"
-            />
-          ) : (
+          seatMap.backgroundMarkup ? (
             <g dangerouslySetInnerHTML={{ __html: seatMap.backgroundMarkup ?? "" }} />
+          ) : (
+            <></>
           )
         ) : (
           <>
