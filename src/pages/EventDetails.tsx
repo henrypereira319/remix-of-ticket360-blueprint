@@ -130,7 +130,7 @@ const EventDetails = () => {
                   <div className="flex items-center gap-2 text-sm text-slate-700">
                     <Ticket className="h-4 w-4 text-primary" />
                     {event.seatMap.variant === "theater"
-                      ? `${event.seatMap.seats.length} assentos mapeados`
+                      ? `${event.seatMap.totalSeats} assentos mapeados`
                       : `${event.seatMap.sections.length} setores disponíveis`}
                   </div>
                 </div>

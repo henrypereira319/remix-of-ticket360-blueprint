@@ -435,7 +435,7 @@ const SeatMap = ({
     ? seatMap.sections.find((section) => section.id === featuredSeat.sectionId) ?? null
     : null;
   const usesVectorSeatPaths = theaterLayout && seatMap.seats.some((seat) => Boolean(seat.vectorPath));
-  const usesVectorBackdrop = theaterLayout && Boolean(seatMap.backgroundMarkup);
+  const usesVectorBackdrop = theaterLayout && Boolean(seatMap.backgroundAssetPath || seatMap.backgroundMarkup);
 
   const denseTheaterMap = theaterLayout && seatMap.seats.length > 400;
   const seatButtonSize = theaterLayout
@@ -633,7 +633,18 @@ const SeatMap = ({
         aria-hidden={usesVectorSeatPaths ? undefined : true}
       >
         {usesVectorBackdrop ? (
-          <g dangerouslySetInnerHTML={{ __html: seatMap.backgroundMarkup ?? "" }} />
+          seatMap.backgroundAssetPath ? (
+            <image
+              href={seatMap.backgroundAssetPath}
+              x="0"
+              y="0"
+              width={viewport.width}
+              height={viewport.height}
+              preserveAspectRatio="xMidYMid meet"
+            />
+          ) : (
+            <g dangerouslySetInnerHTML={{ __html: seatMap.backgroundMarkup ?? "" }} />
+          )
         ) : (
           <>
             <defs>

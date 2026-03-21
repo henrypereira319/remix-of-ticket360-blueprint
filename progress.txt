@@ -17,8 +17,10 @@ What is already materially implemented
 
 2. Seat-map architecture and performance
 - Heavy geometry moved out of the main JS bundle into static JSON under public/maps.
+- Municipal background artwork is now externalized as a standalone SVG asset under public/seatmaps.
 - Runtime seat-map loader fetches geometry on demand.
 - Seat interactions were optimized for heavy SVG maps.
+- Event detail pages now rely on manifest totals instead of inline geometry, avoiding crashes before the heavy map loads.
 
 3. Inventory / orders
 - Temporary seat holds exist.

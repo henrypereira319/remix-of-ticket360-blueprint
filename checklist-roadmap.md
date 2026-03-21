@@ -60,6 +60,7 @@
 - [x] Transparência de taxas e preços.
 - [ ] Sessões, datas e lotes apresentados com clareza.
 - [x] Setores e disponibilidade por setor.
+- [x] PDP consome manifesto leve do mapa sem depender da geometria pesada para renderizar.
 - [ ] Telemetria de CTR em CTA principal e scroll de PDP.
 
 ### 5. Jornada de assentos
@@ -68,6 +69,7 @@
 - [x] Mapa responsivo em mobile.
 - [x] Geometria pesada carregada sob demanda.
 - [x] Assentos separados de disponibilidade/inventário.
+- [x] Fundo vetorial pesado externalizado como asset estático separado da geometria clicável.
 - [x] Performance de pan, zoom e clique aceitável em venues pesados.
 - [x] Estados de assento: disponível, reservado, vendido, acessível.
 - [x] Resumo de seleção sem poluir a leitura do mapa.

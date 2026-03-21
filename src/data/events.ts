@@ -88,6 +88,7 @@ export interface EventSeatMap {
   >;
   venueId?: string;
   geometryPath?: string;
+  backgroundAssetPath?: string;
 }
 
 export interface EventSeatMapData extends EventSeatMap {

@@ -1,6 +1,7 @@
 export const teatroMunicipalManifest = {
   "venueId": "teatro-municipal",
   "geometryPath": "/maps/teatro-municipal-geometry.json",
+  "backgroundAssetPath": "/seatmaps/teatro-municipal-background.svg",
   "hallName": "Theatro Municipal de Sao Paulo",
   "stageLabel": "Palco",
   "sections": [
