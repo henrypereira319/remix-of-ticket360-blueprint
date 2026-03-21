@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { BadgeCheck, LogOut, ShieldCheck, UserRound } from "lucide-react";
+import { BadgeCheck, CreditCard, LogOut, QrCode, ShieldCheck, Ticket, UserRound } from "lucide-react";
 import GoogleOAuthPlaceholder from "@/components/GoogleOAuthPlaceholder";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
@@ -11,6 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useAccountOrders } from "@/hooks/use-account-orders";
+import { useAccountPayments } from "@/hooks/use-account-payments";
+import { useAccountTickets } from "@/hooks/use-account-tickets";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -33,6 +36,9 @@ const formatDateTime = (value: string) =>
 const AccountDashboard = () => {
   const auth = useAuth();
   const { toast } = useToast();
+  const { orders } = useAccountOrders(auth.currentAccount?.id);
+  const { payments } = useAccountPayments(auth.currentAccount?.id);
+  const { tickets } = useAccountTickets(auth.currentAccount?.id);
 
   const profileForm = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
@@ -126,6 +132,12 @@ const AccountDashboard = () => {
                     <Button type="button" variant="outline" className="w-full" onClick={() => auth.logout()}>
                       <LogOut className="w-4 h-4" />
                       Encerrar sessao
+                    </Button>
+                    <Button asChild type="button" className="w-full">
+                      <Link to="/operacao">
+                        <CreditCard className="w-4 h-4" />
+                        Abrir operacao
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -222,6 +234,144 @@ const AccountDashboard = () => {
           </Card>
 
           <div className="space-y-4">
+            <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="font-display text-2xl">Pedidos e checkouts</CardTitle>
+                <CardDescription>Historico local dos pedidos criados neste ambiente.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {orders.length > 0 ? (
+                  orders.map((order) => (
+                    <div key={order.id} className="rounded-md bg-background px-4 py-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{order.reference}</p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                            {order.status} · {order.eventSlug}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-foreground">
+                            {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(order.pricing.total)}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(order.createdAt)}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {order.tickets.map((ticket) => (
+                          <span key={ticket.seatId} className="inline-flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-xs text-foreground">
+                            <Ticket className="h-3.5 w-3.5 text-primary" />
+                            {ticket.sectionName} · {ticket.label}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-md bg-background px-4 py-3 text-sm leading-6 text-muted-foreground">
+                    Ainda nao ha pedidos locais vinculados a esta conta. Feche um checkout para começar a povoar este histórico.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="font-display text-2xl">Pagamentos</CardTitle>
+                <CardDescription>Status financeiro local por pedido e metodo de cobranca.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {payments.length > 0 ? (
+                  payments.map((payment) => (
+                    <div key={payment.id} className="rounded-md bg-background px-4 py-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {payment.method} · {payment.reference}
+                          </p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                            {payment.status} · {payment.eventSlug}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-foreground">
+                            {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(payment.amount)}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(payment.createdAt)}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-xs text-foreground">
+                          <CreditCard className="h-3.5 w-3.5 text-primary" />
+                          {payment.provider}
+                        </span>
+                        {payment.pixExpiresAt ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-xs text-foreground">
+                            Expira em {formatDateTime(payment.pixExpiresAt)}
+                          </span>
+                        ) : null}
+                        {payment.corporateProtocol ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-xs text-foreground">
+                            Protocolo {payment.corporateProtocol}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-md bg-background px-4 py-3 text-sm leading-6 text-muted-foreground">
+                    Os registros de pagamento vao aparecer aqui conforme os pedidos forem criados nesta base.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="font-display text-2xl">Ingressos emitidos</CardTitle>
+                <CardDescription>Tickets locais gerados depois da aprovacao automatica do checkout.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {tickets.length > 0 ? (
+                  tickets.map((ticket) => (
+                    <div key={ticket.id} className="rounded-md bg-background px-4 py-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {ticket.sectionName} · {ticket.label}
+                          </p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                            {ticket.orderReference} · {ticket.status}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground">Wallet</p>
+                          <p className="text-sm font-medium text-foreground">{ticket.walletToken.slice(-10)}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-xs text-foreground">
+                          <QrCode className="h-3.5 w-3.5 text-primary" />
+                          {ticket.barcode}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-xs text-foreground">
+                          <Ticket className="h-3.5 w-3.5 text-primary" />
+                          {ticket.holderName}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-md bg-background px-4 py-3 text-sm leading-6 text-muted-foreground">
+                    Seus ingressos emitidos vao aparecer aqui depois que um checkout local for aprovado.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="font-display text-2xl">Registros da conta</CardTitle>

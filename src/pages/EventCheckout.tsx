@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CreditCard, LockKeyhole, QrCode, ShieldCheck, Ticket, UserRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { z } from "zod";
@@ -15,8 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getEventBySlug } from "@/data/events";
 import { useAuth } from "@/hooks/use-auth";
+import { useEventRuntime } from "@/hooks/use-event-runtime";
 import { useToast } from "@/hooks/use-toast";
 import {
   formatCurrency,
@@ -28,6 +28,7 @@ import {
   sanitizeTicketCategories,
   ticketCategoryMeta,
 } from "@/lib/ticketing";
+import { createOrder } from "@/server/api/orders.api";
 import NotFound from "./NotFound";
 
 const paymentMethods = [
@@ -99,11 +100,20 @@ const EventCheckout = () => {
   const { currentAccount, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [checkoutReference, setCheckoutReference] = useState<string | null>(null);
+  const [checkoutStatus, setCheckoutStatus] = useState<"approved" | "under_review" | null>(null);
+  const holdToken = searchParams.get("hold");
+  const { baseEvent, event, isLoading } = useEventRuntime(slug, holdToken);
 
-  const event = getEventBySlug(slug);
+  if (!baseEvent && !isLoading) {
+    return <NotFound />;
+  }
 
   if (!event) {
-    return <NotFound />;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-sm font-medium text-white/75">
+        Carregando estrutura do checkout...
+      </div>
+    );
   }
 
   const rawSeatIds = parseSeatIdsParam(searchParams.get("assentos"));
@@ -154,26 +164,50 @@ const EventCheckout = () => {
     );
   }
 
-  const handleSubmit = (values: CheckoutValues) => {
-    const reference = `CHK-${Date.now().toString().slice(-6)}`;
-    setCheckoutReference(reference);
+  const handleSubmit = async (values: CheckoutValues) => {
+    try {
+      const order = await createOrder({
+        event,
+        selectedSeatIds,
+        ticketCategories,
+        buyer: {
+          fullName: values.fullName,
+          email: values.email,
+          document: values.document,
+          phone: values.phone,
+          city: values.city,
+        },
+        tickets: selectedSeatIds.map((seatId, index) => ({
+          seatId,
+          holderName: values.tickets[index]?.holderName ?? "",
+          document: values.tickets[index]?.document ?? "",
+        })),
+        paymentMethod: values.paymentMethod,
+        installments: values.installments,
+        accountId: currentAccount?.id ?? null,
+        holdToken,
+      });
 
-    toast({
-      title: "Checkout preparado",
-      description: `Pedido ${reference} montado localmente para seguir com gateway e validacao administrativa.`,
-    });
+      setCheckoutReference(order.reference);
+      setCheckoutStatus(order.status === "under_review" ? "under_review" : "approved");
 
-    console.log("checkout-preview", {
-      reference,
-      eventId: event.id,
-      seats: selectedSeatIds,
-      paymentMethod: values.paymentMethod,
-      buyer: {
-        fullName: values.fullName,
-        email: values.email,
-      },
-      tickets: values.tickets,
-    });
+      if (order.status === "under_review") {
+        toast({
+          title: "Pedido em revisao",
+          description: `Pedido ${order.reference} entrou em revisao manual e os ingressos ainda nao foram emitidos.`,
+        });
+      } else {
+        toast({
+          title: "Pedido criado",
+          description: `Pedido ${order.reference} aprovado localmente com ingressos emitidos para a area da conta.`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Nao foi possivel fechar o pedido",
+        description: error instanceof Error ? error.message : "Tente novamente.",
+      });
+    }
   };
 
   return (
@@ -183,7 +217,7 @@ const EventCheckout = () => {
       <main className="container py-4 space-y-4">
         <div className="flex items-center justify-between gap-4">
           <Link
-            to={`/eventos/${event.slug}/assentos?assentos=${encodeURIComponent(searchParams.get("assentos") ?? "")}&tipos=${encodeURIComponent(searchParams.get("tipos") ?? "")}`}
+            to={`/eventos/${event.slug}/assentos?assentos=${encodeURIComponent(searchParams.get("assentos") ?? "")}&tipos=${encodeURIComponent(searchParams.get("tipos") ?? "")}${holdToken ? `&hold=${encodeURIComponent(holdToken)}` : ""}`}
             className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -262,10 +296,14 @@ const EventCheckout = () => {
               <div>
                 <p className="text-sm font-semibold text-foreground">Pedido local preparado: {checkoutReference}</p>
                 <p className="text-sm text-muted-foreground">
-                  O proximo passo e ligar esta tela ao gateway e ao backend de pedidos.
+                  {checkoutStatus === "under_review"
+                    ? "O pedido entrou em revisao manual. Assim que o pagamento for aprovado, os ingressos serao emitidos."
+                    : "O pedido foi aprovado localmente, os tickets foram emitidos e a confirmacao entrou na outbox desta base."}
                 </p>
               </div>
-              <Badge className="bg-primary text-primary-foreground">Pronto para integracao</Badge>
+              <Badge className="bg-primary text-primary-foreground">
+                {checkoutStatus === "under_review" ? "Em revisao" : "Aprovado localmente"}
+              </Badge>
             </CardContent>
           </Card>
         )}

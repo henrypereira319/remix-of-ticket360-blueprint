@@ -17,7 +17,7 @@ import event5 from "@/assets/event-5.jpg";
 import event6 from "@/assets/event-6.jpg";
 import event7 from "@/assets/event-7.jpg";
 import event8 from "@/assets/event-8.jpg";
-import { teatroMunicipalSeatMap as importedTeatroMunicipalSeatMap } from "@/data/teatroMunicipalGenerated";
+import { teatroMunicipalManifest } from "@/data/teatroMunicipalManifest";
 
 export type EventSeatStatus = "available" | "reserved" | "sold" | "accessible";
 export type EventSeatTag = "partial-view" | "wheelchair" | "low-vision" | "reduced-mobility" | "plus-size";
@@ -71,13 +71,29 @@ export interface EventSeatMap {
   hallName: string;
   stageLabel: string;
   sections: EventSeatSection[];
-  seats: EventSeat[];
   notes: string[];
   variant?: "standard" | "theater";
   viewport?: {
     width: number;
     height: number;
   };
+  totalSeats: number;
+  availableSeats: number;
+  sectionStats: Record<
+    string,
+    {
+      total: number;
+      selectable: number;
+    }
+  >;
+  venueId?: string;
+  geometryPath?: string;
+}
+
+export interface EventSeatMapData extends EventSeatMap {
+  hallName: string;
+  stageLabel: string;
+  seats: EventSeat[];
   backgroundMarkup?: string;
 }
 
@@ -120,6 +136,10 @@ export interface EventData {
   details: EventDetailsContent;
 }
 
+export interface RuntimeEventData extends Omit<EventData, "seatMap"> {
+  seatMap: EventSeatMapData;
+}
+
 export interface HighlightData {
   id: string;
   title: string;
@@ -160,7 +180,7 @@ const createSeatMap = (options: {
   stageLabel: string;
   soldSeatIds: string[];
   reservedSeatIds: string[];
-}): EventSeatMap => {
+}): EventSeatMapData => {
   const soldSeatIds = new Set(options.soldSeatIds);
   const reservedSeatIds = new Set(options.reservedSeatIds);
 
@@ -192,12 +212,25 @@ const createSeatMap = (options: {
     );
   });
 
+  const sectionStats = Object.fromEntries(
+    seatSections.map((section) => [
+      section.id,
+      {
+        total: seats.filter((seat) => seat.sectionId === section.id).length,
+        selectable: seats.filter((seat) => seat.sectionId === section.id && ["available", "accessible"].includes(seat.status)).length,
+      },
+    ]),
+  );
+
   return {
     hallName: options.hallName,
     stageLabel: options.stageLabel,
     sections: seatSections,
     seats,
     variant: "standard",
+    totalSeats: seats.length,
+    availableSeats: seats.filter((seat) => ["available", "accessible"].includes(seat.status)).length,
+    sectionStats,
     notes: [
       "Assentos em cinza ja estao indisponiveis.",
       "Assentos roxos indicam lugares acessiveis.",
@@ -818,24 +851,41 @@ const buildTheaterSeats = () => {
   return seats;
 };
 
-const createTheaterSeatMap = (options: { hallName: string; stageLabel: string }): EventSeatMap => ({
-  hallName: options.hallName,
-  stageLabel: options.stageLabel,
-  sections: theaterSectionBlueprints.map((item) => item.section),
-  seats: buildTheaterSeats(),
-  variant: "theater",
-  viewport: {
-    width: 1400,
-    height: 1050,
-  },
-  notes: [
-    "O mapa de sala agora replica a contagem-base extraida do HTML salvo do Theatro Municipal, com 1531 assentos mapeados.",
-    "O fluxo correto continua sendo: explorar o mapa, escolher o setor, selecionar assentos e so depois seguir para o checkout.",
-    "Lugares com visao parcial, baixa visao, cadeirante, mobilidade reduzida e assento ampliado ficam sinalizados no painel do mapa.",
-  ],
-});
+const createTheaterSeatMap = (options: { hallName: string; stageLabel: string }): EventSeatMapData => {
+  const seats = buildTheaterSeats();
+  const sections = theaterSectionBlueprints.map((item) => item.section);
+  const sectionStats = Object.fromEntries(
+    sections.map((section) => [
+      section.id,
+      {
+        total: seats.filter((seat) => seat.sectionId === section.id).length,
+        selectable: seats.filter((seat) => seat.sectionId === section.id && ["available", "accessible"].includes(seat.status)).length,
+      },
+    ]),
+  );
 
-const teatroMunicipalOfficialSeatMap: EventSeatMap = importedTeatroMunicipalSeatMap;
+  return {
+    hallName: options.hallName,
+    stageLabel: options.stageLabel,
+    sections,
+    seats,
+    variant: "theater",
+    viewport: {
+      width: 1400,
+      height: 1050,
+    },
+    totalSeats: seats.length,
+    availableSeats: seats.filter((seat) => ["available", "accessible"].includes(seat.status)).length,
+    sectionStats,
+    notes: [
+      "O mapa de sala agora replica a contagem-base extraida do HTML salvo do Theatro Municipal, com 1531 assentos mapeados.",
+      "O fluxo correto continua sendo: explorar o mapa, escolher o setor, selecionar assentos e so depois seguir para o checkout.",
+      "Lugares com visao parcial, baixa visao, cadeirante, mobilidade reduzida e assento ampliado ficam sinalizados no painel do mapa.",
+    ],
+  };
+};
+
+const teatroMunicipalOfficialSeatMap: EventSeatMap = teatroMunicipalManifest;
 
 const createEventDetailsContent = (event: Omit<EventData, "details">, overrides: EventDetailsOverrides): EventDetailsContent => ({
   organizer: overrides.organizer,

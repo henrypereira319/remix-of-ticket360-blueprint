@@ -1,0 +1,159 @@
+Progress snapshot derived from rodamap-definitivo.md
+Date: 2026-03-21
+Workspace: C:\Users\hedge\OneDrive\Desktop\remix-of-ticket360-blueprint
+Canonical execution guide: checklist-roadmap.md
+
+Overall status (estimated)
+- Phase A: 68%
+- Phase B: 58%
+- Phase C: 57%
+- Phase D: 14%
+
+What is already materially implemented
+1. Discovery / frontend marketplace foundation
+- Home, header, footer, discovery hero, search box and event rails were upgraded.
+- Event cards and event detail page were redesigned closer to marketplace patterns.
+- Heavy seat-map routes are lazy-loaded.
+
+2. Seat-map architecture and performance
+- Heavy geometry moved out of the main JS bundle into static JSON under public/maps.
+- Runtime seat-map loader fetches geometry on demand.
+- Seat interactions were optimized for heavy SVG maps.
+
+3. Inventory / orders
+- Temporary seat holds exist.
+- Review reservations for corporate/manual flows exist.
+- Runtime inventory hydration exists.
+- Orders are persisted locally.
+- Duplicate purchase of already sold seats is blocked.
+- Order cancellation releases reserved inventory again.
+
+4. Payments
+- Payment domain now exists locally.
+- Pix and card authorize locally.
+- Corporate orders go to under_review.
+- Under-review orders can be settled later.
+- Payment refund exists for cancellation flow.
+- Payment state is separated from order state.
+
+5. Tickets / wallet
+- Tickets are issued locally after approval.
+- Tickets are linked to order, seat, section and account.
+- Tickets can be cancelled.
+- Wallet token and QR/barcode payload are generated locally.
+
+6. Notifications / analytics
+- Notification outbox exists locally.
+- Order confirmation, ticket issued, under-review and cancellation notifications exist.
+- Business analytics events exist for hold, payment, approval, issuance, notification and cancellation.
+- Progress tracking now has a live execution checklist and this status file.
+
+7. Operations / backoffice
+- Backoffice local exists at /operacao.
+- Review queue for corporate/manual orders exists.
+- Backoffice can approve under-review orders.
+- Backoffice can deny under-review orders.
+- Backoffice can cancel approved orders.
+- Backoffice can inspect payments, tickets, notifications and analytics.
+
+8. Account area
+- Account dashboard shows orders.
+- Account dashboard shows payments.
+- Account dashboard shows issued tickets.
+
+9. API boundary
+- Local domain APIs now exist for catalog, inventory, orders, payments, tickets, notifications, analytics and backoffice.
+- Event runtime, seat hold flow, checkout creation, account reads and backoffice reads/actions already consume this API layer.
+- Contract tests now cover the backend-facing API boundary.
+
+What is partially implemented
+1. Checkout orchestration
+- Local orchestration is strong.
+- Still missing real gateway, real antifraud, real reconciliation and real provider webhooks.
+
+2. Corporate review
+- Backend state machine exists.
+- Backoffice UI exists for approve/deny.
+- Still missing permissions, assignment rules, richer review metadata and operator audit workflow.
+
+3. Notifications
+- Outbox exists locally.
+- Still missing real email/SMS/push provider integration, retries and delivery diagnostics.
+
+4. Analytics
+- Local business events exist.
+- Still missing external analytics pipeline, dashboards and alerting.
+
+5. Inventory
+- Local seat state is consistent.
+- Still missing shared remote persistence and multi-user concurrency beyond browser-local storage.
+
+6. Progress governance
+- Checklist and progress snapshot now exist.
+- Still missing automatic update discipline backed by milestones or scripts.
+
+What is not started or still far from done
+1. Real backend platform
+- No database.
+- No API server/BFF.
+- No auth backend beyond local session storage.
+- No real remote service boundaries yet.
+
+2. Producer/admin operations
+- No real backoffice for payments, orders, tickets, support or manual review.
+- No real producer console for CRUD and publishing workflows.
+
+3. SEO / SSR / edge
+- No SSR/hybrid rendering layer.
+- No event schema / long-tail discovery pages strategy implemented end-to-end.
+
+4. Support
+- No support ticketing workflow.
+- No help-center integration.
+- No self-service refund or transfer flows.
+
+5. Security/compliance
+- No real PII protection layer.
+- No real antifraud.
+- No rate limiting or backend authorization model.
+
+Critical next steps
+1. Introduce a real API boundary
+- Catalog API
+- Inventory API
+- Orders API
+- Payments API
+- Tickets API
+
+Status:
+- A local async API boundary now exists inside the app.
+- The next step is replacing the in-browser boundary with a real HTTP server/BFF without changing page contracts again.
+
+2. Replace localStorage persistence
+- Start with database-backed orders, payments and ticket tables
+- Add server-side seat locking
+
+3. Strengthen operations
+- Add roles/permissions for backoffice access
+- Add richer audit trail and operator actions
+- Add runbooks and operational diagnostics
+
+4. Finish post-purchase quality
+- Order details page
+- Ticket details page
+- Delivery history / notification diagnostics
+- Better account filters and status views
+
+5. Start platform work
+- SSR/edge plan
+- Search/indexing service
+- SEO pages per city/category/event
+
+Working rule from now on
+- Every relevant implementation should update checklist-roadmap.md.
+- Every milestone or meaningful change in completion level should update progress.txt.
+
+Confidence notes
+- The current product already behaves like a credible local ticketing simulator.
+- It is not yet a production-grade ticketing backend.
+- The biggest gap is replacing local persistence and in-browser APIs with real server-side infrastructure.

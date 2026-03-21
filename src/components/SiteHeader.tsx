@@ -1,131 +1,175 @@
-import { Search, ShoppingCart, Bell, User, ChevronDown, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, Menu, ShoppingCart, Ticket, User, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import EventSearchBox from "@/components/EventSearchBox";
+import { marketplaceCategories, marketplaceCities } from "@/data/events";
 import { useAuth } from "@/hooks/use-auth";
 
-const categories = [
-  "Casas & Clubs",
-  "Musica",
-  "Artistas",
-  "Eventos",
-  "Artes e Teatro",
-  "Especiais",
-  "Estados",
-  "Turne",
-];
+const categoryAnchor = (category: string) =>
+  `#categoria-${category
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")}`;
 
 const SiteHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { currentAccount, isAuthenticated } = useAuth();
   const firstName = currentAccount?.fullName.split(" ")[0] ?? "Visitante";
+  const featuredCities = useMemo(() => marketplaceCities.slice(0, 4), []);
 
   return (
-    <header className="sticky top-0 z-50 bg-card border-b border-border">
-      <div className="container flex items-center justify-between h-16 gap-4">
-        <Link to="/" className="flex-shrink-0">
-          <span className="font-display text-2xl font-bold text-primary">
-            Event<span className="text-foreground">Hub</span>
-          </span>
-        </Link>
-
-        <div className="hidden md:flex flex-1 max-w-xl">
-          <div className="relative w-full">
-            <input
-              type="text"
-              placeholder="Pesquise por artista, evento ou local..."
-              className="w-full h-10 pl-4 pr-10 rounded-lg border border-border bg-background text-sm font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="hidden border-b border-slate-200 bg-slate-950 lg:block">
+        <div className="container flex h-10 items-center justify-between text-xs text-white/70">
+          <div className="flex items-center gap-5">
+            <span className="font-medium text-white">Ingressos, experiências e mapa de sala no mesmo fluxo</span>
+            <span>Suporte para mobile e desktop</span>
           </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button className="relative p-2 rounded-full hover:bg-muted transition-colors" aria-label="Carrinho">
-            <ShoppingCart className="w-5 h-5 text-foreground" />
-            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[0.6rem] font-bold rounded-full flex items-center justify-center">
-              0
-            </span>
-          </button>
-          <button className="p-2 rounded-full hover:bg-muted transition-colors hidden sm:flex" aria-label="Notificacoes">
-            <Bell className="w-5 h-5 text-foreground" />
-          </button>
-
-          <div className="hidden sm:flex items-center gap-1.5 pl-2 border-l border-border">
-            <User className="w-5 h-5 text-muted-foreground" />
-            <div className="text-sm font-body leading-tight">
-              <span>
-                Ola, <span className="text-primary font-medium">{firstName}!</span>
-              </span>
-              <Link
-                to={isAuthenticated ? "/conta" : "/conta/acesso"}
-                className="block text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {isAuthenticated ? "Minha conta" : "Entrar ou cadastrar"}
-              </Link>
-            </div>
+          <div className="flex items-center gap-4">
+            <span>Atendimento</span>
+            <Link to={isAuthenticated ? "/operacao" : "/conta/acesso"} className="transition-colors hover:text-white">
+              Central do produtor
+            </Link>
+            <span>Ajuda</span>
           </div>
-
-          <button
-            className="md:hidden p-2 rounded-full hover:bg-muted transition-colors"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Menu"
-          >
-            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
         </div>
       </div>
 
-      <nav className="hidden md:block bg-foreground">
-        <div className="container flex items-center gap-1 h-10 overflow-x-auto">
-          {categories.map((cat) => (
-            <a
-              key={cat}
-              href="#"
-              className="flex items-center gap-1 px-3 h-full text-sm font-display font-medium text-card hover:text-primary transition-colors whitespace-nowrap"
-            >
-              {cat}
-              <ChevronDown className="w-3 h-3" />
-            </a>
-          ))}
+      <div className="container flex h-20 items-center gap-4">
+        <Link to="/" className="flex shrink-0 items-center gap-2">
+          <span className="rounded-2xl bg-slate-950 px-3 py-2 font-display text-xl font-bold text-white">
+            EventHub
+          </span>
+          <div className="hidden xl:block">
+            <p className="text-sm font-semibold text-slate-950">Marketplace de ingressos</p>
+            <p className="text-xs text-slate-500">Busca, vitrine e jornada com assento marcado</p>
+          </div>
+        </Link>
+
+        <div className="hidden flex-1 lg:block">
+          <EventSearchBox />
         </div>
-      </nav>
 
-      {menuOpen && (
-        <div className="md:hidden border-t border-border bg-card">
-          <div className="p-3">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Pesquise por artista, evento ou local..."
-                className="w-full h-10 pl-4 pr-10 rounded-lg border border-border bg-background text-sm font-body placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            </div>
-          </div>
+        <div className="ml-auto hidden items-center gap-3 lg:flex">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:text-slate-950"
+          >
+            <Ticket className="h-4 w-4" />
+            Ingressos
+          </Link>
 
-          <div className="px-3 pb-2">
-            <Link
-              to={isAuthenticated ? "/conta" : "/conta/acesso"}
-              className="block rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-              onClick={() => setMenuOpen(false)}
-            >
-              {isAuthenticated ? "Abrir minha conta" : "Entrar ou cadastrar"}
-            </Link>
-          </div>
+          <button className="relative rounded-full border border-slate-200 p-2.5 transition-colors hover:border-slate-300 hover:bg-slate-50" aria-label="Carrinho">
+            <ShoppingCart className="h-5 w-5 text-slate-800" />
+            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">
+              0
+            </span>
+          </button>
 
-          <div className="px-3 pb-3 flex flex-wrap gap-2">
-            {categories.map((cat) => (
+          <Link
+            to={isAuthenticated ? "/conta" : "/conta/acesso"}
+            className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+          >
+            <User className="h-4 w-4" />
+            {isAuthenticated ? `Olá, ${firstName}` : "Entrar"}
+          </Link>
+        </div>
+
+        <button
+          className="ml-auto rounded-full border border-slate-200 p-2.5 text-slate-800 transition-colors hover:bg-slate-50 lg:hidden"
+          onClick={() => setMenuOpen((value) => !value)}
+          aria-label="Abrir menu"
+        >
+          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </div>
+
+      <nav className="hidden border-t border-slate-200 bg-white lg:block">
+        <div className="container flex h-12 items-center justify-between gap-4 overflow-x-auto">
+          <div className="flex items-center gap-2">
+            {marketplaceCategories.map((category) => (
               <a
-                key={cat}
-                href="#"
-                className="px-3 py-1.5 text-sm font-display bg-muted rounded-md text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                key={category}
+                href={categoryAnchor(category)}
+                className="inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-950"
               >
-                {cat}
+                {category}
+                <ChevronDown className="h-3.5 w-3.5" />
               </a>
             ))}
           </div>
+
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <span className="font-medium">Praças:</span>
+            {featuredCities.map((city) => (
+              <span key={city} className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">
+                {city}
+              </span>
+            ))}
+          </div>
         </div>
-      )}
+      </nav>
+
+      {menuOpen ? (
+        <div className="border-t border-slate-200 bg-white lg:hidden">
+          <div className="container space-y-4 py-4">
+            <EventSearchBox />
+
+            <div className="grid gap-2">
+              <Link
+                to="/"
+                onClick={() => setMenuOpen(false)}
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-800"
+              >
+                Explorar eventos
+              </Link>
+              <Link
+                to={isAuthenticated ? "/conta" : "/conta/acesso"}
+                onClick={() => setMenuOpen(false)}
+                className="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white"
+              >
+                {isAuthenticated ? "Abrir minha conta" : "Entrar ou cadastrar"}
+              </Link>
+              <Link
+                to={isAuthenticated ? "/operacao" : "/conta/acesso"}
+                onClick={() => setMenuOpen(false)}
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-800"
+              >
+                Central de operacao
+              </Link>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Categorias</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {marketplaceCategories.map((category) => (
+                  <a
+                    key={category}
+                    href={categoryAnchor(category)}
+                    onClick={() => setMenuOpen(false)}
+                    className="rounded-full border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700"
+                  >
+                    {category}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Praças</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {featuredCities.map((city) => (
+                  <span key={city} className="rounded-full bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700">
+                    {city}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 };

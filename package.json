@@ -8,6 +8,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "generate:teatro-municipal": "node scripts/generate-teatro-municipal-seatmap.mjs",
+    "export:seatmaps": "node scripts/export-seatmaps.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",

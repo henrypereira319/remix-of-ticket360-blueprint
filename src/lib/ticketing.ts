@@ -1,4 +1,4 @@
-import type { EventData, EventSeat, EventSeatSection, EventSeatStatus } from "@/data/events";
+import type { EventData, EventSeat, EventSeatSection, EventSeatStatus, RuntimeEventData } from "@/data/events";
 
 export type TicketCategory = "full" | "half" | "social";
 
@@ -54,6 +54,7 @@ export interface CheckoutPricing {
 
 const selectableStatuses = new Set<EventSeatStatus>(["available", "accessible"]);
 const defaultTicketCategory: TicketCategory = "full";
+const hasSeatData = (event: EventData | RuntimeEventData): event is RuntimeEventData => "seats" in event.seatMap;
 
 export const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", {
@@ -62,19 +63,23 @@ export const formatCurrency = (value: number) =>
     minimumFractionDigits: 2,
   }).format(value);
 
-export const getSeatById = (event: EventData, seatId: string) =>
-  event.seatMap.seats.find((seat) => seat.id === seatId);
+export const getSeatById = (event: EventData | RuntimeEventData, seatId: string) =>
+  hasSeatData(event) ? event.seatMap.seats.find((seat) => seat.id === seatId) : undefined;
 
 export const isSeatSelectable = (seat?: EventSeat | null) => Boolean(seat && selectableStatuses.has(seat.status));
 
-export const getSectionById = (event: EventData, sectionId: string) =>
+export const getSectionById = (event: EventData | RuntimeEventData, sectionId: string) =>
   event.seatMap.sections.find((section) => section.id === sectionId);
 
-export const getSelectableSeatCount = (event: EventData, sectionId: string) =>
-  event.seatMap.seats.filter((seat) => seat.sectionId === sectionId && isSeatSelectable(seat)).length;
+export const getSelectableSeatCount = (event: EventData | RuntimeEventData, sectionId: string) =>
+  hasSeatData(event)
+    ? event.seatMap.seats.filter((seat) => seat.sectionId === sectionId && isSeatSelectable(seat)).length
+    : (event.seatMap.sectionStats[sectionId]?.selectable ?? 0);
 
-export const getSectionCapacity = (event: EventData, sectionId: string) =>
-  event.seatMap.seats.filter((seat) => seat.sectionId === sectionId).length;
+export const getSectionCapacity = (event: EventData | RuntimeEventData, sectionId: string) =>
+  hasSeatData(event)
+    ? event.seatMap.seats.filter((seat) => seat.sectionId === sectionId).length
+    : (event.seatMap.sectionStats[sectionId]?.total ?? 0);
 
 export const parseSeatIdsParam = (value: string | null) =>
   (value ?? "")
@@ -85,7 +90,7 @@ export const parseSeatIdsParam = (value: string | null) =>
 export const serializeSeatIds = (seatIds: string[]) =>
   Array.from(new Set(seatIds.map((seatId) => seatId.trim()).filter(Boolean))).join(",");
 
-export const sanitizeSelectedSeatIds = (event: EventData, seatIds: string[]) =>
+export const sanitizeSelectedSeatIds = (event: EventData | RuntimeEventData, seatIds: string[]) =>
   Array.from(new Set(seatIds.map((seatId) => seatId.trim()).filter(Boolean))).filter((seatId) =>
     isSeatSelectable(getSeatById(event, seatId)),
   );
@@ -108,7 +113,7 @@ export const parseTicketCategoriesParam = (value: string | null): Record<string,
     }, {});
 
 export const sanitizeTicketCategories = (
-  event: EventData,
+  event: EventData | RuntimeEventData,
   selectedSeatIds: string[],
   categories: Record<string, TicketCategory>,
 ) =>
@@ -133,10 +138,14 @@ export const getTicketCategoryPrice = (basePrice: number, category: TicketCatego
   Math.round(basePrice * ticketCategoryMeta[category].multiplier * 100) / 100;
 
 export const getSelectionSummary = (
-  event: EventData,
+  event: EventData | RuntimeEventData,
   selectedSeatIds: string[],
   ticketCategories: Record<string, TicketCategory> = {},
 ): SelectedSeatSummary => {
+  if (!hasSeatData(event)) {
+    throw new Error("O mapa completo ainda nao foi carregado para montar o resumo da selecao.");
+  }
+
   const items = selectedSeatIds
     .map((seatId) => getSeatById(event, seatId))
     .filter((seat): seat is EventSeat => Boolean(seat))

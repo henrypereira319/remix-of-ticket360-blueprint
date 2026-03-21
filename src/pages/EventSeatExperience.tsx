@@ -5,7 +5,9 @@ import SeatMap from "@/components/SeatMap";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getEventBySlug } from "@/data/events";
+import { useAuth } from "@/hooks/use-auth";
+import { useEventRuntime } from "@/hooks/use-event-runtime";
+import { useToast } from "@/hooks/use-toast";
 import {
   formatCurrency,
   getCheckoutPricing,
@@ -20,6 +22,7 @@ import {
   ticketCategoryMeta,
   type TicketCategory,
 } from "@/lib/ticketing";
+import { createInventoryHold, releaseInventoryHold } from "@/server/api/inventory.api";
 import NotFound from "./NotFound";
 
 const selectableStatuses = new Set(["available", "accessible"]);
@@ -30,7 +33,11 @@ const isTicketCategory = (value: string): value is TicketCategory => ticketCateg
 const EventSeatExperience = () => {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
-  const event = getEventBySlug(slug);
+  const { currentAccount } = useAuth();
+  const { toast } = useToast();
+  const [holdToken, setHoldToken] = useState<string | null>(searchParams.get("hold"));
+  const holdTokenRef = useRef<string | null>(searchParams.get("hold"));
+  const { baseEvent, event, isLoading } = useEventRuntime(slug, holdToken);
   const mapSectionRef = useRef<HTMLElement | null>(null);
   const checkoutSectionRef = useRef<HTMLElement | null>(null);
   const initialSeatIds = event ? sanitizeSelectedSeatIds(event, parseSeatIdsParam(searchParams.get("assentos"))) : [];
@@ -56,10 +63,86 @@ const EventSeatExperience = () => {
     setSelectedTicketCategories(
       sanitizeTicketCategories(event, nextSeatIds, parseTicketCategoriesParam(params.get("tipos"))),
     );
-  }, [event?.id, searchKey]);
+  }, [event, searchKey]);
+
+  useEffect(() => {
+    holdTokenRef.current = holdToken;
+  }, [holdToken]);
+
+  useEffect(() => {
+    if (!slug || !event) {
+      return;
+    }
+
+    let cancelled = false;
+    const currentHoldToken = holdTokenRef.current;
+
+    const syncHold = async () => {
+      if (selectedSeatIds.length === 0) {
+        if (currentHoldToken) {
+          await releaseInventoryHold(currentHoldToken);
+          if (!cancelled) {
+            holdTokenRef.current = null;
+            setHoldToken(null);
+          }
+        }
+
+        return;
+      }
+
+      if (currentHoldToken) {
+        await releaseInventoryHold(currentHoldToken);
+      }
+
+      const hold = await createInventoryHold({
+        eventSlug: slug,
+        seatIds: selectedSeatIds,
+        accountId: currentAccount?.id ?? null,
+      });
+
+      if (cancelled) {
+        await releaseInventoryHold(hold.holdToken);
+        return;
+      }
+
+      holdTokenRef.current = hold.holdToken;
+      setHoldToken(hold.holdToken);
+    };
+
+    void syncHold().catch((error) => {
+      if (!cancelled) {
+        holdTokenRef.current = null;
+        setHoldToken(null);
+        toast({
+          title: "Nao foi possivel reservar temporariamente os assentos",
+          description: error instanceof Error ? error.message : "Atualize o mapa e tente novamente.",
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentAccount?.id, event, selectedSeatIds, slug, toast]);
+
+  useEffect(() => {
+    return () => {
+      if (holdTokenRef.current) {
+        void releaseInventoryHold(holdTokenRef.current);
+      }
+    };
+  }, []);
+
+  if (!baseEvent && !isLoading) {
+    return <NotFound />;
+  }
 
   if (!event) {
-    return <NotFound />;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-sm font-medium text-white/75">
+        Desenhando o mapa...
+      </div>
+    );
   }
 
   const scrollToSection = (section: "map" | "checkout") => {
@@ -110,6 +193,9 @@ const EventSeatExperience = () => {
   const checkoutParams = new URLSearchParams();
   checkoutParams.set("assentos", serializeSeatIds(selectedSeatIds));
   checkoutParams.set("tipos", serializeTicketCategories(selectedSeatIds, selectedTicketCategories));
+  if (holdToken) {
+    checkoutParams.set("hold", holdToken);
+  }
 
   return (
     <div className="relative h-screen overflow-hidden bg-slate-100">

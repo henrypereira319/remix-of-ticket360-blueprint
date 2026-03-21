@@ -1,85 +1,207 @@
+import { ArrowRight, Building2, Map, Sparkles, Ticket } from "lucide-react";
 import { Link } from "react-router-dom";
+import DiscoveryHero from "@/components/DiscoveryHero";
+import EventCard from "@/components/EventCard";
 import EventGrid from "@/components/EventGrid";
+import EventRail from "@/components/EventRail";
 import HeroBanner from "@/components/HeroBanner";
 import HighlightsCarousel from "@/components/HighlightsCarousel";
-import SectionSeparator from "@/components/SectionSeparator";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { banners, events, highlights } from "@/data/events";
+import { banners, events, highlights, marketplaceCategories, marketplaceCities } from "@/data/events";
+
+const categoryAnchor = (category: string) =>
+  `categoria-${category
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")}`;
 
 const Index = () => {
-  const mapPreviewEvent = events.find((event) => event.seatMap.variant === "theater") ?? events[0];
+  const spotlightEvent = events.find((event) => event.seatMap.variant === "theater") ?? events[0];
+  const topSellingEvents = [...events].sort((left, right) => right.priceFrom - left.priceFrom).slice(0, 5);
+  const theaterEvents = events.filter((event) => event.seatMap.variant === "theater");
+  const saoPauloEvents = events.filter((event) => event.city.includes("Sao Paulo")).slice(0, 5);
+  const nightlifeEvents = events.filter((event) => ["Shows", "Festivais", "Experiencias"].includes(event.category)).slice(0, 5);
+  const categoryCollections = marketplaceCategories
+    .map((category) => ({
+      category,
+      events: events.filter((event) => event.category === category).slice(0, 4),
+    }))
+    .filter((collection) => collection.events.length > 0);
+
+  const stats = [
+    { label: "Eventos publicados", value: `${events.length}` },
+    { label: "Praças ativas", value: `${marketplaceCities.length}` },
+    { label: "Mapas de sala", value: `${theaterEvents.length}` },
+  ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50 text-slate-950">
       <SiteHeader />
 
-      <main className="container py-4 space-y-4">
-        <SectionSeparator title="Destaques" />
-        <HighlightsCarousel highlights={highlights} />
+      <main className="space-y-8 pb-12 pt-5 sm:space-y-10 sm:pt-6">
+        <div className="container">
+          <DiscoveryHero
+            categories={marketplaceCategories}
+            cities={marketplaceCities.slice(0, 5)}
+            spotlightEvent={spotlightEvent}
+            stats={stats}
+          />
+        </div>
 
-        <div className="border-b border-separator" />
-
-        <HeroBanner banners={banners} />
-
-        <SectionSeparator title="Mapa de Sala" />
-
-        <Card className="overflow-hidden border-border bg-card">
-          <CardContent className="grid gap-5 p-5 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-            <div className="space-y-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Demo ja disponivel</p>
-                <h2 className="mt-2 font-display text-3xl font-semibold text-foreground">
-                  O mapa da sala agora tem uma jornada propria
-                </h2>
+        <div className="container">
+          <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Destaques do momento</p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">O que está puxando a vitrine</h2>
+                </div>
+                <Link to={`/eventos/${spotlightEvent.slug}`} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  Ver destaque
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
+              <HighlightsCarousel highlights={highlights} />
+            </section>
 
-              <p className="text-sm leading-6 text-muted-foreground">
-                A experiencia 2D inspirada no Theatro Municipal ja pode ser aberta no evento{" "}
-                <span className="font-semibold text-foreground">{mapPreviewEvent.title}</span>, agora em uma rota
-                dedicada com foco por setor, palco, frisas, anfiteatro e uma segunda dobra para revisar o ingresso.
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="mb-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Campanhas e turnês</p>
+                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Banners com call mais comercial</h2>
+              </div>
+              <HeroBanner banners={banners} />
+            </section>
+          </div>
+        </div>
+
+        <div className="container">
+          <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Atalhos de descoberta</p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <Link
+                  to={`/eventos/${spotlightEvent.slug}/assentos`}
+                  className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 transition-transform hover:-translate-y-0.5"
+                >
+                  <Map className="h-5 w-5 text-emerald-600" />
+                  <h3 className="mt-3 text-base font-semibold text-slate-950">Mapa de sala</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">Entre direto na jornada de assentos com foco visual e checkout.</p>
+                </Link>
+
+                <Link
+                  to={`/eventos/${topSellingEvents[0].slug}`}
+                  className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 transition-transform hover:-translate-y-0.5"
+                >
+                  <Ticket className="h-5 w-5 text-sky-600" />
+                  <h3 className="mt-3 text-base font-semibold text-slate-950">Compra rápida</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">Chegue no evento em poucos passos e mantenha a navegação limpa.</p>
+                </Link>
+
+                <Link
+                  to={`/eventos/${saoPauloEvents[0]?.slug ?? spotlightEvent.slug}`}
+                  className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 transition-transform hover:-translate-y-0.5"
+                >
+                  <Building2 className="h-5 w-5 text-violet-600" />
+                  <h3 className="mt-3 text-base font-semibold text-slate-950">Praças fortes</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">Curadorias por cidade e venue para deixar a home mais navegável.</p>
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-[0_24px_90px_-50px_rgba(15,23,42,0.95)]">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
+                <Sparkles className="h-4 w-4" />
+                Curadoria editorial
+              </div>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight">Uma home mais próxima de marketplace de ingressos.</h2>
+              <p className="mt-3 text-sm leading-7 text-white/70">
+                Reorganizamos o topo para puxar descoberta real: busca com sugestão, trilhas por categoria, rails por cidade e
+                destaque comercial mais forte no mobile e no desktop.
               </p>
 
-              <div className="flex flex-wrap gap-3">
-                <Button asChild size="lg">
-                  <Link to={`/eventos/${mapPreviewEvent.slug}/assentos`}>Abrir mapa da sala</Link>
-                </Button>
-                <Button asChild size="lg" variant="outline">
-                  <Link to={`/eventos/${mapPreviewEvent.slug}`}>Ver detalhe do evento</Link>
-                </Button>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {marketplaceCities.slice(0, 5).map((city) => (
+                  <span key={city} className="rounded-full bg-white/10 px-3 py-2 text-sm font-medium text-white/85">
+                    {city}
+                  </span>
+                ))}
               </div>
             </div>
+          </section>
+        </div>
 
-            <div className="rounded-[1.5rem] border border-border bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.94),_rgba(241,245,249,1)_68%)] p-5 shadow-sm">
-              <div className="mx-auto w-[72%] rounded-b-[1.6rem] bg-foreground px-4 py-3 text-center text-card">
-                <p className="text-[11px] uppercase tracking-[0.2em] text-card/70">Palco</p>
+        <div className="container space-y-8">
+          <EventRail
+            eyebrow="Mais vendidos"
+            title="Ingressos puxando conversão"
+            description="Uma trilha horizontal mais próxima de vitrine comercial, com preços, badges e CTA explícito."
+            events={topSellingEvents}
+          />
+
+          <EventRail
+            eyebrow="Sala e lugares"
+            title="Eventos com mapa de sala"
+            description="Coleção dedicada para experiências com assento marcado, teatro e checkout mais orientado."
+            events={theaterEvents}
+          />
+
+          <EventRail
+            eyebrow="Praça principal"
+            title="São Paulo em destaque"
+            description="A home agora consegue empilhar curadorias por cidade sem virar só uma grid estática."
+            events={saoPauloEvents}
+          />
+
+          <EventRail
+            eyebrow="Noite e festival"
+            title="Programação para sair hoje"
+            description="Shows, festivais e experiências com uma linguagem mais próxima de ticketing marketplace."
+            events={nightlifeEvents}
+          />
+        </div>
+
+        <div className="container space-y-8">
+          {categoryCollections.map((collection) => (
+            <section key={collection.category} id={categoryAnchor(collection.category)} className="space-y-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Categoria</p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">{collection.category}</h2>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Trilha dedicada para {collection.category.toLowerCase()}, com mais previsibilidade visual na home.
+                  </p>
+                </div>
+                <span className="text-sm font-medium text-slate-500">{collection.events.length} destaques nesta curadoria</span>
               </div>
 
-              <div className="relative mt-5 h-52 overflow-hidden rounded-[1.4rem] border border-border/70 bg-background">
-                <div className="absolute left-1/2 top-6 h-16 w-48 -translate-x-1/2 rounded-[999px] border border-emerald-200 bg-emerald-50/90" />
-                <div className="absolute left-1/2 top-[4.4rem] h-28 w-72 -translate-x-1/2 rounded-[48%] border border-primary/20 bg-primary/10" />
-                <div className="absolute left-5 top-[5.2rem] h-24 w-14 rounded-[1.2rem] border border-slate-300 bg-slate-100/90" />
-                <div className="absolute right-5 top-[5.2rem] h-24 w-14 rounded-[1.2rem] border border-slate-300 bg-slate-100/90" />
-
-                <div className="absolute left-1/2 top-24 h-4 w-4 -translate-x-[6.5rem] rounded-full bg-primary shadow-sm" />
-                <div className="absolute left-1/2 top-[5.2rem] h-4 w-4 -translate-x-[3rem] rounded-full bg-primary shadow-sm" />
-                <div className="absolute left-1/2 top-[4.6rem] h-4 w-4 -translate-x-1/2 rounded-full bg-violet-400 shadow-sm" />
-                <div className="absolute left-1/2 top-[5.2rem] h-4 w-4 translate-x-[2.1rem] rounded-full bg-primary shadow-sm" />
-                <div className="absolute left-1/2 top-24 h-4 w-4 translate-x-[5.6rem] rounded-full bg-primary shadow-sm" />
-
-                <div className="absolute left-8 top-[6.2rem] h-4 w-4 rounded-full bg-slate-500 shadow-sm" />
-                <div className="absolute right-8 top-[6.2rem] h-4 w-4 rounded-full bg-slate-500 shadow-sm" />
-                <div className="absolute left-1/2 top-10 h-4 w-4 -translate-x-8 rounded-full bg-emerald-500 shadow-sm" />
-                <div className="absolute left-1/2 top-10 h-4 w-4 translate-x-4 rounded-full bg-emerald-500 shadow-sm" />
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {collection.events.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
               </div>
+            </section>
+          ))}
+        </div>
+
+        <div className="container">
+          <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Catálogo completo</p>
+                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Todos os eventos da vitrine</h2>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
+                  Um grid final mais denso para quem já desceu toda a home e quer comparar opções lado a lado.
+                </p>
+              </div>
+              <span className="text-sm font-medium text-slate-500">{events.length} eventos publicados</span>
             </div>
-          </CardContent>
-        </Card>
 
-        <SectionSeparator title="Proximos Eventos" />
-        <EventGrid events={events} />
+            <EventGrid events={events} />
+          </section>
+        </div>
       </main>
 
       <SiteFooter />
