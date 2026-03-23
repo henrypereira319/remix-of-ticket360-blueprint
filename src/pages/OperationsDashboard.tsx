@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { CheckCircle2, Loader2, ShieldCheck, XCircle } from "lucide-react";
+import { AlertTriangle, BookOpenText, CheckCircle2, Loader2, ShieldCheck, XCircle } from "lucide-react";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +45,13 @@ const statusVariantMap = {
   "tickets-issued": "default",
   "payment-under-review": "secondary",
   "order-cancelled": "destructive",
+} as const;
+
+const diagnosticVariantMap = {
+  success: "default",
+  info: "outline",
+  warning: "secondary",
+  critical: "destructive",
 } as const;
 
 const OperationsDashboard = () => {
@@ -117,7 +124,7 @@ const OperationsDashboard = () => {
                 </p>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
                 <div className="rounded-2xl border border-border bg-background p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Fila de revisao</p>
                   <p className="mt-2 text-3xl font-semibold text-foreground">{snapshot.summary.underReviewOrders}</p>
@@ -134,6 +141,13 @@ const OperationsDashboard = () => {
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Tickets emitidos</p>
                   <p className="mt-2 text-3xl font-semibold text-foreground">{snapshot.summary.issuedTickets}</p>
                   <p className="mt-2 text-sm text-muted-foreground">Ingressos ativos no wallet local.</p>
+                </div>
+                <div className="rounded-2xl border border-border bg-background p-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Alertas abertos</p>
+                  <p className="mt-2 text-3xl font-semibold text-foreground">{snapshot.summary.openDiagnostics}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {snapshot.summary.criticalDiagnostics} critico(s) para priorizacao manual.
+                  </p>
                 </div>
                 <div className="rounded-2xl border border-border bg-background p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Eventos de analytics</p>
@@ -154,6 +168,16 @@ const OperationsDashboard = () => {
                       <p>Pedidos cancelados: {snapshot.summary.cancelledOrders}</p>
                       <p>Refund local: {currencyFormatter.format(snapshot.summary.refundedRevenue)}</p>
                       <p>Notificacoes enviadas: {snapshot.summary.sentNotifications}</p>
+                      <p>Alertas criticos: {snapshot.summary.criticalDiagnostics}</p>
+                    </div>
+                    <div className="rounded-xl border border-border bg-background p-4">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-primary" />
+                        <p className="text-sm font-semibold text-foreground">{snapshot.diagnostics[0]?.title ?? "Sem alertas"}</p>
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {snapshot.diagnostics[0]?.summary ?? "Acompanhe a aba de diagnosticos para novos sinais operacionais."}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -170,6 +194,8 @@ const OperationsDashboard = () => {
             <TabsTrigger value="tickets">Ingressos</TabsTrigger>
             <TabsTrigger value="notifications">Notificacoes</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="diagnostics">Diagnosticos</TabsTrigger>
+            <TabsTrigger value="runbooks">Runbooks</TabsTrigger>
           </TabsList>
 
           <TabsContent value="review" className="space-y-4">
@@ -485,6 +511,108 @@ const OperationsDashboard = () => {
 
                   <div className="space-y-1 lg:text-right">
                     <p className="text-sm font-semibold text-foreground">{formatDateTime(event.occurredAt)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="diagnostics" className="space-y-4">
+            {snapshot.diagnostics.map((diagnostic) => (
+              <Card key={diagnostic.id} className="border-border bg-card">
+                <CardContent className="space-y-4 p-6">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant={diagnosticVariantMap[diagnostic.severity]}>
+                          {diagnostic.severity}
+                        </Badge>
+                        <span className="font-semibold text-foreground">{diagnostic.title}</span>
+                      </div>
+                      <p className="text-sm leading-6 text-muted-foreground">{diagnostic.summary}</p>
+                    </div>
+
+                    {diagnostic.metricLabel && diagnostic.metricValue ? (
+                      <div className="rounded-xl border border-border bg-background p-4 lg:min-w-60">
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{diagnostic.metricLabel}</p>
+                        <p className="mt-2 text-lg font-semibold text-foreground">{diagnostic.metricValue}</p>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {diagnostic.references.length > 0 ? (
+                    <div className="space-y-2">
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Referencias</p>
+                      <div className="flex flex-wrap gap-2">
+                        {diagnostic.references.map((reference) => (
+                          <span
+                            key={reference}
+                            className="rounded-full border border-border bg-background px-2.5 py-1 text-xs text-foreground"
+                          >
+                            {reference}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Acoes sugeridas</p>
+                    <div className="grid gap-2">
+                      {diagnostic.actions.map((action) => (
+                        <div key={action} className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-muted-foreground">
+                          {action}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="runbooks" className="space-y-4">
+            {snapshot.runbooks.map((runbook) => (
+              <Card key={runbook.id} className="border-border bg-card">
+                <CardContent className="space-y-4 p-6">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <BookOpenText className="h-4 w-4 text-primary" />
+                      <span className="font-semibold text-foreground">{runbook.title}</span>
+                    </div>
+                    <p className="text-sm leading-6 text-muted-foreground">{runbook.summary}</p>
+                  </div>
+
+                  <div className="rounded-xl border border-border bg-background p-4">
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Quando usar</p>
+                    <p className="mt-2 text-sm leading-6 text-foreground">{runbook.trigger}</p>
+                  </div>
+
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <div className="space-y-2">
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Passo a passo</p>
+                      <div className="grid gap-2">
+                        {runbook.steps.map((step, index) => (
+                          <div key={step} className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-muted-foreground">
+                            {index + 1}. {step}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Criterios de sucesso</p>
+                      <div className="grid gap-2">
+                        {runbook.successCriteria.map((criterion) => (
+                          <div
+                            key={criterion}
+                            className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-muted-foreground"
+                          >
+                            {criterion}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

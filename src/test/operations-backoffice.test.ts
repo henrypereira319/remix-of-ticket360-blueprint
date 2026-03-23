@@ -44,14 +44,19 @@ describe("operations backoffice service", () => {
 
     const snapshot = getBackofficeSnapshot();
     const reviewRow = snapshot.reviewQueue.find((row) => row.order.id === order.id);
+    const reviewDiagnostic = snapshot.diagnostics.find((diagnostic) => diagnostic.id === "review-queue-backlog");
 
     expect(snapshot.summary.totalOrders).toBe(1);
     expect(snapshot.summary.underReviewOrders).toBe(1);
     expect(snapshot.summary.pendingReviewRevenue).toBe(order.pricing.total);
+    expect(snapshot.summary.openDiagnostics).toBeGreaterThan(0);
     expect(reviewRow?.order.reference).toBe(order.reference);
     expect(reviewRow?.payment?.status).toBe("under_review");
     expect(reviewRow?.notifications.length).toBe(1);
     expect(reviewRow?.tickets).toHaveLength(0);
+    expect(reviewDiagnostic?.severity).toBe("warning");
+    expect(reviewDiagnostic?.references).toContain(order.reference);
+    expect(snapshot.runbooks.length).toBeGreaterThanOrEqual(3);
   });
 
   it("approves an under-review order from backoffice and issues ticket", () => {
@@ -68,6 +73,8 @@ describe("operations backoffice service", () => {
     expect(snapshot.summary.approvedOrders).toBe(1);
     expect(snapshot.summary.issuedTickets).toBe(1);
     expect(snapshot.reviewQueue).toHaveLength(0);
+    expect(snapshot.summary.openDiagnostics).toBe(0);
+    expect(snapshot.diagnostics[0]?.id).toBe("operations-healthy");
   });
 
   it("denies an under-review order from backoffice and releases the seat", () => {
