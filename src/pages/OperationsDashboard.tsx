@@ -1,6 +1,17 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { AlertTriangle, BookOpenText, CheckCircle2, Loader2, ShieldCheck, XCircle } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  BookOpenText,
+  CheckCircle2,
+  Clock3,
+  Loader2,
+  ShieldCheck,
+  Ticket,
+  XCircle,
+} from "lucide-react";
+import { Bar, BarChart, Cell, Line, LineChart, ResponsiveContainer } from "recharts";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +64,104 @@ const diagnosticVariantMap = {
   warning: "secondary",
   critical: "destructive",
 } as const;
+
+const chartColorMap: Record<string, string> = {
+  submitted: "hsl(var(--muted-foreground))",
+  under_review: "#f59e0b",
+  approved: "hsl(var(--primary))",
+  cancelled: "hsl(var(--destructive))",
+  authorized: "hsl(var(--primary))",
+  refunded: "hsl(var(--destructive))",
+  failed: "hsl(var(--destructive))",
+  expired: "hsl(var(--muted-foreground))",
+  issued: "hsl(var(--primary))",
+  used: "#0f766e",
+  queued: "hsl(var(--muted-foreground))",
+  sent: "#10b981",
+  "tickets-issued": "hsl(var(--primary))",
+  "tickets-cancelled": "hsl(var(--destructive))",
+  "notifications-sent": "#10b981",
+  "notifications-failed": "hsl(var(--destructive))",
+};
+
+const percentFormatter = new Intl.NumberFormat("pt-BR", {
+  maximumFractionDigits: 1,
+});
+
+const formatPercent = (value: number) => `${percentFormatter.format(value)}%`;
+
+const formatMinutes = (value: number) => {
+  if (value <= 0) {
+    return "0 min";
+  }
+
+  if (value < 60) {
+    return `${value} min`;
+  }
+
+  const days = Math.floor(value / 1440);
+  const hours = Math.floor((value % 1440) / 60);
+  const minutes = value % 60;
+
+  if (days > 0) {
+    return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
+  }
+
+  if (minutes === 0) {
+    return `${hours}h`;
+  }
+
+  return `${hours}h ${minutes}m`;
+};
+
+type MiniBarDatum = {
+  key: string;
+  label: string;
+  count?: number;
+  amount?: number;
+};
+
+const MiniBarSpark = ({ data, dataKey }: { data: MiniBarDatum[]; dataKey: "count" | "amount" }) => {
+  if (data.length === 0) {
+    return <div className="flex h-20 items-center text-xs text-muted-foreground">Sem volume suficiente para a janela.</div>;
+  }
+
+  return (
+    <div className="h-20 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} barCategoryGap="28%">
+          <Bar dataKey={dataKey} radius={[6, 6, 2, 2]} maxBarSize={18}>
+            {data.map((entry) => (
+              <Cell key={entry.key} fill={chartColorMap[entry.key] ?? "hsl(var(--primary))"} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+const MiniActivitySpark = ({
+  data,
+}: {
+  data: Array<{ label: string; orders: number; tickets: number; notifications: number }>;
+}) => {
+  if (data.length === 0) {
+    return <div className="flex h-20 items-center text-xs text-muted-foreground">Sem atividade registrada.</div>;
+  }
+
+  return (
+    <div className="h-20 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data}>
+          <Line type="monotone" dataKey="orders" stroke="hsl(var(--primary))" strokeWidth={2.25} dot={false} />
+          <Line type="monotone" dataKey="tickets" stroke="#10b981" strokeWidth={1.75} dot={false} />
+          <Line type="monotone" dataKey="notifications" stroke="#f59e0b" strokeWidth={1.75} dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
 
 const OperationsDashboard = () => {
   const auth = useAuth();
@@ -109,67 +218,172 @@ const OperationsDashboard = () => {
       <SiteHeader />
 
       <main className="container space-y-4 py-4">
-        <Card className="border-border bg-card">
-          <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
+        <Card className="overflow-hidden border-border bg-card">
+          <div className="grid gap-0 xl:grid-cols-[1.2fr_0.8fr]">
             <CardContent className="space-y-4 p-6">
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-foreground">
                   <ShieldCheck className="h-4 w-4 text-primary" />
                   Operacao local
                 </div>
-                <h1 className="font-display text-3xl font-semibold text-foreground">Backoffice minimo</h1>
+                <h1 className="font-display text-3xl font-semibold text-foreground">Backoffice operacional</h1>
                 <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                  Painel para revisar pedidos corporativos, liquidar pagamentos locais, cancelar pedidos e inspecionar
-                  pagamentos, tickets, notificacoes e analytics operacionais.
+                  Painel para revisar pedidos corporativos, monitorar coerencia entre pedido, pagamento, ticket e
+                  notificacao, e acompanhar o fluxo recente com leitura visual mais precisa.
                 </p>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+              <div className="grid gap-3 md:grid-cols-2">
                 <div className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Fila de revisao</p>
-                  <p className="mt-2 text-3xl font-semibold text-foreground">{snapshot.summary.underReviewOrders}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">Pedidos aguardando acao manual.</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Pipeline operacional</p>
+                      <p className="mt-2 text-3xl font-semibold text-foreground">
+                        {snapshot.summary.underReviewOrders}
+                        <span className="ml-2 text-sm font-medium text-muted-foreground">
+                          de {snapshot.summary.totalOrders} na fila
+                        </span>
+                      </p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Resolucao {formatPercent(snapshot.summary.resolutionRate)} · aprovacao{" "}
+                        {formatPercent(snapshot.summary.approvalRate)} nos pedidos resolvidos.
+                      </p>
+                    </div>
+                    <Activity className="mt-1 h-5 w-5 text-primary" />
+                  </div>
+                  <MiniBarSpark data={snapshot.orderStatusSeries} dataKey="count" />
+                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <p>
+                      Maior espera <span className="font-medium text-foreground">{formatMinutes(snapshot.summary.oldestReviewAgeMinutes)}</span>
+                    </p>
+                    <p>
+                      Backlog <span className="font-medium text-foreground">{currencyFormatter.format(snapshot.summary.pendingReviewRevenue)}</span>
+                    </p>
+                  </div>
                 </div>
+
                 <div className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Receita autorizada</p>
-                  <p className="mt-2 text-3xl font-semibold text-foreground">
-                    {currencyFormatter.format(snapshot.summary.authorizedRevenue)}
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">Pagamentos aprovados neste navegador.</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Receita por estado</p>
+                      <p className="mt-2 text-3xl font-semibold text-foreground">
+                        {currencyFormatter.format(snapshot.summary.grossOrderRevenue)}
+                      </p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Ticket medio {currencyFormatter.format(snapshot.summary.averageOrderValue)} · autorizado{" "}
+                        {currencyFormatter.format(snapshot.summary.authorizedRevenue)}.
+                      </p>
+                    </div>
+                    <ShieldCheck className="mt-1 h-5 w-5 text-primary" />
+                  </div>
+                  <MiniBarSpark data={snapshot.orderStatusSeries} dataKey="amount" />
+                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <p>
+                      Aprovado <span className="font-medium text-foreground">{currencyFormatter.format(snapshot.summary.approvedRevenue)}</span>
+                    </p>
+                    <p>
+                      Refund <span className="font-medium text-foreground">{currencyFormatter.format(snapshot.summary.refundedRevenue)}</span>
+                    </p>
+                  </div>
                 </div>
+
                 <div className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Tickets emitidos</p>
-                  <p className="mt-2 text-3xl font-semibold text-foreground">{snapshot.summary.issuedTickets}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">Ingressos ativos no wallet local.</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Entrega pos-compra</p>
+                      <p className="mt-2 text-3xl font-semibold text-foreground">
+                        {formatPercent(snapshot.summary.ticketCoverageRate)}
+                      </p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Emissao completa · notificacoes consistentes em{" "}
+                        {formatPercent(snapshot.summary.notificationCoverageRate)} dos aprovados.
+                      </p>
+                    </div>
+                    <Ticket className="mt-1 h-5 w-5 text-primary" />
+                  </div>
+                  <MiniBarSpark
+                    data={[
+                      { key: "tickets-issued", label: "Emitidos", count: snapshot.summary.issuedTickets },
+                      { key: "tickets-cancelled", label: "Cancelados", count: snapshot.summary.cancelledTickets },
+                      { key: "notifications-sent", label: "Enviadas", count: snapshot.summary.sentNotifications },
+                      { key: "notifications-failed", label: "Falhas", count: snapshot.summary.failedNotifications },
+                    ].filter((item) => (item.count ?? 0) > 0)}
+                    dataKey="count"
+                  />
+                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <p>
+                      Lead time <span className="font-medium text-foreground">{formatMinutes(snapshot.summary.averageIssueLeadTimeMinutes)}</span>
+                    </p>
+                    <p>
+                      Falhas <span className="font-medium text-foreground">{snapshot.summary.failedNotifications}</span>
+                    </p>
+                  </div>
                 </div>
+
                 <div className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Alertas abertos</p>
-                  <p className="mt-2 text-3xl font-semibold text-foreground">{snapshot.summary.openDiagnostics}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {snapshot.summary.criticalDiagnostics} critico(s) para priorizacao manual.
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Eventos de analytics</p>
-                  <p className="mt-2 text-3xl font-semibold text-foreground">{snapshot.summary.analyticsEvents}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">Telemetria operacional acumulada.</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Pulso recente</p>
+                      <p className="mt-2 text-3xl font-semibold text-foreground">
+                        {snapshot.activitySeries.reduce(
+                          (total, point) => total + point.orders + point.payments + point.tickets + point.notifications,
+                          0,
+                        )}
+                      </p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Movimentacoes na janela visivel · ultima mutacao em {formatDateTime(snapshot.summary.lastActivityAt)}.
+                      </p>
+                    </div>
+                    <Clock3 className="mt-1 h-5 w-5 text-primary" />
+                  </div>
+                  <MiniActivitySpark data={snapshot.activitySeries} />
+                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <p>
+                      Analytics/pedido{" "}
+                      <span className="font-medium text-foreground">
+                        {snapshot.summary.totalOrders > 0
+                          ? percentFormatter.format(snapshot.summary.analyticsEvents / snapshot.summary.totalOrders)
+                          : "0"}
+                      </span>
+                    </p>
+                    <p>
+                      Criticos <span className="font-medium text-foreground">{snapshot.summary.criticalDiagnostics}</span>
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
 
-            <div className="border-t border-border bg-background lg:border-l lg:border-t-0">
-              <div className="space-y-3 p-6">
+            <div className="border-t border-border bg-background xl:border-l xl:border-t-0">
+              <div className="grid gap-3 p-6">
                 <Card className="border-border bg-card">
-                  <CardContent className="space-y-3 p-6">
-                    <p className="text-sm font-semibold text-foreground">Estado do ambiente</p>
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                      <p>Pedidos totais: {snapshot.summary.totalOrders}</p>
-                      <p>Pedidos aprovados: {snapshot.summary.approvedOrders}</p>
-                      <p>Pedidos cancelados: {snapshot.summary.cancelledOrders}</p>
-                      <p>Refund local: {currencyFormatter.format(snapshot.summary.refundedRevenue)}</p>
-                      <p>Notificacoes enviadas: {snapshot.summary.sentNotifications}</p>
-                      <p>Alertas criticos: {snapshot.summary.criticalDiagnostics}</p>
+                  <CardContent className="space-y-4 p-6">
+                    <p className="text-sm font-semibold text-foreground">Precisao operacional</p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-xl border border-border bg-background p-4">
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">GMV local</p>
+                        <p className="mt-2 text-lg font-semibold text-foreground">
+                          {currencyFormatter.format(snapshot.summary.grossOrderRevenue)}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-border bg-background p-4">
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Fila media</p>
+                        <p className="mt-2 text-lg font-semibold text-foreground">
+                          {formatMinutes(snapshot.summary.averageReviewAgeMinutes)}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-border bg-background p-4">
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Alertas abertos</p>
+                        <p className="mt-2 text-lg font-semibold text-foreground">{snapshot.summary.openDiagnostics}</p>
+                      </div>
+                      <div className="rounded-xl border border-border bg-background p-4">
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Ultima atividade</p>
+                        <p className="mt-2 text-sm font-semibold text-foreground">
+                          {formatDateTime(snapshot.summary.lastActivityAt)}
+                        </p>
+                      </div>
                     </div>
+
                     <div className="rounded-xl border border-border bg-background p-4">
                       <div className="flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4 text-primary" />
@@ -178,7 +392,67 @@ const OperationsDashboard = () => {
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">
                         {snapshot.diagnostics[0]?.summary ?? "Acompanhe a aba de diagnosticos para novos sinais operacionais."}
                       </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className="rounded-full border border-border px-2.5 py-1 text-xs text-foreground">
+                          Criticos: {snapshot.summary.criticalDiagnostics}
+                        </span>
+                        <span className="rounded-full border border-border px-2.5 py-1 text-xs text-foreground">
+                          Notificacoes falhas: {snapshot.summary.failedNotifications}
+                        </span>
+                        <span className="rounded-full border border-border px-2.5 py-1 text-xs text-foreground">
+                          Analytics: {snapshot.summary.analyticsEvents}
+                        </span>
+                      </div>
                     </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border bg-card">
+                  <CardContent className="space-y-4 p-6">
+                    <p className="text-sm font-semibold text-foreground">Carga por evento</p>
+                    {snapshot.eventLoadSeries.length > 0 ? (
+                      <div className="space-y-4">
+                        {snapshot.eventLoadSeries.map((eventLoad) => {
+                          const peakRevenue = Math.max(...snapshot.eventLoadSeries.map((item) => item.revenue), 1);
+                          const width = peakRevenue > 0 ? Math.max((eventLoad.revenue / peakRevenue) * 100, 10) : 0;
+
+                          return (
+                            <div key={eventLoad.eventSlug} className="space-y-2">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="space-y-1">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <p className="text-sm font-semibold text-foreground">{eventLoad.eventSlug}</p>
+                                    {eventLoad.reviewQueueOrders > 0 ? (
+                                      <Badge variant="secondary">{eventLoad.reviewQueueOrders} em revisao</Badge>
+                                    ) : null}
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">
+                                    {eventLoad.orders} pedidos · {eventLoad.approvedOrders} aprovados · {eventLoad.tickets} tickets
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm font-semibold text-foreground">
+                                    {currencyFormatter.format(eventLoad.revenue)}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">{eventLoad.notifications} notificacoes</p>
+                                </div>
+                              </div>
+
+                              <div className="h-2 overflow-hidden rounded-full bg-muted">
+                                <div
+                                  className="h-full rounded-full bg-primary"
+                                  style={{ width: `${width}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-border bg-background p-4 text-sm leading-6 text-muted-foreground">
+                        Assim que houver pedidos persistidos, esta area passa a mostrar a concentracao de volume e fila por evento.
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

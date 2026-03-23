@@ -9,23 +9,27 @@ import {
   getStoredOrders,
   settleOrderPayment,
   type CheckoutOrderRecord,
+  type CheckoutOrderStatus,
 } from "@/server/checkout.service";
 import {
   getStoredNotifications,
   notificationStorageChannel,
   type NotificationRecord,
+  type NotificationStatus,
 } from "@/server/notification.service";
 import {
   getPaymentByOrder,
   getStoredPayments,
   paymentStorageChannel,
   type PaymentRecord,
+  type PaymentStatus,
 } from "@/server/payment.service";
 import {
   getStoredTickets,
   getTicketsByOrder,
   ticketStorageChannel,
   type IssuedTicketRecord,
+  type IssuedTicketStatus,
 } from "@/server/ticket.service";
 
 export const operationsStorageChannels = [
@@ -50,15 +54,28 @@ export interface BackofficeSummary {
   underReviewOrders: number;
   approvedOrders: number;
   cancelledOrders: number;
+  grossOrderRevenue: number;
+  approvedRevenue: number;
+  cancelledRevenue: number;
   authorizedRevenue: number;
   refundedRevenue: number;
   pendingReviewRevenue: number;
+  averageOrderValue: number;
+  resolutionRate: number;
+  approvalRate: number;
+  ticketCoverageRate: number;
+  notificationCoverageRate: number;
   issuedTickets: number;
   cancelledTickets: number;
   sentNotifications: number;
+  failedNotifications: number;
   analyticsEvents: number;
   openDiagnostics: number;
   criticalDiagnostics: number;
+  averageReviewAgeMinutes: number;
+  oldestReviewAgeMinutes: number;
+  averageIssueLeadTimeMinutes: number;
+  lastActivityAt: string | null;
 }
 
 export type BackofficeDiagnosticSeverity = "success" | "info" | "warning" | "critical";
@@ -83,6 +100,39 @@ export interface BackofficeRunbook {
   successCriteria: string[];
 }
 
+export interface BackofficeActivityPoint {
+  label: string;
+  orders: number;
+  payments: number;
+  tickets: number;
+  notifications: number;
+  analytics: number;
+  revenue: number;
+}
+
+export interface BackofficeStatusSeriesPoint {
+  key: string;
+  label: string;
+  count: number;
+  amount: number;
+}
+
+export interface BackofficeCountSeriesPoint {
+  key: string;
+  label: string;
+  count: number;
+}
+
+export interface BackofficeEventLoadPoint {
+  eventSlug: string;
+  orders: number;
+  approvedOrders: number;
+  reviewQueueOrders: number;
+  revenue: number;
+  tickets: number;
+  notifications: number;
+}
+
 export interface BackofficeSnapshot {
   summary: BackofficeSummary;
   reviewQueue: BackofficeOrderRow[];
@@ -93,6 +143,12 @@ export interface BackofficeSnapshot {
   analytics: AnalyticsEventRecord[];
   diagnostics: BackofficeDiagnostic[];
   runbooks: BackofficeRunbook[];
+  activitySeries: BackofficeActivityPoint[];
+  orderStatusSeries: BackofficeStatusSeriesPoint[];
+  paymentStatusSeries: BackofficeStatusSeriesPoint[];
+  ticketStatusSeries: BackofficeCountSeriesPoint[];
+  notificationStatusSeries: BackofficeCountSeriesPoint[];
+  eventLoadSeries: BackofficeEventLoadPoint[];
 }
 
 const sortByDateDesc = <T extends { createdAt?: string; issuedAt?: string; occurredAt?: string }>(items: T[]) =>
@@ -119,18 +175,276 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
-const getMinutesSince = (value?: string | null) => {
+const activityHourFormatter = new Intl.DateTimeFormat("pt-BR", {
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+const activityDayFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "2-digit",
+});
+
+const orderStatusLabels: Record<CheckoutOrderStatus, string> = {
+  submitted: "Submetidos",
+  under_review: "Em revisao",
+  approved: "Aprovados",
+  cancelled: "Cancelados",
+};
+
+const paymentStatusLabels: Record<PaymentStatus, string> = {
+  authorized: "Autorizados",
+  under_review: "Em revisao",
+  failed: "Falhos",
+  expired: "Expirados",
+  refunded: "Refund",
+};
+
+const ticketStatusLabels: Record<IssuedTicketStatus, string> = {
+  issued: "Emitidos",
+  used: "Usados",
+  cancelled: "Cancelados",
+};
+
+const notificationStatusLabels: Record<NotificationStatus, string> = {
+  queued: "Fila",
+  sent: "Enviadas",
+  failed: "Falhas",
+};
+
+const severityPriority: Record<BackofficeDiagnosticSeverity, number> = {
+  critical: 3,
+  warning: 2,
+  info: 1,
+  success: 0,
+};
+
+const getTimestamp = (value?: string | null) => {
   if (!value) {
-    return 0;
+    return null;
   }
 
   const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? null : parsed;
+};
 
-  if (Number.isNaN(parsed)) {
+const getMinutesSince = (value?: string | null) => {
+  const parsed = getTimestamp(value);
+
+  if (parsed === null) {
     return 0;
   }
 
   return Math.max(0, Math.round((Date.now() - parsed) / 60000));
+};
+
+const getMinutesBetween = (start?: string | null, end?: string | null) => {
+  const startTs = getTimestamp(start);
+  const endTs = getTimestamp(end);
+
+  if (startTs === null || endTs === null || endTs < startTs) {
+    return null;
+  }
+
+  return Math.round((endTs - startTs) / 60000);
+};
+
+const roundRate = (value: number, total: number) => {
+  if (total === 0) {
+    return 0;
+  }
+
+  return Math.round((value / total) * 1000) / 10;
+};
+
+const averageRounded = (values: number[]) => {
+  if (values.length === 0) {
+    return 0;
+  }
+
+  return Math.round(values.reduce((total, value) => total + value, 0) / values.length);
+};
+
+const startOfHour = (timestamp: number) => {
+  const date = new Date(timestamp);
+  date.setMinutes(0, 0, 0);
+  return date.getTime();
+};
+
+const startOfDay = (timestamp: number) => {
+  const date = new Date(timestamp);
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
+};
+
+const formatBucketLabel = (timestamp: number, useDailyBuckets: boolean) =>
+  useDailyBuckets
+    ? activityDayFormatter.format(new Date(timestamp))
+    : activityHourFormatter.format(new Date(timestamp));
+
+type ActivitySeed =
+  | { at?: string | null; kind: "orders"; revenue: number }
+  | { at?: string | null; kind: "payments" | "tickets" | "notifications" | "analytics"; revenue?: never };
+
+const buildActivitySeries = (
+  orders: BackofficeOrderRow[],
+  payments: PaymentRecord[],
+  tickets: IssuedTicketRecord[],
+  notifications: NotificationRecord[],
+  analytics: AnalyticsEventRecord[],
+): BackofficeActivityPoint[] => {
+  const activitySeeds: ActivitySeed[] = [
+    ...orders.map((row) => ({
+      at: row.order.createdAt,
+      kind: "orders" as const,
+      revenue: row.order.pricing.total,
+    })),
+    ...payments.map((payment) => ({
+      at: payment.createdAt,
+      kind: "payments" as const,
+    })),
+    ...tickets.map((ticket) => ({
+      at: ticket.issuedAt,
+      kind: "tickets" as const,
+    })),
+    ...notifications.map((notification) => ({
+      at: notification.createdAt,
+      kind: "notifications" as const,
+    })),
+    ...analytics.map((event) => ({
+      at: event.occurredAt,
+      kind: "analytics" as const,
+    })),
+  ];
+
+  const timestamps = activitySeeds
+    .map((seed) => getTimestamp(seed.at))
+    .filter((value): value is number => value !== null);
+  const referenceTimestamp = timestamps.length > 0 ? Math.max(...timestamps) : Date.now();
+  const oldestTimestamp = timestamps.length > 0 ? Math.min(...timestamps) : referenceTimestamp;
+  const useDailyBuckets = referenceTimestamp - oldestTimestamp > 36 * 60 * 60 * 1000;
+  const bucketSize = useDailyBuckets ? 24 * 60 * 60 * 1000 : 60 * 60 * 1000;
+  const bucketCount = useDailyBuckets ? 7 : 6;
+  const bucketEnd = useDailyBuckets ? startOfDay(referenceTimestamp) : startOfHour(referenceTimestamp);
+  const firstBucketStart = bucketEnd - bucketSize * (bucketCount - 1);
+
+  const series = Array.from({ length: bucketCount }, (_, index) => {
+    const bucketStart = firstBucketStart + bucketSize * index;
+
+    return {
+      label: formatBucketLabel(bucketStart, useDailyBuckets),
+      orders: 0,
+      payments: 0,
+      tickets: 0,
+      notifications: 0,
+      analytics: 0,
+      revenue: 0,
+    };
+  });
+
+  activitySeeds.forEach((seed) => {
+    const timestamp = getTimestamp(seed.at);
+
+    if (timestamp === null) {
+      return;
+    }
+
+    const index = Math.floor((timestamp - firstBucketStart) / bucketSize);
+
+    if (index < 0 || index >= series.length) {
+      return;
+    }
+
+    series[index][seed.kind] += 1;
+
+    if (seed.kind === "orders") {
+      series[index].revenue += seed.revenue;
+    }
+  });
+
+  return series;
+};
+
+const buildOrderStatusSeries = (orders: BackofficeOrderRow[]): BackofficeStatusSeriesPoint[] =>
+  (Object.entries(orderStatusLabels) as [CheckoutOrderStatus, string][])
+    .map(([status, label]) => ({
+      key: status,
+      label,
+      count: orders.filter((row) => row.order.status === status).length,
+      amount: orders
+        .filter((row) => row.order.status === status)
+        .reduce((total, row) => total + row.order.pricing.total, 0),
+    }))
+    .filter((item) => item.count > 0 || item.amount > 0);
+
+const buildPaymentStatusSeries = (payments: PaymentRecord[]): BackofficeStatusSeriesPoint[] =>
+  (Object.entries(paymentStatusLabels) as [PaymentStatus, string][])
+    .map(([status, label]) => ({
+      key: status,
+      label,
+      count: payments.filter((payment) => payment.status === status).length,
+      amount: payments
+        .filter((payment) => payment.status === status)
+        .reduce((total, payment) => total + payment.amount, 0),
+    }))
+    .filter((item) => item.count > 0 || item.amount > 0);
+
+const buildTicketStatusSeries = (tickets: IssuedTicketRecord[]): BackofficeCountSeriesPoint[] =>
+  (Object.entries(ticketStatusLabels) as [IssuedTicketStatus, string][])
+    .map(([status, label]) => ({
+      key: status,
+      label,
+      count: tickets.filter((ticket) => ticket.status === status).length,
+    }))
+    .filter((item) => item.count > 0);
+
+const buildNotificationStatusSeries = (notifications: NotificationRecord[]): BackofficeCountSeriesPoint[] =>
+  (Object.entries(notificationStatusLabels) as [NotificationStatus, string][])
+    .map(([status, label]) => ({
+      key: status,
+      label,
+      count: notifications.filter((notification) => notification.status === status).length,
+    }))
+    .filter((item) => item.count > 0);
+
+const buildEventLoadSeries = (orders: BackofficeOrderRow[]): BackofficeEventLoadPoint[] => {
+  const grouped = new Map<string, BackofficeEventLoadPoint>();
+
+  orders.forEach((row) => {
+    const current = grouped.get(row.order.eventSlug) ?? {
+      eventSlug: row.order.eventSlug,
+      orders: 0,
+      approvedOrders: 0,
+      reviewQueueOrders: 0,
+      revenue: 0,
+      tickets: 0,
+      notifications: 0,
+    };
+
+    current.orders += 1;
+    current.revenue += row.order.pricing.total;
+    current.tickets += row.tickets.length;
+    current.notifications += row.notifications.length;
+
+    if (row.order.status === "approved") {
+      current.approvedOrders += 1;
+    }
+
+    if (row.order.status === "under_review") {
+      current.reviewQueueOrders += 1;
+    }
+
+    grouped.set(row.order.eventSlug, current);
+  });
+
+  return [...grouped.values()]
+    .sort(
+      (left, right) =>
+        right.reviewQueueOrders - left.reviewQueueOrders ||
+        right.orders - left.orders ||
+        right.revenue - left.revenue,
+    )
+    .slice(0, 5);
 };
 
 const buildRunbooks = (): BackofficeRunbook[] => [
@@ -208,12 +522,11 @@ const buildDiagnostics = (orders: BackofficeOrderRow[], notifications: Notificat
     (row) => row.order.status === "cancelled" && row.tickets.some((ticket) => ticket.status !== "cancelled"),
   );
   const failedNotifications = notifications.filter((notification) => notification.status === "failed");
+  const orderReferenceById = new Map(orders.map((row) => [row.order.id, row.order.reference]));
 
   if (reviewQueue.length > 0) {
-    const oldestReviewMinutes = reviewQueue.reduce(
-      (currentOldest, row) => Math.max(currentOldest, getMinutesSince(row.order.createdAt)),
-      0,
-    );
+    const reviewQueueAges = reviewQueue.map((row) => getMinutesSince(row.order.createdAt));
+    const oldestReviewMinutes = Math.max(...reviewQueueAges);
 
     diagnostics.push({
       id: "review-queue-backlog",
@@ -313,7 +626,7 @@ const buildDiagnostics = (orders: BackofficeOrderRow[], notifications: Notificat
       metricLabel: "Falhas na outbox",
       metricValue: `${failedNotifications.length} item(ns)`,
       references: failedNotifications
-        .map((notification) => notification.orderId)
+        .map((notification) => (notification.orderId ? orderReferenceById.get(notification.orderId) ?? notification.orderId : null))
         .filter((value): value is string => Boolean(value))
         .slice(0, 4),
       actions: [
@@ -339,7 +652,12 @@ const buildDiagnostics = (orders: BackofficeOrderRow[], notifications: Notificat
     });
   }
 
-  return diagnostics;
+  return diagnostics.sort(
+    (left, right) =>
+      severityPriority[right.severity] - severityPriority[left.severity] ||
+      right.references.length - left.references.length ||
+      left.title.localeCompare(right.title),
+  );
 };
 
 export const getBackofficeSnapshot = (): BackofficeSnapshot => {
@@ -348,35 +666,86 @@ export const getBackofficeSnapshot = (): BackofficeSnapshot => {
   const payments = sortByDateDesc(getStoredPayments());
   const tickets = sortByDateDesc(getStoredTickets());
   const orders = sortByDateDesc(getStoredOrders()).map((order) => createOrderRow(order, notifications, analytics));
+  const reviewQueue = orders.filter((row) => row.order.status === "under_review");
+  const approvedOrders = orders.filter((row) => row.order.status === "approved");
+  const cancelledOrders = orders.filter((row) => row.order.status === "cancelled");
   const diagnostics = buildDiagnostics(orders, notifications);
   const runbooks = buildRunbooks();
+  const activitySeries = buildActivitySeries(orders, payments, tickets, notifications, analytics);
+  const orderStatusSeries = buildOrderStatusSeries(orders);
+  const paymentStatusSeries = buildPaymentStatusSeries(payments);
+  const ticketStatusSeries = buildTicketStatusSeries(tickets);
+  const notificationStatusSeries = buildNotificationStatusSeries(notifications);
+  const eventLoadSeries = buildEventLoadSeries(orders);
+  const grossOrderRevenue = orders.reduce((total, row) => total + row.order.pricing.total, 0);
+  const approvedRevenue = approvedOrders.reduce((total, row) => total + row.order.pricing.total, 0);
+  const cancelledRevenue = cancelledOrders.reduce((total, row) => total + row.order.pricing.total, 0);
+  const pendingReviewRevenue = reviewQueue.reduce((total, row) => total + row.order.pricing.total, 0);
+  const approvedOrdersWithTickets = approvedOrders.filter((row) =>
+    row.tickets.some((ticket) => ticket.status === "issued" || ticket.status === "used"),
+  ).length;
+  const approvedOrdersWithNotifications = approvedOrders.filter(
+    (row) =>
+      row.notifications.some((notification) => notification.template === "order-confirmation") &&
+      row.notifications.some((notification) => notification.template === "tickets-issued"),
+  ).length;
+  const reviewQueueAges = reviewQueue.map((row) => getMinutesSince(row.order.createdAt));
+  const issueLeadTimes = approvedOrders
+    .map((row) => {
+      const firstIssuedTicket = row.tickets
+        .filter((ticket) => ticket.status === "issued" || ticket.status === "used")
+        .sort((left, right) => left.issuedAt.localeCompare(right.issuedAt))[0];
+
+      return getMinutesBetween(row.order.createdAt, firstIssuedTicket?.issuedAt);
+    })
+    .filter((value): value is number => value !== null);
+  const lastActivityTimestamp = [
+    ...orders.map((row) => getTimestamp(row.order.updatedAt)),
+    ...payments.map((payment) => getTimestamp(payment.updatedAt)),
+    ...tickets.map((ticket) => getTimestamp(ticket.updatedAt)),
+    ...notifications.map((notification) => getTimestamp(notification.sentAt ?? notification.createdAt)),
+    ...analytics.map((event) => getTimestamp(event.occurredAt)),
+  ]
+    .filter((value): value is number => value !== null)
+    .sort((left, right) => right - left)[0];
 
   const summary: BackofficeSummary = {
     totalOrders: orders.length,
     submittedOrders: orders.filter((row) => row.order.status === "submitted").length,
-    underReviewOrders: orders.filter((row) => row.order.status === "under_review").length,
-    approvedOrders: orders.filter((row) => row.order.status === "approved").length,
-    cancelledOrders: orders.filter((row) => row.order.status === "cancelled").length,
+    underReviewOrders: reviewQueue.length,
+    approvedOrders: approvedOrders.length,
+    cancelledOrders: cancelledOrders.length,
+    grossOrderRevenue,
+    approvedRevenue,
+    cancelledRevenue,
     authorizedRevenue: payments
       .filter((payment) => payment.status === "authorized")
       .reduce((total, payment) => total + payment.amount, 0),
     refundedRevenue: payments
       .filter((payment) => payment.status === "refunded")
       .reduce((total, payment) => total + payment.amount, 0),
-    pendingReviewRevenue: payments
-      .filter((payment) => payment.status === "under_review")
-      .reduce((total, payment) => total + payment.amount, 0),
+    pendingReviewRevenue,
+    averageOrderValue: orders.length > 0 ? grossOrderRevenue / orders.length : 0,
+    resolutionRate: roundRate(approvedOrders.length + cancelledOrders.length, orders.length),
+    approvalRate: roundRate(approvedOrders.length, approvedOrders.length + cancelledOrders.length),
+    ticketCoverageRate: roundRate(approvedOrdersWithTickets, approvedOrders.length),
+    notificationCoverageRate: roundRate(approvedOrdersWithNotifications, approvedOrders.length),
     issuedTickets: tickets.filter((ticket) => ticket.status === "issued").length,
     cancelledTickets: tickets.filter((ticket) => ticket.status === "cancelled").length,
     sentNotifications: notifications.filter((notification) => notification.status === "sent").length,
+    failedNotifications: notifications.filter((notification) => notification.status === "failed").length,
     analyticsEvents: analytics.length,
     openDiagnostics: diagnostics.filter((diagnostic) => diagnostic.severity !== "success").length,
     criticalDiagnostics: diagnostics.filter((diagnostic) => diagnostic.severity === "critical").length,
+    averageReviewAgeMinutes: averageRounded(reviewQueueAges),
+    oldestReviewAgeMinutes: reviewQueueAges.length > 0 ? Math.max(...reviewQueueAges) : 0,
+    averageIssueLeadTimeMinutes: averageRounded(issueLeadTimes),
+    lastActivityAt: lastActivityTimestamp ? new Date(lastActivityTimestamp).toISOString() : null,
   };
 
   return {
     summary,
-    reviewQueue: orders.filter((row) => row.order.status === "under_review"),
+    reviewQueue,
     orders,
     payments,
     tickets,
@@ -384,6 +753,12 @@ export const getBackofficeSnapshot = (): BackofficeSnapshot => {
     analytics,
     diagnostics,
     runbooks,
+    activitySeries,
+    orderStatusSeries,
+    paymentStatusSeries,
+    ticketStatusSeries,
+    notificationStatusSeries,
+    eventLoadSeries,
   };
 };
 

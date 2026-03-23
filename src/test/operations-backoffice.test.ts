@@ -48,7 +48,11 @@ describe("operations backoffice service", () => {
 
     expect(snapshot.summary.totalOrders).toBe(1);
     expect(snapshot.summary.underReviewOrders).toBe(1);
+    expect(snapshot.summary.grossOrderRevenue).toBe(order.pricing.total);
     expect(snapshot.summary.pendingReviewRevenue).toBe(order.pricing.total);
+    expect(snapshot.summary.averageOrderValue).toBe(order.pricing.total);
+    expect(snapshot.summary.averageReviewAgeMinutes).toBeGreaterThanOrEqual(0);
+    expect(snapshot.summary.oldestReviewAgeMinutes).toBeGreaterThanOrEqual(0);
     expect(snapshot.summary.openDiagnostics).toBeGreaterThan(0);
     expect(reviewRow?.order.reference).toBe(order.reference);
     expect(reviewRow?.payment?.status).toBe("under_review");
@@ -56,6 +60,11 @@ describe("operations backoffice service", () => {
     expect(reviewRow?.tickets).toHaveLength(0);
     expect(reviewDiagnostic?.severity).toBe("warning");
     expect(reviewDiagnostic?.references).toContain(order.reference);
+    expect(snapshot.orderStatusSeries.find((item) => item.key === "under_review")?.count).toBe(1);
+    expect(snapshot.paymentStatusSeries.find((item) => item.key === "under_review")?.amount).toBe(order.pricing.total);
+    expect(snapshot.notificationStatusSeries.find((item) => item.key === "sent")?.count).toBe(1);
+    expect(snapshot.activitySeries.reduce((total, point) => total + point.orders, 0)).toBe(1);
+    expect(snapshot.eventLoadSeries[0]?.eventSlug).toBe(order.eventSlug);
     expect(snapshot.runbooks.length).toBeGreaterThanOrEqual(3);
   });
 
@@ -71,10 +80,17 @@ describe("operations backoffice service", () => {
 
     const snapshot = getBackofficeSnapshot();
     expect(snapshot.summary.approvedOrders).toBe(1);
+    expect(snapshot.summary.approvedRevenue).toBe(order.pricing.total);
     expect(snapshot.summary.issuedTickets).toBe(1);
     expect(snapshot.reviewQueue).toHaveLength(0);
+    expect(snapshot.summary.ticketCoverageRate).toBe(100);
+    expect(snapshot.summary.notificationCoverageRate).toBe(100);
+    expect(snapshot.summary.averageIssueLeadTimeMinutes).toBeGreaterThanOrEqual(0);
+    expect(snapshot.summary.lastActivityAt).toBeTruthy();
     expect(snapshot.summary.openDiagnostics).toBe(0);
     expect(snapshot.diagnostics[0]?.id).toBe("operations-healthy");
+    expect(snapshot.ticketStatusSeries.find((item) => item.key === "issued")?.count).toBe(1);
+    expect(snapshot.eventLoadSeries[0]?.approvedOrders).toBe(1);
   });
 
   it("denies an under-review order from backoffice and releases the seat", () => {
