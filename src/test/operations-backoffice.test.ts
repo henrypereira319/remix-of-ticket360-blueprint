@@ -47,6 +47,10 @@ describe("operations backoffice service", () => {
     const reviewDiagnostic = snapshot.diagnostics.find((diagnostic) => diagnostic.id === "review-queue-backlog");
 
     expect(snapshot.summary.totalOrders).toBe(1);
+    expect(snapshot.summary.activeEventsCount).toBe(1);
+    expect(snapshot.summary.grossPlatformRevenue).toBe(0);
+    expect(snapshot.summary.netPlatformFeeRevenue).toBe(0);
+    expect(snapshot.summary.pendingPlatformFeeRevenue).toBe(order.tickets[0].price * 0.1);
     expect(snapshot.summary.underReviewOrders).toBe(1);
     expect(snapshot.summary.grossOrderRevenue).toBe(order.pricing.total);
     expect(snapshot.summary.pendingReviewRevenue).toBe(order.pricing.total);
@@ -80,6 +84,10 @@ describe("operations backoffice service", () => {
 
     const snapshot = getBackofficeSnapshot();
     expect(snapshot.summary.approvedOrders).toBe(1);
+    expect(snapshot.summary.activeEventsCount).toBe(1);
+    expect(snapshot.summary.grossPlatformRevenue).toBe(order.pricing.total);
+    expect(snapshot.summary.netPlatformFeeRevenue).toBe(order.tickets[0].price * 0.1);
+    expect(snapshot.summary.pendingPlatformFeeRevenue).toBe(0);
     expect(snapshot.summary.approvedRevenue).toBe(order.pricing.total);
     expect(snapshot.summary.issuedTickets).toBe(1);
     expect(snapshot.reviewQueue).toHaveLength(0);
@@ -91,6 +99,7 @@ describe("operations backoffice service", () => {
     expect(snapshot.diagnostics[0]?.id).toBe("operations-healthy");
     expect(snapshot.ticketStatusSeries.find((item) => item.key === "issued")?.count).toBe(1);
     expect(snapshot.eventLoadSeries[0]?.approvedOrders).toBe(1);
+    expect(snapshot.eventLoadSeries[0]?.platformFeeRevenue).toBe(order.tickets[0].price * 0.1);
   });
 
   it("denies an under-review order from backoffice and releases the seat", () => {

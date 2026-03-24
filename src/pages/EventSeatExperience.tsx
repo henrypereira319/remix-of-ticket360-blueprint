@@ -97,6 +97,7 @@ const EventSeatExperience = () => {
       const hold = await createInventoryHold({
         eventSlug: slug,
         seatIds: selectedSeatIds,
+        eventSnapshot: event,
         accountId: currentAccount?.id ?? null,
       });
 

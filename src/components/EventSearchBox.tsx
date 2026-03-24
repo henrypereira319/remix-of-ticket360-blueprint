@@ -1,8 +1,9 @@
 import { CalendarDays, MapPin, Search, Ticket } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { searchEvents } from "@/data/events";
+import type { EventData } from "@/data/events";
+import { searchCatalogEvents } from "@/server/api/catalog.api";
 
 interface EventSearchBoxProps {
   className?: string;
@@ -17,8 +18,8 @@ const EventSearchBox = ({
 }: EventSearchBoxProps) => {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [results, setResults] = useState<EventData[]>([]);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const results = useMemo(() => searchEvents(query), [query]);
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -33,6 +34,24 @@ const EventSearchBox = ({
       document.removeEventListener("mousedown", handlePointerDown);
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      const nextResults = await searchCatalogEvents(query);
+
+      if (!cancelled) {
+        setResults(nextResults);
+      }
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query]);
 
   const heroVariant = variant === "hero";
   const showDropdown = open && (query.trim().length > 0 || results.length > 0);

@@ -13,7 +13,7 @@ const footerColumns = [
   },
   {
     title: "Para produtores",
-    items: ["Cadastrar evento", "Operação de bilheteria", "Relatórios", "Contato comercial"],
+    items: ["Meus eventos", "Painel do evento", "Operacao de bilheteria", "Relatorios"],
   },
 ];
 

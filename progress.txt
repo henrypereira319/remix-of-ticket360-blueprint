@@ -1,12 +1,12 @@
 Progress snapshot derived from rodamap-definitivo.md
-Date: 2026-03-21
+Date: 2026-03-23
 Workspace: C:\Users\hedge\OneDrive\Desktop\remix-of-ticket360-blueprint
 Canonical execution guide: checklist-roadmap.md
 
 Overall status (estimated)
-- Phase A: 68%
-- Phase B: 58%
-- Phase C: 57%
+- Phase A: 71%
+- Phase B: 71%
+- Phase C: 85%
 - Phase D: 14%
 
 What is already materially implemented
@@ -14,6 +14,7 @@ What is already materially implemented
 - Home, header, footer, discovery hero, search box and event rails were upgraded.
 - Event cards and event detail page were redesigned closer to marketplace patterns.
 - Heavy seat-map routes are lazy-loaded.
+- Search suggestions now have a real backend contract and respect publication state instead of reading every seed event blindly.
 
 2. Seat-map architecture and performance
 - Heavy geometry moved out of the main JS bundle into static JSON under public/maps.
@@ -54,35 +55,78 @@ What is already materially implemented
 
 7. Operations / backoffice
 - Backoffice local exists at /operacao.
+- The /operacao route is now treated explicitly as platform administration, not as the organizer surface.
 - Review queue for corporate/manual orders exists.
 - Backoffice can approve under-review orders.
 - Backoffice can deny under-review orders.
 - Backoffice can cancel approved orders.
 - Backoffice can inspect payments, tickets, notifications and analytics.
+- Backoffice now exposes operational diagnostics with severity, affected references and suggested actions.
+- Backoffice now exposes local runbooks for approval, cancellation and alert triage.
+- Organizer "Meus eventos" now exists at /produtor/meus-eventos and /organizador/meus-eventos.
+- The organizer view now consolidates catalog, orders, revenue, tickets, notifications and attention state per event.
+- The organizer view now also exposes real publication and unpublish actions against the backend catalog.
+- Header and organization modules now separate the organizer surface from the platform admin route instead of routing producer access straight to /operacao.
 
 8. Account area
 - Account dashboard shows orders.
+- Account dashboard now filters orders by status and exposes order drilldown with items, payment and lifecycle logs.
 - Account dashboard shows payments.
 - Account dashboard shows issued tickets.
+- Account dashboard now opens wallet-linked ticket details and surfaces local notification diagnostics for each order.
 
 9. API boundary
-- Local domain APIs now exist for catalog, inventory, orders, payments, tickets, notifications, analytics and backoffice.
+- Local domain APIs now exist for catalog, inventory, orders, payments, tickets, notifications, analytics, organizer and backoffice.
 - Event runtime, seat hold flow, checkout creation, account reads and backoffice reads/actions already consume this API layer.
 - Contract tests now cover the backend-facing API boundary.
+
+10. Developer tooling
+- A local Gemini terminal helper is now wired as `npm run eni`.
+- The helper now carrega configuracao de `.env` ou `.gemini`, ganhou arquivos de exemplo versionados, aceita prompt externo versionado, sobe em `gemini-3-flash-preview` por padrao, tem atalhos dedicados para Flash/Pro/auto-fallback, e expoe um atalho local para o Gemini CLI.
+
+11. Real backend foundation
+- Supabase/Postgres real now exists for the product instead of only browser-local persistence.
+- A migration runner now versions the database schema under `server/db/migrations`.
+- The real schema now covers profiles, venues, events, sessions, sections, seats, seat_holds, orders, order_items, payments, tickets, notifications, analytics_events and audit_log.
+- A server-side catalog domain now exists with upsert flows for venue, event, session, section and seat data.
+- A transactional ticketing domain now exists with server-side hold expiration, seat locking, order creation, payment orchestration, approval, cancellation, ticket issuance and notification creation.
+- Backend smoke scripts now validate Supabase admin access, direct Postgres access and an end-to-end flow of hold -> under_review -> approve -> tickets plus direct pix -> cancel.
+
+12. First HTTP/BFF slice
+- A real HTTP backend now exists under `server/http` using the Supabase/Postgres domains instead of in-browser storage.
+- The exposed surfaces now cover organizer snapshot/publication, catalog publication/search, runtime catalog hydration, holds, orders, account reads and the backoffice API.
+- The frontend operations, organizer, inventory, checkout and account APIs now support remote-first fetching through `VITE_BACKEND_URL` with local fallback if the backend is unavailable.
+- Home, PDP and buyer entrypoints now honor backend publication state instead of exposing every seed event unconditionally.
+- A dedicated HTTP smoke test now boots the server on an ephemeral port and validates health, organizer snapshot/publication, buyer flow, account reads and `/api/backoffice`.
+
+13. Producer CRUD and backend-backed public catalog
+- The organizer module now creates, edits and archives real events in Postgres instead of only publishing/unpublishing seed snapshots.
+- The organizer dashboard now exposes a real event editor dialog backed by HTTP routes for create, update, editor read and archive.
+- New events created in the organizer module now flow into the public catalog through backend list/detail/runtime routes, instead of remaining invisible outside the dashboard.
+- Catalog list, detail, runtime and search now read backend-created published events directly, with local seeds used only as bootstrap/templates when needed.
+- The HTTP smoke suite now validates producer CRUD plus public catalog visibility for created events.
+
+14. Support and self-service foundation
+- A real support domain now exists in Postgres with `support_cases` migration, persistence and audit logging.
+- The HTTP backend now exposes support-case creation plus account-scoped support-case listing.
+- The account area now exposes a support surface with operational FAQs, self-service trails and a form to open support requests tied to the account and, optionally, to an order.
+- Local and remote API contracts now cover support-case creation and account history, and the HTTP smoke suite validates support case creation end-to-end.
 
 What is partially implemented
 1. Checkout orchestration
 - Local orchestration is strong.
+- A real transactional backend slice now exists in Postgres for the critical lifecycle.
 - Still missing real gateway, real antifraud, real reconciliation and real provider webhooks.
 
 2. Corporate review
 - Backend state machine exists.
 - Backoffice UI exists for approve/deny.
+- Backoffice now has local runbooks and diagnostics to orientar a operacao.
 - Still missing permissions, assignment rules, richer review metadata and operator audit workflow.
 
 3. Notifications
 - Outbox exists locally.
-- Still missing real email/SMS/push provider integration, retries and delivery diagnostics.
+- Still missing real email/SMS/push provider integration, retries and provider-grade delivery diagnostics.
 
 4. Analytics
 - Local business events exist.
@@ -90,31 +134,37 @@ What is partially implemented
 
 5. Inventory
 - Local seat state is consistent.
-- Still missing shared remote persistence and multi-user concurrency beyond browser-local storage.
+- Remote persistence and server-side seat locking now exist in the backend slice.
+- Still missing full adoption of that remote inventory path by the live frontend flows and multi-user production rollout.
 
 6. Progress governance
 - Checklist and progress snapshot now exist.
 - Still missing automatic update discipline backed by milestones or scripts.
 
+7. Post-purchase account quality
+- Filters, order details, wallet detail and local diagnostics now exist in the account area.
+- Still missing reliable cross-device history and provider-backed delivery telemetry.
+
 What is not started or still far from done
-1. Real backend platform
-- No database.
-- No API server/BFF.
-- No auth backend beyond local session storage.
-- No real remote service boundaries yet.
+1. HTTP API / BFF adoption
+- The database and core transactional domains now exist in Supabase/Postgres.
+- A first HTTP/BFF layer now exists for organizer, backoffice, runtime catalog, inventory, orders and account reads.
+- Auth and RLS now exist at schema level, but the app is not yet consuming them end-to-end.
+- The browser now has remote-first support for organizer, operations, runtime inventory, checkout creation and account reads, but local fallback and local auth are still present.
 
 2. Producer/admin operations
 - No real backoffice for payments, orders, tickets, support or manual review.
-- No real producer console for CRUD and publishing workflows.
+- A producer console now exists for portfolio, event health, backend-backed publish/unpublish and real event CRUD.
+- Collaborators, permissions, venue/map editors, multi-session management and operational governance for producers are still missing.
 
 3. SEO / SSR / edge
 - No SSR/hybrid rendering layer.
 - No event schema / long-tail discovery pages strategy implemented end-to-end.
 
 4. Support
-- No support ticketing workflow.
-- No help-center integration.
-- No self-service refund or transfer flows.
+- A first support ticketing workflow now exists with account-linked case creation and history.
+- The account area now contains a basic help-center/support surface focused on order, payment and ticket troubleshooting.
+- Self-service refund or transfer automation still does not exist.
 
 5. Security/compliance
 - No real PII protection layer.
@@ -131,22 +181,23 @@ Critical next steps
 
 Status:
 - A local async API boundary now exists inside the app.
-- The next step is replacing the in-browser boundary with a real HTTP server/BFF without changing page contracts again.
+- A real Supabase/Postgres domain layer now exists behind the scenes.
+- The next step is exposing that domain through a real HTTP server/BFF without changing page contracts again.
 
 2. Replace localStorage persistence
-- Start with database-backed orders, payments and ticket tables
-- Add server-side seat locking
+- Wire account, checkout and operations reads to the new Postgres tables
+- Move hold, order and approval mutations from the in-browser services to server calls
+- Preserve current frontend contracts while swapping the persistence layer underneath
 
 3. Strengthen operations
 - Add roles/permissions for backoffice access
 - Add richer audit trail and operator actions
-- Add runbooks and operational diagnostics
+- Add assignment rules and operator governance on top of the existing local runbooks/diagnostics
 
 4. Finish post-purchase quality
-- Order details page
-- Ticket details page
-- Delivery history / notification diagnostics
-- Better account filters and status views
+- Cross-device account history
+- Provider-backed delivery history and notification telemetry
+- Richer self-service flows after purchase
 
 5. Start platform work
 - SSR/edge plan
@@ -165,5 +216,6 @@ Working rule from now on
 
 Confidence notes
 - The current product already behaves like a credible local ticketing simulator.
-- It is not yet a production-grade ticketing backend.
-- The biggest gap is replacing local persistence and in-browser APIs with real server-side infrastructure.
+- The project now also has a credible first real backend foundation in Supabase/Postgres.
+- It is not yet a production-grade ticketing platform because the frontend, auth and operations still are not fully wired to that backend.
+- The biggest gap is now adoption of the server-side infrastructure through a real API/BFF and end-to-end product integration.

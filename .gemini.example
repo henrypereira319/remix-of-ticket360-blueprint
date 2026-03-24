@@ -1,0 +1,4 @@
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3-flash-preview
+GEMINI_FALLBACK_MODEL=gemini-3-flash-preview
+ENI_PROMPT_FILE=scripts/eni-system-prompt.txt

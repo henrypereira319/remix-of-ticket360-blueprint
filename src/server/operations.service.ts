@@ -49,6 +49,10 @@ export interface BackofficeOrderRow {
 }
 
 export interface BackofficeSummary {
+  activeEventsCount: number;
+  grossPlatformRevenue: number;
+  netPlatformFeeRevenue: number;
+  pendingPlatformFeeRevenue: number;
   totalOrders: number;
   submittedOrders: number;
   underReviewOrders: number;
@@ -126,9 +130,11 @@ export interface BackofficeCountSeriesPoint {
 export interface BackofficeEventLoadPoint {
   eventSlug: string;
   orders: number;
+  activeOrders: number;
   approvedOrders: number;
   reviewQueueOrders: number;
   revenue: number;
+  platformFeeRevenue: number;
   tickets: number;
   notifications: number;
 }
@@ -174,6 +180,8 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
 });
+
+const PLATFORM_FEE_RATE = 0.1;
 
 const activityHourFormatter = new Intl.DateTimeFormat("pt-BR", {
   hour: "2-digit",
@@ -264,6 +272,22 @@ const averageRounded = (values: number[]) => {
 
   return Math.round(values.reduce((total, value) => total + value, 0) / values.length);
 };
+
+const roundCurrency = (value: number) => Math.round(value * 100) / 100;
+
+const isCollectedPaymentStatus = (status: PaymentStatus) => status === "authorized" || status === "refunded";
+
+const getOrderTicketSubtotal = (row: BackofficeOrderRow) =>
+  row.order.tickets.reduce((total, ticket) => total + ticket.price, 0);
+
+const getPlatformFeeRevenue = (row: BackofficeOrderRow) =>
+  row.order.status === "approved" ? roundCurrency(getOrderTicketSubtotal(row) * PLATFORM_FEE_RATE) : 0;
+
+const getPendingPlatformFeeRevenue = (row: BackofficeOrderRow) =>
+  row.order.status === "under_review" ? roundCurrency(getOrderTicketSubtotal(row) * PLATFORM_FEE_RATE) : 0;
+
+const getCollectedGrossRevenue = (row: BackofficeOrderRow) =>
+  row.payment && isCollectedPaymentStatus(row.payment.status) ? row.payment.amount : 0;
 
 const startOfHour = (timestamp: number) => {
   const date = new Date(timestamp);
@@ -414,17 +438,24 @@ const buildEventLoadSeries = (orders: BackofficeOrderRow[]): BackofficeEventLoad
     const current = grouped.get(row.order.eventSlug) ?? {
       eventSlug: row.order.eventSlug,
       orders: 0,
+      activeOrders: 0,
       approvedOrders: 0,
       reviewQueueOrders: 0,
       revenue: 0,
+      platformFeeRevenue: 0,
       tickets: 0,
       notifications: 0,
     };
 
     current.orders += 1;
-    current.revenue += row.order.pricing.total;
+    current.revenue += getCollectedGrossRevenue(row);
+    current.platformFeeRevenue += getPlatformFeeRevenue(row);
     current.tickets += row.tickets.length;
     current.notifications += row.notifications.length;
+
+    if (row.order.status !== "cancelled") {
+      current.activeOrders += 1;
+    }
 
     if (row.order.status === "approved") {
       current.approvedOrders += 1;
@@ -441,8 +472,9 @@ const buildEventLoadSeries = (orders: BackofficeOrderRow[]): BackofficeEventLoad
     .sort(
       (left, right) =>
         right.reviewQueueOrders - left.reviewQueueOrders ||
-        right.orders - left.orders ||
-        right.revenue - left.revenue,
+        right.activeOrders - left.activeOrders ||
+        right.revenue - left.revenue ||
+        right.orders - left.orders,
     )
     .slice(0, 5);
 };
@@ -669,6 +701,7 @@ export const getBackofficeSnapshot = (): BackofficeSnapshot => {
   const reviewQueue = orders.filter((row) => row.order.status === "under_review");
   const approvedOrders = orders.filter((row) => row.order.status === "approved");
   const cancelledOrders = orders.filter((row) => row.order.status === "cancelled");
+  const activeOrders = orders.filter((row) => row.order.status !== "cancelled");
   const diagnostics = buildDiagnostics(orders, notifications);
   const runbooks = buildRunbooks();
   const activitySeries = buildActivitySeries(orders, payments, tickets, notifications, analytics);
@@ -678,6 +711,11 @@ export const getBackofficeSnapshot = (): BackofficeSnapshot => {
   const notificationStatusSeries = buildNotificationStatusSeries(notifications);
   const eventLoadSeries = buildEventLoadSeries(orders);
   const grossOrderRevenue = orders.reduce((total, row) => total + row.order.pricing.total, 0);
+  const grossPlatformRevenue = roundCurrency(orders.reduce((total, row) => total + getCollectedGrossRevenue(row), 0));
+  const netPlatformFeeRevenue = roundCurrency(orders.reduce((total, row) => total + getPlatformFeeRevenue(row), 0));
+  const pendingPlatformFeeRevenue = roundCurrency(
+    orders.reduce((total, row) => total + getPendingPlatformFeeRevenue(row), 0),
+  );
   const approvedRevenue = approvedOrders.reduce((total, row) => total + row.order.pricing.total, 0);
   const cancelledRevenue = cancelledOrders.reduce((total, row) => total + row.order.pricing.total, 0);
   const pendingReviewRevenue = reviewQueue.reduce((total, row) => total + row.order.pricing.total, 0);
@@ -710,6 +748,10 @@ export const getBackofficeSnapshot = (): BackofficeSnapshot => {
     .sort((left, right) => right - left)[0];
 
   const summary: BackofficeSummary = {
+    activeEventsCount: new Set(activeOrders.map((row) => row.order.eventId)).size,
+    grossPlatformRevenue,
+    netPlatformFeeRevenue,
+    pendingPlatformFeeRevenue,
     totalOrders: orders.length,
     submittedOrders: orders.filter((row) => row.order.status === "submitted").length,
     underReviewOrders: reviewQueue.length,

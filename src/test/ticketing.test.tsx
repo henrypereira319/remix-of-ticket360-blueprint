@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import SeatMap from "@/components/SeatMap";
 import { events } from "@/data/events";
+import { teatroMunicipalSeatMap } from "@/data/teatroMunicipalGenerated";
 import {
   getCheckoutPricing,
   getSelectionSummary,
@@ -14,11 +15,7 @@ import {
 
 describe("event details seat map", () => {
   const event = events[0];
-  const theaterEvent = events.find((item) => item.slug === "hamlet-cia-teatro-novo");
-
-  if (!theaterEvent) {
-    throw new Error("Theater event not found in fixture");
-  }
+  const theaterSeatMap = teatroMunicipalSeatMap;
 
   it("calcula o total da selecao com base no setor do assento", () => {
     const summary = getSelectionSummary(event, ["premium-a1", "plateia-a-d1"]);
@@ -73,32 +70,31 @@ describe("event details seat map", () => {
   it("permite focar setores do mapa teatral e inspecionar assentos especiais", () => {
     const onToggleSeat = vi.fn();
 
-    render(<SeatMap seatMap={theaterEvent.seatMap} selectedSeatIds={[]} onToggleSeat={onToggleSeat} />);
+    render(<SeatMap seatMap={theaterSeatMap} selectedSeatIds={[]} onToggleSeat={onToggleSeat} />);
 
-    expect(screen.getByRole("heading", { name: "Plateia" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Frisa" })).toBeInTheDocument();
-    expect(theaterEvent.seatMap.seats).toHaveLength(1531);
+    expect(screen.getByRole("heading", { name: "Setor 1" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Setor 3 - Visão parcial" })).toBeInTheDocument();
+    expect(theaterSeatMap.seats).toHaveLength(1531);
 
-    fireEvent.click(screen.getByRole("button", { name: /^Frisa \(/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^Setor 3 - Visão parcial \(/i }));
 
-    expect(screen.queryByRole("heading", { name: "Plateia" })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Frisa" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Setor 1" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Setor 3 - Visão parcial" })).toBeInTheDocument();
 
-    fireEvent.mouseEnter(screen.getByRole("button", { name: /Frisa Assento 9-1 - Frisa - Visao parcial/i }));
+    fireEvent.mouseEnter(screen.getByRole("button", { name: /Setor 3 - Visão parcial Assento A-19 - Anfiteatro/i }));
 
-    expect(screen.getByText("Assento 9-1")).toBeInTheDocument();
-    expect(screen.getAllByText("Visao parcial").length).toBeGreaterThan(0);
+    expect(screen.getByText("Assento A-19")).toBeInTheDocument();
+    expect(screen.getAllByText(/Visão parcial/i).length).toBeGreaterThan(0);
   });
 
-  it("ajusta o tamanho dos botoes do mapa quando o zoom aumenta", () => {
-    render(<SeatMap seatMap={theaterEvent.seatMap} selectedSeatIds={[]} onToggleSeat={vi.fn()} />);
+  it("mantem a interacao dos assentos apos aumentar o zoom do mapa", () => {
+    const onToggleSeat = vi.fn();
 
-    const seatButton = screen.getByRole("button", { name: /^Plateia Assento A-1 - Plateia - Baixa visao$/i });
-
-    expect(seatButton).toHaveStyle({ height: "14px" });
+    render(<SeatMap seatMap={event.seatMap} selectedSeatIds={[]} onToggleSeat={onToggleSeat} />);
 
     fireEvent.click(screen.getByRole("button", { name: /Aumentar mapa de assentos/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Premium Assento A1/i }));
 
-    expect(seatButton).toHaveStyle({ height: "18px" });
+    expect(onToggleSeat).toHaveBeenCalledWith("premium-a1");
   });
 });

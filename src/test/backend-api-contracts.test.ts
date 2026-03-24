@@ -5,8 +5,10 @@ import { createInventoryHold, getInventoryOverviewBySlug, releaseInventoryHold }
 import { getBackofficeData } from "@/server/api/operations.api";
 import { createOrder, listAllOrders, listOrdersByAccount } from "@/server/api/orders.api";
 import { getPaymentForOrder, listAllPayments } from "@/server/api/payments.api";
+import { createSupportCase, listSupportCasesByAccount } from "@/server/api/support.api";
 import { listAllTickets, listTicketsByAccount } from "@/server/api/tickets.api";
 import { listAllNotifications } from "@/server/api/notifications.api";
+import { getOrganizerData } from "@/server/api/organizer.api";
 import { listAnalyticsEvents } from "@/server/api/analytics.api";
 
 const sampleEvent = events[0];
@@ -71,7 +73,15 @@ describe("backend api boundary", () => {
       accountId: "account_api",
     });
 
-    const [orders, accountOrders, payment, payments, tickets, accountTickets, notifications, analytics, backoffice] =
+    const supportCase = await createSupportCase({
+      accountId: "account_api",
+      orderId: order.id,
+      category: "ticket",
+      subject: "Ingresso nao apareceu",
+      message: "Contrato de suporte para a conta de teste.",
+    });
+
+    const [orders, accountOrders, payment, payments, tickets, accountTickets, notifications, analytics, backoffice, supportCases] =
       await Promise.all([
         listAllOrders(),
         listOrdersByAccount("account_api"),
@@ -82,6 +92,7 @@ describe("backend api boundary", () => {
         listAllNotifications(),
         listAnalyticsEvents(),
         getBackofficeData(),
+        listSupportCasesByAccount("account_api"),
       ]);
 
     expect(orders).toHaveLength(1);
@@ -93,5 +104,14 @@ describe("backend api boundary", () => {
     expect(notifications.length).toBeGreaterThanOrEqual(2);
     expect(analytics.length).toBeGreaterThan(0);
     expect(backoffice.summary.totalOrders).toBe(1);
+    expect(supportCase.accountId).toBe("account_api");
+    expect(supportCases).toHaveLength(1);
+  });
+
+  it("exposes organizer data through the API boundary", async () => {
+    const organizer = await getOrganizerData();
+
+    expect(organizer.summary.totalEvents).toBe(events.length);
+    expect(organizer.events[0]?.publicationStatus).toBe("published");
   });
 });

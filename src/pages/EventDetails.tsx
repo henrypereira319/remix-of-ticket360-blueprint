@@ -7,16 +7,26 @@ import SiteHeader from "@/components/SiteHeader";
 import VenueTag from "@/components/VenueTag";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { events, getEventBySlug } from "@/data/events";
+import { useCatalogEvent } from "@/hooks/use-catalog-event";
+import { useCatalogEvents } from "@/hooks/use-catalog-events";
 import { formatCurrency, getSelectableSeatCount } from "@/lib/ticketing";
 import NotFound from "./NotFound";
 
 const EventDetails = () => {
   const { slug } = useParams<{ slug: string }>();
-  const event = getEventBySlug(slug);
+  const { event, isLoading } = useCatalogEvent(slug);
+  const { events } = useCatalogEvents();
+
+  if (!event && !isLoading) {
+    return <NotFound />;
+  }
 
   if (!event) {
-    return <NotFound />;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm font-medium text-slate-600">
+        Carregando evento...
+      </div>
+    );
   }
 
   const seatExperienceLink = `/eventos/${event.slug}/assentos`;

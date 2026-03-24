@@ -26,7 +26,7 @@
 - [x] Navegação com taxonomia consistente entre home, listagem, detalhe e busca.
 - [ ] Curadoria e coleções orientadas por cidade, categoria, popularidade e contexto.
 - [ ] Preferências de localidade e cidade persistidas no produto.
-- [ ] Busca global com contrato de backend próprio.
+- [x] Busca global com contrato de backend próprio.
 - [x] Sugestões, autocomplete e zero-results com qualidade comercial.
 - [ ] Telemetria de CTR no header, uso de busca e profundidade de navegação.
 
@@ -49,7 +49,7 @@
 - [x] Zero result com sugestões reais.
 - [ ] Resultados paginados ou com infinite loading consistente.
 - [ ] Telemetria de uso de filtro e refinamento.
-- [ ] Contrato de backend para indexação e busca.
+- [x] Contrato de backend para indexação e busca.
 
 ### 4. Página do evento
 
@@ -105,8 +105,8 @@
 ### 8. Meus pedidos
 
 - [x] Lista de pedidos com status real.
-- [ ] Filtro por status.
-- [ ] Detalhe do pedido com itens, setores, pagamento e logs principais.
+- [x] Filtro por status.
+- [x] Detalhe do pedido com itens, setores, pagamento e logs principais.
 - [x] Status de revisão, aprovado, cancelado e afins.
 - [ ] Histórico confiável entre devices.
 
@@ -131,23 +131,24 @@
 ### 11. Suporte e autosserviço
 
 - [ ] FAQs por evento e por checkout.
-- [ ] Central de ajuda / support surface.
-- [ ] Trilhas de autoatendimento para pedido, pagamento e ingresso.
-- [ ] Base para abrir solicitação de suporte.
-- [ ] Logs mínimos para investigação.
+- [x] Central de ajuda / support surface.
+- [x] Trilhas de autoatendimento para pedido, pagamento e ingresso.
+- [x] Base para abrir solicitação de suporte.
+- [x] Logs mínimos para investigação.
 
 ## Fase C — Backend real, produtor e operação
 
 ### 12. Domínios de backend
 
 - [x] Domínio de identidade/autenticação.
-- [ ] Domínio de catálogo de eventos.
+- [x] Domínio de catálogo de eventos.
 - [x] Domínio de inventário de assentos e setores.
 - [x] Domínio de pedidos.
 - [x] Domínio de pagamentos.
 - [x] Domínio de tickets.
 - [x] Domínio de notificações.
 - [ ] Domínio de suporte.
+- [x] Domínio de suporte.
 - [x] Domínio de analytics operacional.
 - [x] Fronteira de API local separando consumo do frontend e regras internas por domínio.
 
@@ -179,7 +180,7 @@
 - [x] Ligação com inventário.
 - [x] Ligação com tickets.
 - [x] Ligação com notificações.
-- [ ] Trilhas de auditoria.
+- [x] Trilhas de auditoria.
 
 ### 16. Emissão de tickets
 
@@ -191,6 +192,7 @@
 
 ### 17. Backoffice / operação
 
+- [x] Rota `/operacao` tratada como administracao da plataforma, separada do modulo do organizador.
 - [x] Backoffice para revisar pedidos.
 - [x] Aprovar ou negar pedidos corporativos.
 - [x] Cancelar pedidos.
@@ -198,12 +200,16 @@
 - [x] Consultar tickets.
 - [x] Consultar notificações.
 - [x] Consultar trilha de analytics operacional.
-- [ ] Runbooks de operação.
+- [x] Runbooks de operação.
 
 ### 18. Produtor / administração de eventos
 
-- [ ] CRUD de eventos real.
-- [ ] Publicação / despublicação.
+- [x] Módulo "Meus eventos" separado do backoffice operacional.
+- [x] Visão consolidada por evento com pedidos, receita, tickets e comunicação.
+- [x] Atalhos entre página pública, mapa/checkout e operação por evento.
+- [x] Navegação de organização coerente entre header, conta e operação.
+- [x] CRUD de eventos real.
+- [x] Publicação / despublicação.
 - [ ] Gerenciamento de venues e mapas.
 - [ ] Regras de lote, taxa e políticas.
 - [ ] Configuração de disponibilidade e sessões.
@@ -287,12 +293,16 @@
 - [x] Documentação operacional atualizada.
 - [x] Deploy estático validado com fallback SPA e política de cache coerente.
 
+## Ferramentas auxiliares locais
+
+- [x] CLI local `npm run eni` preparada para chat Gemini via terminal com suporte a `.env` e `.gemini`, arquivos de exemplo versionados, override de modelo, prompt externo versionavel, atalhos para Flash/Pro/auto-fallback e atalho local para o Gemini CLI.
+
 ## Ordem recomendada de execução
 
 - [x] Discovery e navegação
 - [x] PDP e checkout
 - [x] Conta e meus ingressos
 - [x] Backend real de inventário/pedido/pagamento/ticket
-- [ ] Backoffice
+- [x] Backoffice
 - [ ] SEO/SSR/edge
 - [ ] Growth, BI e otimização contínua

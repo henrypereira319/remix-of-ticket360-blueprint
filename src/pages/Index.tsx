@@ -8,7 +8,8 @@ import HeroBanner from "@/components/HeroBanner";
 import HighlightsCarousel from "@/components/HighlightsCarousel";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
-import { banners, events, highlights, marketplaceCategories, marketplaceCities } from "@/data/events";
+import { banners, highlights } from "@/data/events";
+import { useCatalogEvents } from "@/hooks/use-catalog-events";
 
 const categoryAnchor = (category: string) =>
   `categoria-${category
@@ -19,11 +20,48 @@ const categoryAnchor = (category: string) =>
     .replace(/^-+|-+$/g, "")}`;
 
 const Index = () => {
+  const { events, isLoading } = useCatalogEvents();
+
+  if (isLoading && events.length === 0) {
+    return (
+      <div className="min-h-screen bg-slate-50 text-slate-950">
+        <SiteHeader />
+        <main className="container flex min-h-[60vh] items-center justify-center py-10">
+          <div className="text-sm font-medium text-slate-600">Carregando catálogo...</div>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  if (events.length === 0) {
+    return (
+      <div className="min-h-screen bg-slate-50 text-slate-950">
+        <SiteHeader />
+        <main className="container flex min-h-[60vh] items-center justify-center py-10">
+          <div className="max-w-xl rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Catálogo público</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">Nenhum evento publicado agora</h1>
+            <p className="mt-3 text-sm leading-7 text-slate-600">
+              Quando houver eventos publicados no backend, a vitrine volta a carregar automaticamente nesta rota.
+            </p>
+          </div>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  const marketplaceCategories = Array.from(new Set(events.map((event) => event.category)));
+  const marketplaceCities = Array.from(new Set(events.map((event) => event.city)));
   const spotlightEvent = events.find((event) => event.seatMap.variant === "theater") ?? events[0];
   const topSellingEvents = [...events].sort((left, right) => right.priceFrom - left.priceFrom).slice(0, 5);
   const theaterEvents = events.filter((event) => event.seatMap.variant === "theater");
   const saoPauloEvents = events.filter((event) => event.city.includes("Sao Paulo")).slice(0, 5);
   const nightlifeEvents = events.filter((event) => ["Shows", "Festivais", "Experiencias"].includes(event.category)).slice(0, 5);
+  const publishedSlugs = new Set(events.map((event) => event.slug));
+  const visibleHighlights = highlights.filter((highlight) => publishedSlugs.has(highlight.href.split("/").filter(Boolean).at(-1) ?? ""));
+  const visibleBanners = banners.filter((banner) => publishedSlugs.has(banner.href.split("/").filter(Boolean).at(-1) ?? ""));
   const categoryCollections = marketplaceCategories
     .map((category) => ({
       category,
@@ -64,7 +102,7 @@ const Index = () => {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
-              <HighlightsCarousel highlights={highlights} />
+              <HighlightsCarousel highlights={visibleHighlights} />
             </section>
 
             <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
@@ -72,7 +110,7 @@ const Index = () => {
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Campanhas e turnês</p>
                 <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Banners com call mais comercial</h2>
               </div>
-              <HeroBanner banners={banners} />
+              <HeroBanner banners={visibleBanners} />
             </section>
           </div>
         </div>

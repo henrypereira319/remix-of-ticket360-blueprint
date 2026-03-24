@@ -13,6 +13,7 @@ const AccountDashboard = lazy(() => import("./pages/AccountDashboard.tsx"));
 const EventCheckout = lazy(() => import("./pages/EventCheckout.tsx"));
 const EventDetails = lazy(() => import("./pages/EventDetails.tsx"));
 const EventSeatExperience = lazy(() => import("./pages/EventSeatExperience.tsx"));
+const OrganizerEventsDashboard = lazy(() => import("./pages/OrganizerEventsDashboard.tsx"));
 const OperationsDashboard = lazy(() => import("./pages/OperationsDashboard.tsx"));
 
 const queryClient = new QueryClient();
@@ -38,6 +39,8 @@ const App = () => (
               <Route path="/eventos/:slug/checkout" element={<EventCheckout />} />
               <Route path="/conta/acesso" element={<AccountAccess />} />
               <Route path="/conta" element={<AccountDashboard />} />
+              <Route path="/organizador/meus-eventos" element={<OrganizerEventsDashboard />} />
+              <Route path="/produtor/meus-eventos" element={<OrganizerEventsDashboard />} />
               <Route path="/operacao" element={<OperationsDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

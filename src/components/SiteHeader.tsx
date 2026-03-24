@@ -2,8 +2,8 @@ import { ChevronDown, Menu, ShoppingCart, Ticket, User, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import EventSearchBox from "@/components/EventSearchBox";
-import { marketplaceCategories, marketplaceCities } from "@/data/events";
 import { useAuth } from "@/hooks/use-auth";
+import { useCatalogEvents } from "@/hooks/use-catalog-events";
 
 const categoryAnchor = (category: string) =>
   `#categoria-${category
@@ -16,8 +16,11 @@ const categoryAnchor = (category: string) =>
 const SiteHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { currentAccount, isAuthenticated } = useAuth();
+  const { events } = useCatalogEvents();
   const firstName = currentAccount?.fullName.split(" ")[0] ?? "Visitante";
-  const featuredCities = useMemo(() => marketplaceCities.slice(0, 4), []);
+  const marketplaceCategories = useMemo(() => Array.from(new Set(events.map((event) => event.category))), [events]);
+  const marketplaceCities = useMemo(() => Array.from(new Set(events.map((event) => event.city))), [events]);
+  const featuredCities = useMemo(() => marketplaceCities.slice(0, 4), [marketplaceCities]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
@@ -29,8 +32,11 @@ const SiteHeader = () => {
           </div>
           <div className="flex items-center gap-4">
             <span>Atendimento</span>
+            <Link to={isAuthenticated ? "/produtor/meus-eventos" : "/conta/acesso"} className="transition-colors hover:text-white">
+              Meus eventos
+            </Link>
             <Link to={isAuthenticated ? "/operacao" : "/conta/acesso"} className="transition-colors hover:text-white">
-              Central do produtor
+              Admin da plataforma
             </Link>
             <span>Ajuda</span>
           </div>
@@ -133,11 +139,18 @@ const SiteHeader = () => {
                 {isAuthenticated ? "Abrir minha conta" : "Entrar ou cadastrar"}
               </Link>
               <Link
+                to={isAuthenticated ? "/produtor/meus-eventos" : "/conta/acesso"}
+                onClick={() => setMenuOpen(false)}
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-800"
+              >
+                Meus eventos
+              </Link>
+              <Link
                 to={isAuthenticated ? "/operacao" : "/conta/acesso"}
                 onClick={() => setMenuOpen(false)}
                 className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-800"
               >
-                Central de operacao
+                Admin da plataforma
               </Link>
             </div>
 
