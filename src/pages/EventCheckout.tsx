@@ -24,6 +24,7 @@ import {
   getSelectionSummary,
   parseSeatIdsParam,
   parseTicketCategoriesParam,
+  type SelectedSeatSummary,
   sanitizeSelectedSeatIds,
   sanitizeTicketCategories,
   ticketCategoryMeta,
@@ -71,7 +72,7 @@ const checkoutSchema = z.object({
 type CheckoutValues = z.infer<typeof checkoutSchema>;
 
 const buildCheckoutDefaults = (
-  items: Array<{ label: string }>,
+  ticketCount: number,
   account?: {
     fullName: string;
     email: string;
@@ -87,7 +88,7 @@ const buildCheckoutDefaults = (
   city: account?.city ?? "",
   paymentMethod: "pix",
   installments: "1x",
-  tickets: items.map((_, index) => ({
+  tickets: Array.from({ length: ticketCount }, (_, index) => ({
     holderName: index === 0 ? account?.fullName ?? "" : "",
     document: index === 0 ? account?.document ?? "" : "",
   })),
@@ -104,6 +105,32 @@ const EventCheckout = () => {
   const holdToken = searchParams.get("hold");
   const { baseEvent, event, isLoading } = useEventRuntime(slug, holdToken);
 
+  const rawSeatIds = parseSeatIdsParam(searchParams.get("assentos"));
+  const selectedSeatIds = event ? sanitizeSelectedSeatIds(event, rawSeatIds) : [];
+  const removedSeatCount = rawSeatIds.length - selectedSeatIds.length;
+  const ticketCategories = event
+    ? sanitizeTicketCategories(event, selectedSeatIds, parseTicketCategoriesParam(searchParams.get("tipos")))
+    : {};
+  const selection: SelectedSeatSummary = event
+    ? getSelectionSummary(event, selectedSeatIds, ticketCategories)
+    : { items: [], total: 0 };
+  const pricing = getCheckoutPricing(selection.total, selection.items.length);
+  const defaultFormValues = useMemo(
+    () => buildCheckoutDefaults(selection.items.length, currentAccount),
+    [currentAccount, selection.items.length],
+  );
+
+  const form = useForm<CheckoutValues>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: defaultFormValues,
+  });
+
+  const paymentMethod = form.watch("paymentMethod");
+
+  useEffect(() => {
+    form.reset(defaultFormValues);
+  }, [defaultFormValues, form]);
+
   if (!baseEvent && !isLoading) {
     return <NotFound />;
   }
@@ -115,26 +142,6 @@ const EventCheckout = () => {
       </div>
     );
   }
-
-  const rawSeatIds = parseSeatIdsParam(searchParams.get("assentos"));
-  const selectedSeatIds = sanitizeSelectedSeatIds(event, rawSeatIds);
-  const removedSeatCount = rawSeatIds.length - selectedSeatIds.length;
-  const ticketCategories = sanitizeTicketCategories(event, selectedSeatIds, parseTicketCategoriesParam(searchParams.get("tipos")));
-  const selection = getSelectionSummary(event, selectedSeatIds, ticketCategories);
-  const pricing = getCheckoutPricing(selection.total, selection.items.length);
-
-  const form = useForm<CheckoutValues>({
-    resolver: zodResolver(checkoutSchema),
-    defaultValues: buildCheckoutDefaults(selection.items, currentAccount),
-  });
-
-  const paymentMethod = form.watch("paymentMethod");
-  const selectionKey = selectedSeatIds.join("|");
-  const accountKey = currentAccount ? `${currentAccount.id}:${currentAccount.updatedAt}` : "guest";
-
-  useEffect(() => {
-    form.reset(buildCheckoutDefaults(selection.items, currentAccount));
-  }, [accountKey, form, selectionKey]);
 
   if (selection.items.length === 0) {
     return (
