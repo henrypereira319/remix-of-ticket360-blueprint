@@ -98,6 +98,73 @@ const run = async () => {
       );
     }
 
+    const authRegisterResponse = await fetch(`${baseUrl}/api/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fullName: "HTTP Buyer",
+        email: `http-buyer-${suffix}@example.com`,
+        document: "12345678900",
+        phone: "11999999999",
+        city: "Sao Paulo / SP",
+        password: "senha123",
+      }),
+    });
+    const authRegister = await authRegisterResponse.json();
+
+    if (!authRegisterResponse.ok) {
+      throw new Error(
+        `Auth register falhou com status ${authRegisterResponse.status}: ${authRegister.error ?? JSON.stringify(authRegister)}`,
+      );
+    }
+
+    const authLoginResponse = await fetch(`${baseUrl}/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: `http-buyer-${suffix}@example.com`,
+        password: "senha123",
+      }),
+    });
+    const authLogin = await authLoginResponse.json();
+
+    if (!authLoginResponse.ok) {
+      throw new Error(
+        `Auth login falhou com status ${authLoginResponse.status}: ${authLogin.error ?? JSON.stringify(authLogin)}`,
+      );
+    }
+
+    const accountId = authLogin?.account?.id;
+
+    if (!accountId) {
+      throw new Error("Login remoto nao devolveu um accountId valido.");
+    }
+
+    const authProfileUpdateResponse = await fetch(`${baseUrl}/api/accounts/${accountId}/profile`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fullName: "HTTP Buyer Updated",
+        email: `http-buyer-${suffix}@example.com`,
+        document: "12345678900",
+        phone: "11999999999",
+        city: "Campinas / SP",
+      }),
+    });
+    const authProfileUpdate = await authProfileUpdateResponse.json();
+
+    if (!authProfileUpdateResponse.ok) {
+      throw new Error(
+        `Auth profile update falhou com status ${authProfileUpdateResponse.status}: ${authProfileUpdate.error ?? JSON.stringify(authProfileUpdate)}`,
+      );
+    }
+
     const catalogPublicationResponse = await fetch(`${baseUrl}/api/catalog/publication-state`, {
       method: "POST",
       headers: {
@@ -142,7 +209,7 @@ const run = async () => {
       body: JSON.stringify({
         eventSnapshot: runtimeEvent,
         seatIds: ["plateia-a-a1"],
-        accountId: "local-account-1",
+        accountId,
       }),
     });
     const hold = await holdResponse.json();
@@ -322,7 +389,7 @@ const run = async () => {
         ],
         paymentMethod: "pix",
         installments: "1x",
-        accountId: "local-account-1",
+        accountId,
         holdToken: hold.holdToken,
       }),
     });
@@ -338,7 +405,7 @@ const run = async () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        accountId: "local-account-1",
+        accountId,
         orderId: order.id,
         category: "ticket",
         subject: "Ticket nao apareceu na wallet",
@@ -356,6 +423,7 @@ const run = async () => {
     const backofficeResponse = await fetch(`${baseUrl}/api/backoffice`);
     const backoffice = await backofficeResponse.json();
     const [
+      accountProfileResponse,
       accountOrdersResponse,
       accountPaymentsResponse,
       accountTicketsResponse,
@@ -363,12 +431,14 @@ const run = async () => {
       accountSupportCasesResponse,
     ] =
       await Promise.all([
-        fetch(`${baseUrl}/api/accounts/local-account-1/orders`),
-        fetch(`${baseUrl}/api/accounts/local-account-1/payments`),
-        fetch(`${baseUrl}/api/accounts/local-account-1/tickets`),
-        fetch(`${baseUrl}/api/accounts/local-account-1/notifications`),
-        fetch(`${baseUrl}/api/accounts/local-account-1/support-cases`),
+        fetch(`${baseUrl}/api/accounts/${accountId}/profile`),
+        fetch(`${baseUrl}/api/accounts/${accountId}/orders`),
+        fetch(`${baseUrl}/api/accounts/${accountId}/payments`),
+        fetch(`${baseUrl}/api/accounts/${accountId}/tickets`),
+        fetch(`${baseUrl}/api/accounts/${accountId}/notifications`),
+        fetch(`${baseUrl}/api/accounts/${accountId}/support-cases`),
       ]);
+    const accountProfile = await accountProfileResponse.json();
     const accountOrders = await accountOrdersResponse.json();
     const accountPayments = await accountPaymentsResponse.json();
     const accountTickets = await accountTicketsResponse.json();
@@ -382,6 +452,7 @@ const run = async () => {
     }
 
     if (
+      !accountProfileResponse.ok ||
       !accountOrdersResponse.ok ||
       !accountPaymentsResponse.ok ||
       !accountTicketsResponse.ok ||
@@ -389,6 +460,23 @@ const run = async () => {
       !accountSupportCasesResponse.ok
     ) {
       throw new Error("Leituras remotas da conta falharam.");
+    }
+
+    const authLogoutResponse = await fetch(`${baseUrl}/api/auth/logout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        accountId,
+      }),
+    });
+    const authLogout = await authLogoutResponse.json();
+
+    if (!authLogoutResponse.ok) {
+      throw new Error(
+        `Auth logout falhou com status ${authLogoutResponse.status}: ${authLogout.error ?? JSON.stringify(authLogout)}`,
+      );
     }
 
     console.log("backend http smoke ok");
@@ -436,6 +524,13 @@ const run = async () => {
             caseId: supportCase.id,
             status: supportCase.status,
             category: supportCase.category,
+          },
+          auth: {
+            accountId,
+            registeredProvider: authRegister?.account?.provider ?? null,
+            updatedCity: authProfileUpdate?.city ?? null,
+            activityCount: accountProfile?.activity?.length ?? 0,
+            logoutOk: authLogout?.ok ?? false,
           },
           summary: backoffice.summary,
           orders: backoffice.orders?.length ?? 0,

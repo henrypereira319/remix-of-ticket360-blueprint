@@ -239,12 +239,14 @@ const AccountDashboard = () => {
     });
   };
 
-  const handleSubmit = (values: ProfileValues) => {
+  const accountActivity = auth.currentAccount.activity.slice(0, 8);
+
+  const handleSubmit = async (values: ProfileValues) => {
     try {
-      auth.updateProfile(values);
+      await auth.updateProfile(values);
       toast({
         title: "Cadastro atualizado",
-        description: "Os dados da sua conta foram salvos neste ambiente local.",
+        description: "Os dados da sua conta foram salvos e sincronizados com o backend quando disponivel.",
       });
     } catch (error) {
       toast({
@@ -304,7 +306,8 @@ const AccountDashboard = () => {
                 </div>
                 <h1 className="font-display text-3xl font-semibold text-foreground">{auth.currentAccount.fullName}</h1>
                 <p className="text-sm leading-6 text-muted-foreground">
-                  Gestao de dados cadastrais, historico de registros da conta e area reservada para Google OAuth.
+                  Gestao de dados cadastrais, historico da conta e trilhas pos-compra com leitura remota quando o
+                  backend estiver ativo.
                 </p>
               </div>
 
@@ -330,10 +333,10 @@ const AccountDashboard = () => {
                       <p className="font-semibold">Guardrails desta base</p>
                     </div>
                     <p className="text-sm leading-6 text-muted-foreground">
-                      Esta gestao de contas funciona localmente para desenvolvimento. A autenticacao real, validacao de
-                      credenciais e login federado precisam ser fechados no backend.
+                      Esta area da conta agora roda em modo remote-first para cadastro, login e atualizacao de perfil.
+                      Auth federado, ownership final e hardening de producao continuam como proximo passo.
                     </p>
-                    <Button type="button" variant="outline" className="w-full" onClick={() => auth.logout()}>
+                    <Button type="button" variant="outline" className="w-full" onClick={() => void auth.logout()}>
                       <LogOut className="w-4 h-4" />
                       Encerrar sessao
                     </Button>
@@ -351,12 +354,12 @@ const AccountDashboard = () => {
         </Card>
 
         <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-          <Card className="border-border bg-card">
-            <CardHeader>
-              <CardTitle className="font-display text-2xl">Dados cadastrais</CardTitle>
-              <CardDescription>Edite os dados basicos da sua conta sem sair da base atual.</CardDescription>
-            </CardHeader>
-            <CardContent>
+            <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="font-display text-2xl">Dados cadastrais</CardTitle>
+                <CardDescription>Edite os dados basicos da sua conta sem sair da area autenticada.</CardDescription>
+              </CardHeader>
+              <CardContent>
               <Form {...profileForm}>
                 <form className="grid gap-4 md:grid-cols-2" onSubmit={profileForm.handleSubmit(handleSubmit)}>
                   <FormField
@@ -439,10 +442,36 @@ const AccountDashboard = () => {
 
           <div className="space-y-4">
             <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="font-display text-2xl">Atividade da conta</CardTitle>
+                <CardDescription>Ultimos eventos de cadastro, acesso e alteracao deste perfil.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {accountActivity.length > 0 ? (
+                  accountActivity.map((activity) => (
+                    <div key={activity.id} className="rounded-md border border-border bg-background p-4">
+                      <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm font-semibold text-foreground">{activity.message}</p>
+                          <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">{activity.type}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{formatDateTime(activity.createdAt)}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-md bg-background px-4 py-3 text-sm leading-6 text-muted-foreground">
+                    Ainda nao existem eventos de atividade registrados para esta conta.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-card">
               <CardHeader className="space-y-3">
                 <div>
                   <CardTitle className="font-display text-2xl">Pedidos e checkouts</CardTitle>
-                  <CardDescription>Historico local com filtro por status e detalhe completo por pedido.</CardDescription>
+                  <CardDescription>Historico da conta com filtro por status e detalhe completo por pedido.</CardDescription>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {orderStatusFilters.map((filter) => (

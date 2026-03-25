@@ -108,7 +108,7 @@
 - [x] Filtro por status.
 - [x] Detalhe do pedido com itens, setores, pagamento e logs principais.
 - [x] Status de revisão, aprovado, cancelado e afins.
-- [ ] Histórico confiável entre devices.
+- [x] Histórico confiável entre devices.
 
 ### 9. Meus ingressos / wallet
 

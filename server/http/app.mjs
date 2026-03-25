@@ -1,6 +1,13 @@
 import crypto from "node:crypto";
 import express from "express";
 import {
+  appendCustomerAccountLogoutInDb,
+  getCustomerAccountByIdFromDb,
+  loginCustomerAccountInDb,
+  registerCustomerAccountInDb,
+  updateCustomerAccountProfileInDb,
+} from "../domain/auth-backend.mjs";
+import {
   listNotificationsByLocalAccountId,
   listOrdersByLocalAccountId,
   listPaymentsByLocalAccountId,
@@ -64,6 +71,19 @@ const asUuidOrNull = (value) =>
     ? value
     : null;
 
+const resolveProfileAccountId = async (accountId) => {
+  const candidateId = asUuidOrNull(accountId);
+
+  if (!candidateId) {
+    return null;
+  }
+
+  return withDbClient(async (client) => {
+    const result = await client.query("select id from public.profiles where id = $1 limit 1", [candidateId]);
+    return result.rows[0]?.id ?? null;
+  });
+};
+
 export const createApp = () => {
   const app = express();
 
@@ -106,6 +126,32 @@ export const createApp = () => {
       service: "ticketing-backend",
       now: new Date().toISOString(),
     });
+  });
+
+  app.post("/api/auth/register", async (request, response, next) => {
+    try {
+      const result = await registerCustomerAccountInDb(request.body, withActor(request));
+      response.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/auth/login", async (request, response, next) => {
+    try {
+      const result = await loginCustomerAccountInDb(request.body, withActor(request));
+      response.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/auth/logout", async (request, response, next) => {
+    try {
+      response.json(await appendCustomerAccountLogoutInDb(request.body?.accountId, withActor(request)));
+    } catch (error) {
+      next(error);
+    }
   });
 
   app.get("/api/backoffice", async (_request, response, next) => {
@@ -297,6 +343,7 @@ export const createApp = () => {
     try {
       const eventSnapshot = request.body?.eventSnapshot;
       const selectedSeatKeys = Array.isArray(request.body?.seatIds) ? request.body.seatIds : [];
+      const profileAccountId = await resolveProfileAccountId(request.body?.accountId);
       const synced = await syncEventSnapshot(eventSnapshot);
       const hold = await withDbClient(async (client) => {
         const seatResult = await client.query(
@@ -320,7 +367,7 @@ export const createApp = () => {
           {
             sessionId: synced.session.id,
             seatIds: dbSeatIds,
-            accountId: asUuidOrNull(request.body?.accountId),
+            accountId: profileAccountId,
             ttlMs: request.body?.ttlMs,
             metadata: {
               sourceSlug: eventSnapshot?.slug ?? null,
@@ -354,6 +401,7 @@ export const createApp = () => {
   app.post("/api/orders", async (request, response, next) => {
     try {
       const eventSnapshot = request.body?.event;
+      const profileAccountId = await resolveProfileAccountId(request.body?.accountId);
       const synced = await syncEventSnapshot(eventSnapshot);
       const selectedSeatKeys = Array.isArray(request.body?.selectedSeatIds) ? request.body.selectedSeatIds : [];
       const selectedTicketCategories = request.body?.ticketCategories ?? {};
@@ -394,7 +442,7 @@ export const createApp = () => {
           {
             sessionId: synced.session.id,
             holdToken: request.body?.holdToken ?? null,
-            accountId: asUuidOrNull(request.body?.accountId),
+            accountId: profileAccountId,
             paymentMethod: request.body?.paymentMethod,
             installments: request.body?.installments ?? "1x",
             buyer: request.body?.buyer,
@@ -453,6 +501,22 @@ export const createApp = () => {
     }
   });
 
+  app.get("/api/accounts/:accountId/profile", async (request, response, next) => {
+    try {
+      response.json(await getCustomerAccountByIdFromDb(request.params.accountId));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.put("/api/accounts/:accountId/profile", async (request, response, next) => {
+    try {
+      response.json(await updateCustomerAccountProfileInDb(request.params.accountId, request.body, withActor(request)));
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.get("/api/accounts/:accountId/payments", async (request, response, next) => {
     try {
       response.json(await listPaymentsByLocalAccountId(request.params.accountId));
@@ -487,9 +551,10 @@ export const createApp = () => {
 
   app.post("/api/support/cases", async (request, response, next) => {
     try {
+      const profileAccountId = await resolveProfileAccountId(request.body?.accountId);
       const supportCase = await createSupportCaseInDb(
         {
-          accountId: asUuidOrNull(request.body?.accountId),
+          accountId: profileAccountId,
           orderId: asUuidOrNull(request.body?.orderId),
           category: request.body?.category,
           subject: request.body?.subject,

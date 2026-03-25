@@ -131,6 +131,44 @@ export const getCurrentAccount = (storage = createStorage()) => {
   return getStoredAccounts(storage).find((account) => account.id === session.accountId) ?? null;
 };
 
+export const replaceStoredAccount = (account: AccountRecord, storage = createStorage()) => {
+  const accounts = getStoredAccounts(storage);
+  const accountIndex = accounts.findIndex((candidate) => candidate.id === account.id);
+
+  if (accountIndex === -1) {
+    writeJson(ACCOUNTS_STORAGE_KEY, [account, ...accounts], storage);
+    return account;
+  }
+
+  const nextAccounts = [...accounts];
+  nextAccounts[accountIndex] = account;
+  writeJson(ACCOUNTS_STORAGE_KEY, nextAccounts, storage);
+  return account;
+};
+
+export const setStoredSession = (session: AccountSession | null, storage = createStorage()) => {
+  if (!session) {
+    removeValue(SESSION_STORAGE_KEY, storage);
+    return;
+  }
+
+  writeJson(SESSION_STORAGE_KEY, session, storage);
+};
+
+export const persistRemoteAuthSnapshot = (
+  account: AccountRecord,
+  session: AccountSession,
+  storage = createStorage(),
+) => {
+  replaceStoredAccount(account, storage);
+  setStoredSession(session, storage);
+  return { account, session };
+};
+
+export const clearStoredSession = (storage = createStorage()) => {
+  removeValue(SESSION_STORAGE_KEY, storage);
+};
+
 export const registerAccount = (input: RegisterAccountInput, storage = createStorage()) => {
   const accounts = getStoredAccounts(storage);
   const normalizedEmail = normalizeEmail(input.email);

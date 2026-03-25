@@ -1,12 +1,12 @@
 Progress snapshot derived from rodamap-definitivo.md
-Date: 2026-03-23
+Date: 2026-03-24
 Workspace: C:\Users\hedge\OneDrive\Desktop\remix-of-ticket360-blueprint
 Canonical execution guide: checklist-roadmap.md
 
 Overall status (estimated)
 - Phase A: 71%
-- Phase B: 71%
-- Phase C: 85%
+- Phase B: 76%
+- Phase C: 87%
 - Phase D: 14%
 
 What is already materially implemented
@@ -111,6 +111,13 @@ What is already materially implemented
 - The HTTP backend now exposes support-case creation plus account-scoped support-case listing.
 - The account area now exposes a support surface with operational FAQs, self-service trails and a form to open support requests tied to the account and, optionally, to an order.
 - Local and remote API contracts now cover support-case creation and account history, and the HTTP smoke suite validates support case creation end-to-end.
+
+15. Remote-first account authentication and cross-device history
+- A dedicated customer-account backend now exists in Postgres with remote password registration, login, profile update and logout activity logging.
+- The HTTP backend now exposes `register`, `login`, `logout` and account profile read/update routes for the buyer account surface.
+- The React auth provider now operates in remote-first mode, persisting the returned account/session locally only as a client cache and falling back to the old local auth flow if the backend is unavailable.
+- The account area now shows recent account activity and profile updates synced from the backend when available.
+- Orders, payments, tickets, notifications and support cases can now be revisited across devices as long as the buyer signs into the same remote-backed account.
 
 What is partially implemented
 1. Checkout orchestration

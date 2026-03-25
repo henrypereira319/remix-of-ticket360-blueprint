@@ -1,3 +1,4 @@
+export * from "@/server/api/auth.api";
 export * from "@/server/api/analytics.api";
 export * from "@/server/api/catalog.api";
 export * from "@/server/api/inventory.api";

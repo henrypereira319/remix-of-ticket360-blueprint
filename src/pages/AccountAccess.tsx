@@ -67,12 +67,12 @@ const AccountAccess = () => {
     return <Navigate to="/conta" replace />;
   }
 
-  const handleLogin = (values: LoginValues) => {
+  const handleLogin = async (values: LoginValues) => {
     try {
-      auth.login(values);
+      await auth.login(values);
       toast({
         title: "Acesso liberado",
-        description: "Sua conta foi autenticada com sucesso.",
+        description: "Sua conta foi autenticada com sucesso e sincronizada com o backend quando disponivel.",
       });
       navigate("/conta");
     } catch (error) {
@@ -84,9 +84,9 @@ const AccountAccess = () => {
     }
   };
 
-  const handleRegister = (values: RegisterValues) => {
+  const handleRegister = async (values: RegisterValues) => {
     try {
-      auth.register({
+      await auth.register({
         fullName: values.fullName,
         email: values.email,
         document: values.document,
@@ -96,7 +96,7 @@ const AccountAccess = () => {
       });
       toast({
         title: "Conta criada",
-        description: "Seu cadastro foi salvo e a sessao ja esta ativa neste navegador.",
+        description: "Seu cadastro foi salvo e a sessao ja esta ativa, com persistencia remota quando o backend estiver configurado.",
       });
       navigate("/conta");
     } catch (error) {
@@ -123,8 +123,8 @@ const AccountAccess = () => {
                 </div>
                 <h1 className="font-display text-3xl font-semibold text-foreground">Entrar ou criar conta</h1>
                 <p className="text-sm leading-6 text-muted-foreground">
-                  O cadastro fica ligado ao fluxo atual da plataforma e ja deixa um ponto reservado para integrarmos o
-                  Google OAuth depois.
+                  O cadastro agora pode operar em modo remote-first para testes entre devices, mantendo um fallback
+                  local enquanto a autenticacao definitiva evolui.
                 </p>
               </div>
 
@@ -138,7 +138,7 @@ const AccountAccess = () => {
                   <Card className="border-border bg-background">
                     <CardHeader>
                       <CardTitle className="font-display text-xl">Acesse sua conta</CardTitle>
-                      <CardDescription>Use email e senha para entrar no ambiente local desta base.</CardDescription>
+                      <CardDescription>Use email e senha para entrar na area da conta com sincronizacao remota quando disponivel.</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <Form {...loginForm}>
@@ -171,7 +171,7 @@ const AccountAccess = () => {
                             )}
                           />
 
-                          <Button type="submit" className="w-full">
+                          <Button type="submit" className="w-full" disabled={loginForm.formState.isSubmitting}>
                             Entrar
                           </Button>
                         </form>
@@ -288,7 +288,7 @@ const AccountAccess = () => {
                           />
 
                           <div className="md:col-span-2">
-                            <Button type="submit" className="w-full">
+                            <Button type="submit" className="w-full" disabled={registerForm.formState.isSubmitting}>
                               Criar conta
                             </Button>
                           </div>
@@ -306,11 +306,12 @@ const AccountAccess = () => {
                   <CardContent className="space-y-3 p-6">
                     <h2 className="font-display text-2xl font-semibold text-foreground">O que entra nesta etapa</h2>
                     <p className="text-sm leading-6 text-muted-foreground">
-                      Cadastro local, login, sessao persistida neste navegador e area reservada para login federado.
+                      Cadastro por email e senha, login, sincronizacao remote-first para testes definitivos e area
+                      reservada para login federado.
                     </p>
                     <div className="space-y-2">
-                      <div className="rounded-md bg-background px-3 py-2 text-sm text-foreground">Dados cadastrais do usuario</div>
-                      <div className="rounded-md bg-background px-3 py-2 text-sm text-foreground">Registro de acessos e alteracoes</div>
+                      <div className="rounded-md bg-background px-3 py-2 text-sm text-foreground">Dados cadastrais do usuario com persistencia remota</div>
+                      <div className="rounded-md bg-background px-3 py-2 text-sm text-foreground">Registro de acessos e alteracoes da conta</div>
                       <div className="rounded-md bg-background px-3 py-2 text-sm text-foreground">Espaco pronto para Google OAuth</div>
                     </div>
                   </CardContent>

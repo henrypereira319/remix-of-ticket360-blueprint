@@ -483,4 +483,21 @@
   </g>
 </g></svg>
 
-aqui possui ambas as coisas necessarias, vetores e assentos
+A INTI desenhou a planta baixa inteira usando polígonos e agrupamentos de vetores direto no código. A imagem de fundo é, literalmente, tudo o que sobra quando você arranca as cadeiras
+A planta está dividida na estrutura do SVG. Aqui está o primeiro pedaço do fundo,
+
+<g id="PALCO_EXTRAS">
+    <g id="PALCO_EXTRAS_Area">
+      <path id="area" fill="#666666" d="M1603.784,1831.766..."></path>
+      </g>
+    <g id="PALCO_EXTRAS_Extra">
+      <text ...>Palco</text>
+      <text ...>Técnica</text>
+    </g>
+  </g>
+
+"Esse grupo desenha o palco cinza e os textos fixos. Não tem cadeiras aí, "Depois, a planta desenha o 'chão' colorido de cada setor antes de colocar os assentos em cima. Olha dentro do grupo <g id="Anfiteatro">. A primeira coisa que ele faz é desenhar a área vermelha do setor:"
+
+"E lá no final de cada setor, depois daquele bloco gigantesco chamado <g id="Anfiteatro_Area_de_Assentos">, tem as legendas impressas na planta, os quadradinhos que dizem o que é cada coisa," I continued, tracing further down the screen. "As tags <g id="Anfiteatro_Legendas">, <g id="Galeria_Legendas">.
+
+"Para você criar o seu teatro-municipal-background.svg limpo e leve, você pega todo esse código gigante que você colou e deleta absolutamente todas as tags <g data-seatarea="true">. Você arranca fora cada <path> que tenha o atributo data-seat-id. O que sobrar—o palco, os fundos coloridos como aquele fill="#ED1C24", as linhas das paredes, as legendas e os textos—é a sua planta baixa vetorial."
