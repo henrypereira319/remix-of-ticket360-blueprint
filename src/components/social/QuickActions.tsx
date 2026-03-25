@@ -21,12 +21,12 @@ const QuickActions = ({ counts }: QuickActionsProps) => {
   ];
 
   return (
-    <div className="flex items-center justify-around px-4 py-3">
+    <div className="grid grid-cols-4 gap-3 px-4 py-3 lg:px-0 lg:py-0">
       {actions.map((action) => (
         <button
           key={action.label}
           onClick={action.onClick}
-          className="group flex flex-col items-center gap-1.5"
+          className="group flex flex-col items-center gap-1.5 rounded-[1.5rem] border border-white/5 bg-surface/55 px-2 py-3 transition-colors hover:bg-surface-elevated lg:items-start lg:gap-3 lg:px-4 lg:py-4"
         >
           <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-social/30 bg-surface text-social transition-colors group-active:bg-social/10">
             {action.icon}
@@ -36,7 +36,7 @@ const QuickActions = ({ counts }: QuickActionsProps) => {
               </span>
             ) : null}
           </div>
-          <span className="text-[10px] font-medium text-muted-foreground">
+          <span className="text-[10px] font-medium text-muted-foreground lg:text-xs">
             {action.label}
           </span>
         </button>

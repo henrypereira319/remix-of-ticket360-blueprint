@@ -58,8 +58,8 @@ const BarPage = () => {
   };
 
   return (
-    <div className="space-y-4 safe-top">
-      <div className="flex items-center gap-3 px-4 pt-4">
+    <div className="space-y-4 safe-top lg:px-6 lg:pb-6">
+      <div className="flex items-center gap-3 px-4 pt-4 lg:px-0 lg:pt-6">
         <button onClick={() => navigate(-1)} className="rounded-lg p-1.5 text-muted-foreground active:bg-surface">
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -77,8 +77,7 @@ const BarPage = () => {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 px-4">
+      <div className="flex gap-1 px-4 lg:px-0">
         <button
           onClick={() => setTab("menu")}
           className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
@@ -98,32 +97,73 @@ const BarPage = () => {
       </div>
 
       {tab === "menu" ? (
-        <>
-          {/* Category filter */}
-          <div className="flex gap-1.5 overflow-x-auto px-4 scrollbar-none">
-            {(Object.keys(categoryLabels) as Category[]).map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition-colors ${
-                  category === cat ? "bg-social text-social-foreground" : "bg-surface text-muted-foreground"
-                }`}
-              >
-                {categoryLabels[cat]}
-              </button>
-            ))}
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6">
+          <div className="space-y-4">
+            <div className="flex gap-1.5 overflow-x-auto px-4 scrollbar-none lg:px-0">
+              {(Object.keys(categoryLabels) as Category[]).map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategory(cat)}
+                  className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition-colors ${
+                    category === cat ? "bg-social text-social-foreground" : "bg-surface text-muted-foreground"
+                  }`}
+                >
+                  {categoryLabels[cat]}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid gap-2 px-4 lg:px-0 xl:grid-cols-2">
+              {filteredItems.map((item) => (
+                <BarItemCard key={item.id} item={item} onAdd={addToCart} />
+              ))}
+            </div>
           </div>
 
-          {/* Items */}
-          <div className="space-y-2 px-4">
-            {filteredItems.map((item) => (
-              <BarItemCard key={item.id} item={item} onAdd={addToCart} />
-            ))}
-          </div>
+          <aside className="hidden lg:block">
+            <div className="sticky top-8 space-y-4 rounded-[1.75rem] border border-white/5 bg-surface/70 p-5">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-social">Carrinho atual</p>
+                <h2 className="mt-2 text-lg font-semibold text-foreground">
+                  {cartCount > 0 ? `${cartCount} itens selecionados` : "Monte seu pedido"}
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Adicione consumíveis do cardápio para confirmar seu pedido sem fila.
+                </p>
+              </div>
 
-          {/* Cart footer */}
+              {cart.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="space-y-2 rounded-2xl bg-background/55 p-4">
+                    {cart.map(({ item, quantity }) => (
+                      <div key={item.id} className="flex items-center justify-between gap-3 text-sm">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-foreground">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">{quantity}x no carrinho</p>
+                        </div>
+                        <p className="font-semibold text-primary">R$ {(item.price * quantity).toFixed(2)}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleOrder}
+                    className="flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    <span>Confirmar pedido</span>
+                    <span>R$ {cartTotal.toFixed(2)}</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-border bg-background/35 p-4 text-sm leading-6 text-muted-foreground">
+                  Os itens adicionados aparecem aqui com subtotal e CTA final de compra.
+                </div>
+              )}
+            </div>
+          </aside>
+
           {cartCount > 0 && (
-            <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-lg safe-bottom">
+            <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-lg safe-bottom lg:hidden">
               <button
                 onClick={handleOrder}
                 className="flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground active:bg-primary/80"
@@ -133,16 +173,18 @@ const BarPage = () => {
               </button>
             </div>
           )}
-        </>
+        </div>
       ) : (
-        <div className="space-y-3 px-4 pb-6">
+        <div className="space-y-3 px-4 pb-6 lg:px-0">
           {orders.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-12 text-center">
               <ShoppingBag className="h-10 w-10 text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground">Nenhum pedido ainda</p>
             </div>
           ) : (
-            orders.map((order) => <BarOrderCard key={order.id} order={order} />)
+            <div className="grid gap-3 xl:grid-cols-2">
+              {orders.map((order) => <BarOrderCard key={order.id} order={order} />)}
+            </div>
           )}
         </div>
       )}

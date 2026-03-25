@@ -1,19 +1,11 @@
-import { Home, Users, Ticket, Map, User } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { socialNavTabs } from "@/components/social/navigation";
 import { cn } from "@/lib/utils";
 
-const tabs = [
-  { to: "/app", icon: Home, label: "Home" },
-  { to: "/app/amigos", icon: Users, label: "Amigos" },
-  { to: "/app/tickets", icon: Ticket, label: "Ticket's" },
-  { to: "/app/mapa", icon: Map, label: "Mapa" },
-  { to: "/app/perfil", icon: User, label: "Perfil" },
-] as const;
-
 const BottomNav = () => (
-  <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg safe-bottom">
+  <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg safe-bottom lg:hidden">
     <div className="mx-auto flex h-16 max-w-md items-center justify-around px-2">
-      {tabs.map(({ to, icon: Icon, label }) => (
+      {socialNavTabs.map(({ to, icon: Icon, label }) => (
         <NavLink
           key={to}
           to={to}
