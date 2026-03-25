@@ -56,6 +56,14 @@ export default {
         separator: "hsl(var(--color-separator))",
         "calendar-day": "hsl(var(--color-calendar-day))",
         "venue-bg": "hsl(var(--color-venue-bg))",
+        social: {
+          DEFAULT: "hsl(var(--social))",
+          foreground: "hsl(var(--social-foreground))",
+        },
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          elevated: "hsl(var(--surface-elevated))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
