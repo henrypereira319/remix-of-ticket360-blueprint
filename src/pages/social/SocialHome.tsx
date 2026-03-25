@@ -57,13 +57,13 @@ const SocialHome = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 px-4 md:grid-cols-3 lg:px-0 xl:grid-cols-3 2xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-4 px-4 md:grid-cols-3 lg:px-0 xl:grid-cols-3 2xl:grid-cols-4">
             {activeTab === "eventos"
-              ? mockSocialEvents.map((event) => (
-                  <SocialEventCard key={event.id} event={event} />
+              ? mockSocialEvents.map((event, index) => (
+                  <SocialEventCard key={event.id} event={event} index={index} />
                 ))
-              : mockFeedItems.map((item) => (
-                  <FeedCard key={item.id} item={item} />
+              : mockFeedItems.map((item, index) => (
+                  <FeedCard key={item.id} item={item} index={index} />
                 ))}
           </div>
         </div>
