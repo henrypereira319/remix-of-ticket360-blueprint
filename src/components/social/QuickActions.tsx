@@ -26,7 +26,7 @@ const QuickActions = ({ counts }: QuickActionsProps) => {
         <button
           key={action.label}
           onClick={action.onClick}
-          className="group flex flex-col items-center gap-1.5 rounded-[1.5rem] border border-white/5 bg-surface/55 px-2 py-3 transition-colors hover:bg-surface-elevated lg:items-start lg:gap-3 lg:px-4 lg:py-4"
+          className="group flex flex-col items-center gap-1.5 bg-transparent px-2 py-3 transition-transform hover:-translate-y-0.5 lg:items-start lg:gap-3 lg:px-1 lg:py-1"
         >
           <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-social/30 bg-surface text-social transition-colors group-active:bg-social/10">
             {action.icon}

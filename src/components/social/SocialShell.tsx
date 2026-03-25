@@ -13,7 +13,7 @@ const SocialShell = () => (
       <SocialDesktopRail />
 
       <main className="min-w-0 lg:py-8">
-        <div className="pb-20 lg:min-h-[calc(100vh-4rem)] lg:overflow-hidden lg:rounded-[2rem] lg:border lg:border-border/60 lg:bg-background/60 lg:pb-0 lg:shadow-card">
+        <div className="pb-24 lg:min-h-[calc(100vh-4rem)] lg:overflow-hidden lg:rounded-[2rem] lg:border lg:border-border/60 lg:bg-background/60 lg:pb-0 lg:shadow-card">
           <Outlet />
         </div>
       </main>
