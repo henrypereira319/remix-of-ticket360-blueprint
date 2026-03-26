@@ -1,0 +1,30 @@
+MANUAL DE IMPORTAÇÃO E INTEGRAÇÃO DE MAPAS SYMPLA BILETO
+(Criado por Agent ENI para garantir resiliência contratual e tipagem estrita no futuro)
+
+Este documento dita as regras, dependências arquiteturais e os passos extatos para importar novos teatros sem causar regressões de tipagem do TypeScript, assincronia de scripts paralelos ou contratos no SeatMap Loader.
+
+PASSO 1: O SCRAPING REAL (REST API, NÃO DOM)
+1. Nós não usamos scraping de DOM (SVG visual na mão extraído das divs). Toda importação baseia-se em interceptar as chamadas XHR no sistema Sympla Bileto via Network tab do navegador autenticado.
+2. Você deve salvar os payloads extraídos para o diretório local isolado (`/temp_assets/`). São eles:
+   - "schematic.json" (contém o schema background: imagens base, textos legados de fundo e polígonos originais)
+   - "seats.json" (contém a coleção bruta de assentos: ids, status real-time, seção e coordenadas espaciais)
+   AVISO CRÍTICO: Não se deixe enganar se o seats.json no Network estiver paginado. Frequentemente, a bilheteria retorna cada setor numa requests avulsa. Aglutine as respostas ou puxe o dump maestro se o manifesto estiver indicando lugares a menos (ex: VIP de 439 vs Teatro de 1450).
+
+PASSO 2: O MOTOR DE INGESTÃO (A ÚNICA FONTE DA VERDADE)
+1. O único ambiente canônico para processar transformações é um módulo Node.JS isolado referenciado nativamente no `package.json` (Exemplo da arquitetura ideal: `"import:bradesco": "node scripts/import_bradesco_map.js"`). Em hipótese alguma coexista scripts `.py`, `.js` e `.ts` cumprindo o mesmo papel.
+2. Regras do Pipeline do Ingestor JS:
+   - "type": "module" definido por padrão no ambiente Vite. Logo, utilize sempre imports puros do ESM: `import fs from "node:fs/promises"`.
+   - As flags semânticas vindo do Bileto (`AVAILABLE`, `ACCESSIBLE_AVAILABLE`) devem ser transcritas estritamente para o dicionário contido no app: `available`, `accessible`, `sold`.
+   - O Contrato Estrutural Geométrico (O BUG P1): O arquivo estático exportado não é um Array puro! O componente UI e o `seat-map-loader.ts` aguardam a envelopagem base. Ao assinar a geometria JSON para a tag `/public/maps`, é mandatório envolvê-lo em: `JSON.stringify({ seats: normalizedSeats })`.
+
+PASSO 3: MANIFESTO GERADO E A CORRETUDE DE TIPAGEM DO TYPESCRIPT 
+1. Após a normalização geométrica, e ejeção do background SVG estático (para o diretório genérico `public/seatmaps`), o app dita seu consumo por um Manifesto (ex. `src/data/teatroBradescoManifest.ts`).
+2. NUNCA utilize `"as const"` na finalização do módulo de manifesto ou templates literais de geração. Fazer isso instanciará as listas como tuplas Readonly. Quando a aplicação for assinar `{...} as const` no `EventSeatMap`, o Compilador lançará um Error estático negando a injeção ao Array nativo. NUNCA SILENCIE ESSA TRAVA NO CATÁLOGO! (Nada de `as unknown as EventSeatMap` no sources).
+3. A melhor abordagem no Ingestor: Force a inferência declarando a anotação natural nativa nas dependências locais quando for escrevê-lo: 
+   "import type { EventSeatMap } from '@/data/events';
+   export const newMapaOficial: EventSeatMap = { ... };"
+
+PASSO 4: VERIFICAÇÃO CEGA
+1. Insira imediatamente o `Command Action` em `package.json`.
+2. Inclua o import gerado em `events.ts`.
+3. Valide o contrato criando uma spec unitária sem usar o seat-map-loader. Teste a tipagem com parsing seco (File reading puro no Vitest) assegurando a hierarquia `geometry.seats` > 0.
