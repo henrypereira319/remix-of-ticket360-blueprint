@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import MiniCalendar from "./MiniCalendar";
 import VenueTag from "./VenueTag";
+import { ParticleTextEffect } from "@/components/ui/particle-text-effect";
 import type { EventData } from "@/data/events";
 
 interface EventCardProps {
@@ -8,6 +9,8 @@ interface EventCardProps {
 }
 
 const EventCard = ({ event }: EventCardProps) => {
+  const hasParticleTitle = event.title === "Roda de Samba - Edicao Verao" && event.venueName === "Espaco Cultural";
+
   return (
     <Link
       to={`/eventos/${event.slug}`}
@@ -53,16 +56,36 @@ const EventCard = ({ event }: EventCardProps) => {
           </div>
         </div>
 
-        <div>
-          <VenueTag name={event.venueName} icon={event.venueIcon} />
-        </div>
+        {hasParticleTitle ? (
+          <div className="space-y-3">
+            <div className="overflow-hidden rounded-[1.25rem] border border-slate-900/10 bg-slate-950 p-2 shadow-[0_14px_40px_-28px_rgba(15,23,42,0.8)]">
+              <ParticleTextEffect
+                words={["Roda de Samba", "Edicao Verao", "ESPACO CULTURAL"]}
+                width={540}
+                height={112}
+                fontFamily="Plus Jakarta Sans, Arial"
+                className="min-h-0 bg-transparent p-0"
+                canvasClassName="w-full rounded-[0.95rem] border border-white/10 bg-transparent shadow-none"
+                showHelperText={false}
+                backgroundFill="rgba(2, 6, 23, 0.18)"
+              />
+            </div>
+            <p className="line-clamp-2 text-sm leading-6 text-slate-600">{event.summary}</p>
+          </div>
+        ) : (
+          <>
+            <div>
+              <VenueTag name={event.venueName} icon={event.venueIcon} />
+            </div>
 
-        <div className="space-y-2">
-          <h3 className="line-clamp-2 text-base font-semibold leading-snug text-slate-950 font-body">
-            {event.title}
-          </h3>
-          <p className="line-clamp-2 text-sm leading-6 text-slate-600">{event.summary}</p>
-        </div>
+            <div className="space-y-2">
+              <h3 className="line-clamp-2 text-base font-semibold leading-snug text-slate-950 font-body">
+                {event.title}
+              </h3>
+              <p className="line-clamp-2 text-sm leading-6 text-slate-600">{event.summary}</p>
+            </div>
+          </>
+        )}
 
         <div className="flex items-end justify-between gap-3 border-t border-slate-100 pt-3">
           <div>
