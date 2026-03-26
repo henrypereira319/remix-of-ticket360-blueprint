@@ -141,6 +141,10 @@ interface ParticleTextEffectProps {
   backgroundFill?: string;
   drawAsPoints?: boolean;
   autoAdvanceFrames?: number;
+  lineHeight?: number;
+  particleColor?: { r: number; g: number; b: number };
+  clearOnFrame?: boolean;
+  spawnRadius?: number;
 }
 
 const DEFAULT_WORDS = ["HELLO", "21st.dev", "ParticleTextEffect", "BY", "KAINXU"];
@@ -157,6 +161,10 @@ export function ParticleTextEffect({
   backgroundFill = "rgba(0, 0, 0, 0.1)",
   drawAsPoints = true,
   autoAdvanceFrames = 240,
+  lineHeight = 1.1,
+  particleColor,
+  clearOnFrame = false,
+  spawnRadius,
 }: ParticleTextEffectProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -207,8 +215,11 @@ export function ParticleTextEffect({
     };
 
     const resolveFont = (word: string) => {
+      const lines = word.split("\n").filter(Boolean);
+      const longestLine = lines.reduce((longest, line) => (line.length > longest.length ? line : longest), lines[0] ?? word);
       const fittedSize =
-        fontSize ?? Math.max(22, Math.min(height * 0.58, width / Math.max(word.length * 0.58, 1)));
+        fontSize ??
+        Math.max(18, Math.min((height * 0.72) / Math.max(lines.length, 1), width / Math.max(longestLine.length * 0.62, 1)));
 
       return `800 ${Math.floor(fittedSize)}px ${fontFamily}`;
     };
@@ -228,12 +239,30 @@ export function ParticleTextEffect({
       offscreenCtx.font = resolveFont(word);
       offscreenCtx.textAlign = "center";
       offscreenCtx.textBaseline = "middle";
-      offscreenCtx.fillText(word, canvas.width / 2, canvas.height / 2);
+      const lines = word.split("\n").filter(Boolean);
+      const font = resolveFont(word);
+      const fontMatch = font.match(/(\d+)px/);
+      const resolvedFontSize = fontMatch ? Number(fontMatch[1]) : fontSize ?? 32;
+
+      offscreenCtx.font = font;
+
+      if (lines.length <= 1) {
+        offscreenCtx.fillText(word, canvas.width / 2, canvas.height / 2);
+      } else {
+        const totalHeight = resolvedFontSize * lineHeight * (lines.length - 1);
+        lines.forEach((line, index) => {
+          offscreenCtx.fillText(
+            line,
+            canvas.width / 2,
+            canvas.height / 2 - totalHeight / 2 + index * resolvedFontSize * lineHeight,
+          );
+        });
+      }
 
       const imageData = offscreenCtx.getImageData(0, 0, canvas.width, canvas.height);
       const pixels = imageData.data;
 
-      const newColor = {
+      const newColor = particleColor ?? {
         r: Math.random() * 255,
         g: Math.random() * 255,
         b: Math.random() * 255,
@@ -267,7 +296,11 @@ export function ParticleTextEffect({
           } else {
             particle = new Particle();
 
-            const randomPos = generateRandomPos(canvas.width / 2, canvas.height / 2, (canvas.width + canvas.height) / 2);
+            const randomPos = generateRandomPos(
+              canvas.width / 2,
+              canvas.height / 2,
+              spawnRadius ?? (canvas.width + canvas.height) / 2,
+            );
             particle.pos.x = randomPos.x;
             particle.pos.y = randomPos.y;
 
@@ -298,8 +331,12 @@ export function ParticleTextEffect({
     };
 
     const animate = () => {
-      ctx.fillStyle = backgroundFill;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (clearOnFrame) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = backgroundFill;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
 
       for (let i = particles.length - 1; i >= 0; i--) {
         const particle = particles[i];
@@ -326,7 +363,7 @@ export function ParticleTextEffect({
       }
 
       frameCountRef.current++;
-      if (frameCountRef.current % autoAdvanceFrames === 0) {
+      if (autoAdvanceFrames > 0 && words.length > 1 && frameCountRef.current % autoAdvanceFrames === 0) {
         wordIndexRef.current = (wordIndexRef.current + 1) % words.length;
         nextWord(words[wordIndexRef.current]);
       }
@@ -357,8 +394,12 @@ export function ParticleTextEffect({
       event.preventDefault();
     };
 
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (clearOnFrame) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.fillStyle = backgroundFill;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
     nextWord(words[0]);
     animate();
 
@@ -376,7 +417,20 @@ export function ParticleTextEffect({
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("contextmenu", handleContextMenu);
     };
-  }, [autoAdvanceFrames, backgroundFill, drawAsPoints, fontFamily, fontSize, height, width, words]);
+  }, [
+    autoAdvanceFrames,
+    backgroundFill,
+    clearOnFrame,
+    drawAsPoints,
+    fontFamily,
+    fontSize,
+    height,
+    lineHeight,
+    particleColor,
+    spawnRadius,
+    width,
+    words,
+  ]);
 
   return (
     <div className={cn("flex flex-col items-center justify-center min-h-screen bg-black p-4", className)}>
