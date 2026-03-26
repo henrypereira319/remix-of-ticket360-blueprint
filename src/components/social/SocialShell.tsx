@@ -200,7 +200,7 @@ const SocialShell = () => {
               key={activeBackgroundVideo}
               ref={videoRef}
               aria-hidden="true"
-              className={`pointer-events-none fixed inset-0 z-[5] h-full w-full scale-[1.02] object-cover transition-opacity duration-1000 ease-out ${
+              className={`pointer-events-none fixed inset-0 z-[5] h-full w-full scale-100 object-cover transition-opacity duration-1000 ease-out md:scale-[1.02] ${
                 videoReady ? "opacity-100" : "opacity-0"
               }`}
               autoPlay
