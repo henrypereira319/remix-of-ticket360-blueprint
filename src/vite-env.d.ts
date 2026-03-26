@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_BACKEND_URL?: string;
+  readonly VITE_GOOGLE_MAPS_API_KEY?: string;
   readonly VITE_GOOGLE_OAUTH_ENABLED?: string;
   readonly VITE_GOOGLE_OAUTH_CLIENT_ID?: string;
   readonly VITE_SUPABASE_URL: string;
@@ -47,5 +48,6 @@ interface Window {
     accounts: {
       id: GoogleAccountsIdApi;
     };
+    maps?: any;
   };
 }
