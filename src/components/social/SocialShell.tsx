@@ -50,8 +50,14 @@ const SocialShell = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const direction = routeIndex === previousRouteIndexRef.current ? 0 : routeIndex > previousRouteIndexRef.current ? 1 : -1;
   const isHome = location.pathname === "/app";
-  const [canUseVideoBackground, setCanUseVideoBackground] = useState(true);
-  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [canUseVideoBackground, setCanUseVideoBackground] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
+  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 768px)").matches;
+  });
   const [videoReady, setVideoReady] = useState(false);
   const activeBackgroundVideo = isMobileViewport ? backgroundVideoMobileMp4 : backgroundVideoMp4;
 
@@ -73,7 +79,7 @@ const SocialShell = () => {
 
     const updatePreference = () => {
       const slowConnection = connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g";
-      setCanUseVideoBackground(!mediaQuery.matches && !connection?.saveData && !slowConnection);
+      setCanUseVideoBackground(!mediaQuery.matches && !slowConnection);
       setIsMobileViewport(viewportQuery.matches);
     };
 
@@ -110,6 +116,13 @@ const SocialShell = () => {
     const video = videoRef.current;
     if (!video) return;
 
+    video.defaultMuted = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "true");
+
     const syncPlayback = () => {
       if (document.hidden) {
         video.pause();
@@ -132,6 +145,29 @@ const SocialShell = () => {
       video.pause();
     };
   }, [activeBackgroundVideo, canUseVideoBackground, isHome]);
+
+  useEffect(() => {
+    if (!isHome || !canUseVideoBackground) return;
+
+    const tryResumePlayback = () => {
+      const video = videoRef.current;
+      if (!video || document.hidden || !video.paused) return;
+
+      video.play().catch(() => {
+        // Some mobile browsers require a more explicit user gesture. We'll keep listening until one succeeds.
+      });
+    };
+
+    window.addEventListener("touchstart", tryResumePlayback, { passive: true });
+    window.addEventListener("pointerdown", tryResumePlayback, { passive: true });
+    window.addEventListener("scroll", tryResumePlayback, { passive: true });
+
+    return () => {
+      window.removeEventListener("touchstart", tryResumePlayback);
+      window.removeEventListener("pointerdown", tryResumePlayback);
+      window.removeEventListener("scroll", tryResumePlayback);
+    };
+  }, [canUseVideoBackground, isHome]);
 
   const handleVideoReady = () => {
     if (videoRef.current) {
@@ -164,7 +200,7 @@ const SocialShell = () => {
               loop
               muted
               playsInline
-              preload="auto"
+              preload={isMobileViewport ? "metadata" : "auto"}
               src={activeBackgroundVideo}
               poster={backgroundVideoPoster}
               disablePictureInPicture
