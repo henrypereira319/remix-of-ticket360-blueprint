@@ -12,6 +12,10 @@ interface AuthResponse {
   session: AccountSession;
 }
 
+interface GoogleAuthInput {
+  credential: string;
+}
+
 export const hasRemoteAuth = hasConfiguredBackendUrl;
 
 export const registerAccountRemote = async (input: RegisterAccountInput) =>
@@ -22,6 +26,12 @@ export const registerAccountRemote = async (input: RegisterAccountInput) =>
 
 export const loginAccountRemote = async (input: LoginAccountInput) =>
   requestBackendJson<AuthResponse>("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+
+export const loginAccountWithGoogleRemote = async (input: GoogleAuthInput) =>
+  requestBackendJson<AuthResponse>("/api/auth/google", {
     method: "POST",
     body: JSON.stringify(input),
   });

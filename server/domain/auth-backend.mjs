@@ -3,15 +3,16 @@ import { withDbClient } from "../db/client.mjs";
 import { appendAuditLog, asObject, asNullableText } from "./helpers.mjs";
 
 const normalizeEmail = (email) => String(email ?? "").trim().toLowerCase();
+const configuredGoogleOAuthClientId = process.env.GOOGLE_OAUTH_CLIENT_ID ?? process.env.VITE_GOOGLE_OAUTH_CLIENT_ID ?? "";
 
 const hashPassword = (password, salt) =>
   crypto.scryptSync(String(password ?? ""), salt, 64, {
     maxmem: 128 * 1024 * 1024,
   }).toString("hex");
 
-const buildSession = (account) => ({
+const buildSession = (account, providerOverride = account.provider) => ({
   accountId: account.id,
-  provider: account.provider,
+  provider: providerOverride,
   email: account.email,
   fullName: account.fullName,
   signedInAt: new Date().toISOString(),
@@ -67,6 +68,36 @@ const appendAccountActivity = async (client, { accountId, type, message, metadat
     `,
     [accountId, type, message, JSON.stringify(asObject(metadata))],
   );
+};
+
+const verifyGoogleCredential = async (credential) => {
+  const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(String(credential ?? ""))}`);
+
+  if (!response.ok) {
+    throw new Error("Nao foi possivel validar a credencial Google.");
+  }
+
+  const payload = await response.json();
+  const email = normalizeEmail(payload.email);
+
+  if (!email) {
+    throw new Error("A credencial Google nao trouxe um email valido.");
+  }
+
+  if (payload.email_verified !== "true") {
+    throw new Error("O email da conta Google precisa estar verificado.");
+  }
+
+  if (configuredGoogleOAuthClientId && payload.aud !== configuredGoogleOAuthClientId) {
+    throw new Error("A credencial Google nao pertence a este aplicativo.");
+  }
+
+  return {
+    googleSub: String(payload.sub ?? ""),
+    email,
+    fullName: String(payload.name ?? "").trim() || email,
+    picture: typeof payload.picture === "string" ? payload.picture : null,
+  };
 };
 
 export const registerCustomerAccountInDb = async (input, actor = {}) =>
@@ -185,6 +216,117 @@ export const loginCustomerAccountInDb = async (input, actor = {}) =>
       session: buildSession(hydratedAccount),
     };
   });
+
+export const loginCustomerAccountWithGoogleInDb = async (credential, actor = {}) => {
+  const googleProfile = await verifyGoogleCredential(credential);
+
+  return withDbClient(async (client) => {
+    const accountResult = await client.query("select * from public.customer_accounts where email = $1 limit 1", [googleProfile.email]);
+    const existingAccount = accountResult.rows[0];
+    let accountId = existingAccount?.id ?? null;
+
+    if (!existingAccount) {
+      const createdResult = await client.query(
+        `
+          insert into public.customer_accounts (
+            full_name,
+            email,
+            provider,
+            metadata
+          )
+          values ($1, $2, 'google', $3::jsonb)
+          returning *
+        `,
+        [
+          googleProfile.fullName,
+          googleProfile.email,
+          JSON.stringify({
+            source: "google-oauth",
+            googleSub: googleProfile.googleSub,
+            picture: googleProfile.picture,
+          }),
+        ],
+      );
+
+      accountId = createdResult.rows[0]?.id ?? null;
+
+      if (!accountId) {
+        throw new Error("Nao foi possivel criar a conta Google no backend.");
+      }
+
+      await appendAccountActivity(client, {
+        accountId,
+        type: "registered",
+        message: "Conta criada com Google no backend.",
+        metadata: {
+          provider: "google",
+        },
+      });
+      await appendAuditLog(client, {
+        actorType: actor.actorType ?? "system",
+        actorId: actor.actorId ?? null,
+        actorEmail: actor.actorEmail ?? googleProfile.email,
+        action: "customer.account.registered_google",
+        targetTable: "customer_accounts",
+        targetId: accountId,
+        context: {
+          email: googleProfile.email,
+        },
+      });
+    } else {
+      if (!existingAccount.is_active) {
+        throw new Error("Esta conta esta inativa.");
+      }
+
+      await client.query(
+        `
+          update public.customer_accounts
+          set
+            full_name = $2,
+            updated_at = timezone('utc'::text, now()),
+            metadata = coalesce(metadata, '{}'::jsonb) || $3::jsonb
+          where id = $1
+        `,
+        [
+          existingAccount.id,
+          googleProfile.fullName,
+          JSON.stringify({
+            googleSub: googleProfile.googleSub,
+            picture: googleProfile.picture,
+            lastGoogleLoginAt: new Date().toISOString(),
+          }),
+        ],
+      );
+      accountId = existingAccount.id;
+    }
+
+    await appendAccountActivity(client, {
+      accountId,
+      type: "login",
+      message: "Login realizado com Google no backend.",
+      metadata: {
+        actorType: actor.actorType ?? "account",
+      },
+    });
+    await appendAuditLog(client, {
+      actorType: "account",
+      actorId: accountId,
+      actorEmail: googleProfile.email,
+      action: "customer.account.login_google",
+      targetTable: "customer_accounts",
+      targetId: accountId,
+      context: {
+        googleSub: googleProfile.googleSub,
+      },
+    });
+
+    const hydratedAccount = await readAccountWithActivity(client, accountId);
+    return {
+      account: hydratedAccount,
+      session: buildSession(hydratedAccount, "google"),
+    };
+  });
+};
 
 export const getCustomerAccountByIdFromDb = async (accountId) =>
   withDbClient(async (client) => readAccountWithActivity(client, accountId));

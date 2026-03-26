@@ -1,4 +1,8 @@
+import { config as loadEnv } from "dotenv";
 import { startHttpServer } from "./app.mjs";
+
+loadEnv({ path: ".env.local", override: false });
+loadEnv({ override: false });
 
 const run = async () => {
   const port = Number(process.env.PORT ?? 8787);

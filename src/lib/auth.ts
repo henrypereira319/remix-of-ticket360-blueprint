@@ -49,6 +49,16 @@ export interface UpdateAccountProfileInput {
   city: string;
 }
 
+export interface GoogleIdentityProfile {
+  sub: string;
+  email: string;
+  fullName: string;
+  givenName?: string;
+  familyName?: string;
+  picture?: string;
+  emailVerified: boolean;
+}
+
 const ACCOUNTS_STORAGE_KEY = "ticket360.accounts";
 const SESSION_STORAGE_KEY = "ticket360.session";
 
@@ -96,6 +106,17 @@ const removeValue = (key: string, storage = createStorage()) => {
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
+const decodeBase64Url = (value: string) => {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=");
+
+  if (typeof atob === "function") {
+    return atob(padded);
+  }
+
+  return Buffer.from(padded, "base64").toString("utf-8");
+};
+
 const createActivity = (type: AccountActivity["type"], message: string): AccountActivity => ({
   id: createId(),
   type,
@@ -113,6 +134,36 @@ export const createDemoPasswordHash = (email: string, password: string) => {
   }
 
   return Math.abs(hash).toString(36);
+};
+
+export const parseGoogleIdentityCredential = (credential: string): GoogleIdentityProfile => {
+  const payloadSegment = credential.split(".")[1];
+
+  if (!payloadSegment) {
+    throw new Error("Token Google invalido.");
+  }
+
+  const payload = JSON.parse(decodeBase64Url(payloadSegment)) as Record<string, unknown>;
+  const email = typeof payload.email === "string" ? normalizeEmail(payload.email) : "";
+  const fullName = typeof payload.name === "string" ? payload.name.trim() : "";
+
+  if (!email) {
+    throw new Error("A conta Google nao retornou um email valido.");
+  }
+
+  if (!fullName) {
+    throw new Error("A conta Google nao retornou o nome do usuario.");
+  }
+
+  return {
+    sub: typeof payload.sub === "string" ? payload.sub : email,
+    email,
+    fullName,
+    givenName: typeof payload.given_name === "string" ? payload.given_name : undefined,
+    familyName: typeof payload.family_name === "string" ? payload.family_name : undefined,
+    picture: typeof payload.picture === "string" ? payload.picture : undefined,
+    emailVerified: payload.email_verified === true || payload.email_verified === "true",
+  };
 };
 
 export const getStoredAccounts = (storage = createStorage()) =>
@@ -314,4 +365,68 @@ export const logoutAccount = (storage = createStorage()) => {
   }
 
   removeValue(SESSION_STORAGE_KEY, storage);
+};
+
+export const loginWithGoogleAccount = (profile: GoogleIdentityProfile, storage = createStorage()) => {
+  if (!profile.emailVerified) {
+    throw new Error("O email da conta Google precisa estar verificado.");
+  }
+
+  const accounts = getStoredAccounts(storage);
+  const normalizedEmail = normalizeEmail(profile.email);
+  const accountIndex = accounts.findIndex((account) => normalizeEmail(account.email) === normalizedEmail);
+  const timestamp = new Date().toISOString();
+
+  if (accountIndex >= 0) {
+    const existingAccount = accounts[accountIndex];
+    const updatedAccount: AccountRecord = {
+      ...existingAccount,
+      fullName: profile.fullName || existingAccount.fullName,
+      email: normalizedEmail,
+      updatedAt: timestamp,
+      activity: [createActivity("login", "Login realizado com Google."), ...existingAccount.activity],
+    };
+
+    const updatedAccounts = [...accounts];
+    updatedAccounts[accountIndex] = updatedAccount;
+
+    const session: AccountSession = {
+      accountId: updatedAccount.id,
+      provider: "google",
+      email: updatedAccount.email,
+      fullName: updatedAccount.fullName,
+      signedInAt: timestamp,
+    };
+
+    writeJson(ACCOUNTS_STORAGE_KEY, updatedAccounts, storage);
+    writeJson(SESSION_STORAGE_KEY, session, storage);
+
+    return { account: updatedAccount, session };
+  }
+
+  const account: AccountRecord = {
+    id: createId(),
+    fullName: profile.fullName,
+    email: normalizedEmail,
+    document: "",
+    phone: "",
+    city: "",
+    provider: "google",
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    activity: [createActivity("registered", "Conta criada com Google.")],
+  };
+
+  const session: AccountSession = {
+    accountId: account.id,
+    provider: "google",
+    email: account.email,
+    fullName: account.fullName,
+    signedInAt: timestamp,
+  };
+
+  writeJson(ACCOUNTS_STORAGE_KEY, [...accounts, account], storage);
+  writeJson(SESSION_STORAGE_KEY, session, storage);
+
+  return { account, session };
 };

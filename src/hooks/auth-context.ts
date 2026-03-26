@@ -7,6 +7,7 @@ export interface AuthContextValue {
   isAuthenticated: boolean;
   register: (input: RegisterAccountInput) => Promise<AccountRecord>;
   login: (input: LoginAccountInput) => Promise<AccountRecord>;
+  loginWithGoogle: (credential: string) => Promise<AccountRecord>;
   logout: () => Promise<void>;
   updateProfile: (input: UpdateAccountProfileInput) => Promise<AccountRecord>;
 }

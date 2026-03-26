@@ -4,6 +4,7 @@ import {
   appendCustomerAccountLogoutInDb,
   getCustomerAccountByIdFromDb,
   loginCustomerAccountInDb,
+  loginCustomerAccountWithGoogleInDb,
   registerCustomerAccountInDb,
   updateCustomerAccountProfileInDb,
 } from "../domain/auth-backend.mjs";
@@ -140,6 +141,15 @@ export const createApp = () => {
   app.post("/api/auth/login", async (request, response, next) => {
     try {
       const result = await loginCustomerAccountInDb(request.body, withActor(request));
+      response.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/auth/google", async (request, response, next) => {
+    try {
+      const result = await loginCustomerAccountWithGoogleInDb(request.body?.credential, withActor(request));
       response.json(result);
     } catch (error) {
       next(error);

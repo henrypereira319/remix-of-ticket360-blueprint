@@ -5,7 +5,9 @@ import {
   getStoredAccounts,
   getStoredSession,
   loginAccount,
+  loginWithGoogleAccount,
   logoutAccount,
+  parseGoogleIdentityCredential,
   persistRemoteAuthSnapshot,
   replaceStoredAccount,
   registerAccount,
@@ -16,6 +18,7 @@ import {
   getAccountProfileRemote,
   hasRemoteAuth,
   loginAccountRemote,
+  loginAccountWithGoogleRemote,
   logoutAccountRemote,
   registerAccountRemote,
   updateAccountProfileRemote,
@@ -100,6 +103,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       result = loginAccount(input);
+      syncSnapshot();
+      return result.account;
+    },
+    loginWithGoogle: async (credential) => {
+      let result;
+
+      if (hasRemoteAuth) {
+        try {
+          result = await loginAccountWithGoogleRemote({ credential });
+          persistRemoteAuthSnapshot(result.account, result.session);
+          syncSnapshot();
+          return result.account;
+        } catch (error) {
+          console.warn("Falha ao autenticar com Google no backend remoto, usando fallback local.", error);
+        }
+      }
+
+      const profile = parseGoogleIdentityCredential(credential);
+      result = loginWithGoogleAccount(profile);
       syncSnapshot();
       return result.account;
     },

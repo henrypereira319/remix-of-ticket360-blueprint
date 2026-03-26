@@ -312,7 +312,7 @@ const AccountAccess = () => {
                     <div className="space-y-2">
                       <div className="rounded-md bg-background px-3 py-2 text-sm text-foreground">Dados cadastrais do usuario com persistencia remota</div>
                       <div className="rounded-md bg-background px-3 py-2 text-sm text-foreground">Registro de acessos e alteracoes da conta</div>
-                      <div className="rounded-md bg-background px-3 py-2 text-sm text-foreground">Espaco pronto para Google OAuth</div>
+                      <div className="rounded-md bg-background px-3 py-2 text-sm text-foreground">Login Google ativo com validacao de token</div>
                     </div>
                   </CardContent>
                 </Card>
