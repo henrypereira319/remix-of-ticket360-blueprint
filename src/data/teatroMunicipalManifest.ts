@@ -1,4 +1,6 @@
-export const teatroMunicipalManifest = {
+import type { EventSeatMap } from "@/data/events";
+
+export const teatroMunicipalManifest: EventSeatMap = {
   "venueId": "teatro-municipal",
   "geometryPath": "/maps/teatro-municipal-geometry.json",
   "backgroundAssetPath": "/seatmaps/teatro-municipal-background.svg",
@@ -128,4 +130,4 @@ export const teatroMunicipalManifest = {
       "selectable": 0
     }
   }
-} as const;
+};

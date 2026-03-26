@@ -887,8 +887,8 @@ const createTheaterSeatMap = (options: { hallName: string; stageLabel: string })
   };
 };
 
-const teatroMunicipalOfficialSeatMap: EventSeatMap = teatroMunicipalManifest as unknown as EventSeatMap;
-const teatroBradescoOfficialSeatMap: EventSeatMap = teatroBradescoManifest as unknown as EventSeatMap;
+const teatroMunicipalOfficialSeatMap: EventSeatMap = teatroMunicipalManifest;
+const teatroBradescoOfficialSeatMap: EventSeatMap = teatroBradescoManifest;
 
 const createEventDetailsContent = (event: Omit<EventData, "details">, overrides: EventDetailsOverrides): EventDetailsContent => ({
   organizer: overrides.organizer,
