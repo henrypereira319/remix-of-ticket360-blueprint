@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLocation, useOutlet } from "react-router-dom";
 import BottomNav from "@/components/social/BottomNav";
@@ -7,6 +7,11 @@ import SocialDesktopRail from "@/components/social/SocialDesktopRail";
 
 const backgroundImage =
   "https://lh3.googleusercontent.com/aida/ADBb0ujjRIWQIYy1FeWu-Mtq7SifGiLts-cv6qhQbB6-NWCURug0u3T2q7nbr4eCxQFg_DXSd7IgXJOZQSvOWzlowBvTHXeUdcC3GNpu_1ETi6GPcPQbS-UJU344RNPn-43y6hdlG59zopaEV_w1tEN9JQU7u1a9v24Pd1Qzt9UJo52r4a_gyrggFmqfHXGNr2RoPv-iS_fY63Px45QJs1-qDnQyoWgLcAqkUv_bnWRRGgpLpnocx0h4RSalKBl4jrA8v6Kc02BAOkjKicY";
+const backgroundVideoMobileWebm = "/media/travis-fein-live-bg-mobile.webm";
+const backgroundVideoMobileMp4 = "/media/travis-fein-live-bg-mobile.mp4";
+const backgroundVideoWebm = "/media/travis-fein-live-bg.webm";
+const backgroundVideoMp4 = "/media/travis-fein-live-bg-optimized.mp4";
+const backgroundVideoPoster = "/media/travis-fein-live-bg-poster.webp";
 
 const pageTransition = {
   center: {
@@ -44,22 +49,127 @@ const SocialShell = () => {
   const location = useLocation();
   const routeIndex = getSocialRouteIndex(location.pathname);
   const previousRouteIndexRef = useRef(routeIndex);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const direction = routeIndex === previousRouteIndexRef.current ? 0 : routeIndex > previousRouteIndexRef.current ? 1 : -1;
   const isHome = location.pathname === "/app";
+  const [canUseVideoBackground, setCanUseVideoBackground] = useState(true);
+  const [videoReady, setVideoReady] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {
     previousRouteIndexRef.current = routeIndex;
   }, [routeIndex]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const connection = navigator.connection as
+      | {
+          saveData?: boolean;
+          effectiveType?: string;
+          addEventListener?: (type: string, listener: () => void) => void;
+          removeEventListener?: (type: string, listener: () => void) => void;
+        }
+      | undefined;
+
+    const updatePreference = () => {
+      const slowConnection = connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g";
+      setCanUseVideoBackground(!mediaQuery.matches && !connection?.saveData && !slowConnection);
+    };
+
+    updatePreference();
+
+    const handleMediaChange = () => updatePreference();
+    mediaQuery.addEventListener("change", handleMediaChange);
+    connection?.addEventListener?.("change", handleMediaChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleMediaChange);
+      connection?.removeEventListener?.("change", handleMediaChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isHome) {
+      setVideoReady(false);
+      setVideoFailed(false);
+    }
+  }, [isHome]);
+
+  useEffect(() => {
+    if (!isHome || !canUseVideoBackground || videoFailed) {
+      videoRef.current?.pause();
+      return;
+    }
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    const syncPlayback = () => {
+      if (document.hidden) {
+        video.pause();
+        return;
+      }
+
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => setVideoFailed(true));
+      }
+    };
+
+    syncPlayback();
+    document.addEventListener("visibilitychange", syncPlayback);
+
+    return () => {
+      document.removeEventListener("visibilitychange", syncPlayback);
+      video.pause();
+    };
+  }, [canUseVideoBackground, isHome, videoFailed]);
+
+  const handleVideoReady = () => {
+    if (videoRef.current) {
+      videoRef.current.defaultPlaybackRate = 0.82;
+      videoRef.current.playbackRate = 0.82;
+    }
+    setVideoReady(true);
+  };
 
   return (
     <div className={`relative min-h-screen overflow-x-hidden text-foreground ${isHome ? "bg-transparent" : "bg-background"}`}>
       {isHome ? (
         <div className="app-nocturne relative isolate min-h-screen overflow-x-hidden font-['Manrope'] text-foreground">
           <div
-            className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${backgroundImage})` }}
+            className="pointer-events-none fixed inset-0 z-0 bg-black bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${backgroundVideoPoster}), url(${backgroundImage})` }}
           />
-          <div className="pointer-events-none fixed inset-0 z-10 bg-black/40" />
+          {canUseVideoBackground && !videoFailed ? (
+            <video
+              ref={videoRef}
+              aria-hidden="true"
+              className={`pointer-events-none fixed inset-0 z-[5] h-full w-full scale-[1.02] object-cover transition-opacity duration-1000 ease-out ${
+                videoReady ? "opacity-100" : "opacity-0"
+              }`}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              poster={backgroundVideoPoster}
+              disablePictureInPicture
+              disableRemotePlayback
+              onCanPlay={handleVideoReady}
+              onLoadedData={handleVideoReady}
+              onPlaying={handleVideoReady}
+              onError={() => setVideoFailed(true)}
+              style={{ willChange: "transform, opacity" }}
+            >
+              <source media="(max-width: 768px)" src={backgroundVideoMobileWebm} type="video/webm" />
+              <source media="(max-width: 768px)" src={backgroundVideoMobileMp4} type="video/mp4" />
+              <source src={backgroundVideoWebm} type="video/webm" />
+              <source src={backgroundVideoMp4} type="video/mp4" />
+            </video>
+          ) : null}
+          <div className="pointer-events-none fixed inset-0 z-10 bg-black/52" />
+          <div className="pointer-events-none fixed inset-0 z-[11] bg-[radial-gradient(circle_at_top,rgba(8,145,178,0.12),transparent_38%),linear-gradient(to_bottom,rgba(0,0,0,0.12),rgba(0,0,0,0.2))]" />
 
           <main className="relative z-20 min-h-screen">
             <AnimatePresence mode="wait" initial={false} custom={direction}>
