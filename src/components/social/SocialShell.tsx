@@ -52,16 +52,16 @@ const SocialShell = () => {
   }, [routeIndex]);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+    <div className={`relative min-h-screen overflow-x-hidden text-foreground ${isHome ? "bg-transparent" : "bg-background"}`}>
       {isHome ? (
-        <div className="app-nocturne relative min-h-screen overflow-x-hidden font-['Manrope'] text-foreground">
+        <div className="app-nocturne relative isolate min-h-screen overflow-x-hidden font-['Manrope'] text-foreground">
           <div
-            className="pointer-events-none fixed inset-0 -z-20 bg-cover bg-center bg-no-repeat"
+            className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${backgroundImage})` }}
           />
-          <div className="pointer-events-none fixed inset-0 -z-10 bg-black/40" />
+          <div className="pointer-events-none fixed inset-0 z-10 bg-black/40" />
 
-          <main className="relative min-h-screen">
+          <main className="relative z-20 min-h-screen">
             <AnimatePresence mode="wait" initial={false} custom={direction}>
               <motion.div
                 key={location.pathname}

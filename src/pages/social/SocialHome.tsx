@@ -1,25 +1,25 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
-  CalendarDays,
-  MapPinned,
-  MessageCircle,
+  ArrowRight,
+  CreditCard,
+  Megaphone,
+  MessageSquare,
   Percent,
   Search,
   ShoppingBag,
-  Ticket,
+  ShoppingCart,
+  Sparkles,
   UserPlus,
   Users,
 } from "lucide-react";
-import FeedCard from "@/components/social/FeedCard";
-import SocialEventCard from "@/components/social/SocialEventCard";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import {
-  mockHeroEvent,
-  mockNotificationCounts,
   mockFeedItems,
   mockFriends,
-  mockSocialEvents,
+  mockHeroEvent,
+  mockNotificationCounts,
   mockSplitRequests,
 } from "@/data/social-mock";
 import { useAuth } from "@/hooks/use-auth";
@@ -30,34 +30,54 @@ import { useCatalogEvents } from "@/hooks/use-catalog-events";
 import {
   buildFeedItemsFromBackend,
   buildHeroEventFromBackend,
-  buildSocialEventsFromBackend,
 } from "@/lib/social-backend";
 
-const formatCapacity = (seats: number | undefined) => {
-  if (!seats) {
-    return "INGRESSOS LIMITADOS";
+const badgeColorByIndex = [
+  "ring-primary/20 text-primary",
+  "ring-secondary/20 text-secondary",
+] as const;
+
+const splitHeadline = (value: string) => {
+  const separators = [" - ", " – ", ": "];
+
+  for (const separator of separators) {
+    if (value.includes(separator)) {
+      const [first, ...rest] = value.split(separator);
+      return {
+        first: first.trim(),
+        second: rest.join(separator).trim(),
+      };
+    }
   }
 
-  return `${new Intl.NumberFormat("pt-BR").format(seats)} LUGARES`;
+  return { first: value, second: "" };
 };
 
-const ActionPill = ({
+const formatHeroDate = (value: string) => value.replaceAll("â€¢", "•");
+
+const ActionButton = ({
   icon: Icon,
   label,
-  to,
   badge,
+  to,
 }: {
-  icon: typeof MessageCircle;
+  icon: typeof MessageSquare;
   label: string;
-  to: string;
   badge?: number;
+  to: string;
 }) => (
   <Link to={to} className="flex flex-col items-center gap-2">
-    <div className="action-button">
-      <Icon className="h-6 w-6 text-white" strokeWidth={2} />
-      {badge ? <span className="action-badge">{badge}</span> : null}
-    </div>
-    <span className="font-label text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">{label}</span>
+    <button className="relative h-20 w-20 rounded-3xl bg-black/60 border border-white/10 transition-all group hover:bg-white/10">
+      <span className="flex h-full w-full items-center justify-center">
+        <Icon className="h-6 w-6 text-white transition-transform group-hover:scale-110" />
+      </span>
+      {badge !== undefined ? (
+        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] font-black text-white">
+          {badge}
+        </span>
+      ) : null}
+    </button>
+    <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">{label}</span>
   </Link>
 );
 
@@ -65,73 +85,105 @@ const InfoCard = ({
   title,
   subtitle,
   icon: Icon,
-  tone,
+  colorClass,
   to,
 }: {
   title: string;
   subtitle: string;
   icon: typeof Users;
-  tone: "primary" | "secondary" | "tertiary" | "neutral";
+  colorClass: string;
   to: string;
 }) => (
   <Link
     to={to}
-    className="glass-panel group flex items-center justify-between rounded-2xl border border-white/10 p-4 transition-colors hover:bg-white/5"
+    className="glass-panel group flex items-center justify-between rounded-2xl p-4 transition-colors hover:bg-white/5"
   >
     <div>
       <p className="text-xs font-bold text-white">{title}</p>
       <p className="text-[10px] text-white/40">{subtitle}</p>
     </div>
-    <Icon
-      className={
-        tone === "primary"
-          ? "h-4 w-4 text-primary"
-          : tone === "secondary"
-            ? "h-4 w-4 text-secondary"
-            : tone === "tertiary"
-              ? "h-4 w-4 text-cyan-300"
-              : "h-4 w-4 text-white/40"
-      }
-    />
+    <Icon className={cn("h-4 w-4", colorClass)} />
   </Link>
+);
+
+const NetworkFeedCard = ({
+  avatar,
+  name,
+  role,
+  content,
+  actionLabel,
+  roleColor,
+}: {
+  avatar: string;
+  name: string;
+  role: string;
+  content: string;
+  actionLabel: string;
+  roleColor: string;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    className="glass-panel rounded-[2rem] p-6 transition-all hover:bg-white/5"
+  >
+    <div className="mb-4 flex items-center gap-4">
+      <div className={cn("h-12 w-12 overflow-hidden rounded-full ring-2", roleColor)}>
+        <img src={avatar} alt={name} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+      </div>
+      <div>
+        <p className="text-sm font-bold text-white">{name}</p>
+        <p className={cn("text-[10px] font-bold uppercase tracking-tighter", roleColor.replace("ring-", "text-"))}>
+          {role}
+        </p>
+      </div>
+    </div>
+    <p className="mb-6 text-xs leading-relaxed text-white/60">"{content}"</p>
+    <button className="w-full rounded-full border border-white/5 bg-white/5 py-2 text-[10px] font-bold uppercase tracking-widest text-white transition-all hover:bg-white/10">
+      {actionLabel}
+    </button>
+  </motion.div>
 );
 
 const OfficialAlertCard = ({ eventName }: { eventName: string }) => (
-  <Link
-    to="/app/tickets"
-    className="group relative overflow-hidden rounded-[2rem] bg-primary p-6 text-primary-foreground transition-transform hover:scale-[1.01]"
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    whileInView={{ opacity: 1, scale: 1 }}
+    viewport={{ once: true }}
+    className="group relative overflow-hidden rounded-[2rem] bg-primary p-6"
   >
-    <div className="absolute -bottom-4 -right-4 opacity-15 transition-transform duration-500 group-hover:scale-110">
-      <Ticket className="h-24 w-24" />
+    <div className="absolute -bottom-4 -right-4 opacity-20 transition-transform duration-500 group-hover:scale-125">
+      <Megaphone className="h-32 w-32 text-primary-foreground" />
     </div>
     <div className="relative z-10">
-      <span className="font-label text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground/60">
-        ALERTA OFICIAL
+      <span className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-primary-foreground/60">
+        OFFICIAL ALERT
       </span>
-      <p className="mt-2 font-headline text-2xl font-extrabold leading-tight">Acesso ao after</p>
-      <p className="mt-2 text-[11px] leading-5 text-primary-foreground/80">
-        Convite exclusivo liberado para a sessão premium de {eventName}. Entrada pela porta lateral após o headliner.
+      <p className="mb-1 text-xl font-black leading-tight text-primary-foreground">Afterparty Access</p>
+      <p className="mb-8 text-[10px] font-medium text-primary-foreground/80">
+        Exclusive invite for session holders at {eventName}. Access through the side entrance after the headliner.
       </p>
-      <span className="mt-8 inline-flex rounded-full bg-black px-4 py-3 text-[10px] font-black uppercase tracking-[0.16em] text-white">
-        Liberar acesso
-      </span>
+      <button className="w-full rounded-full bg-black py-3 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:scale-[1.02] active:scale-95">
+        Claim Ticket
+      </button>
     </div>
-  </Link>
+  </motion.div>
 );
 
-const MapPreviewCard = ({ image }: { image: string }) => (
-  <Link
-    to="/app/mapa"
-    className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-black/60"
-  >
-    <img src={image} alt="Mapa do evento" className="absolute inset-0 h-full w-full object-cover opacity-40 transition-transform duration-700 group-hover:scale-110" />
-    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent p-6" />
-    <div className="relative flex h-full flex-col justify-end p-6">
-      <p className="text-sm font-bold text-white">Pulso do evento</p>
-      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">MAPA AO VIVO</p>
-      <span className="mt-4 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-white/60 transition-colors group-hover:text-white">
-        Abrir mapa interativo
-        <MapPinned className="h-4 w-4" />
+const MapCard = ({ image }: { image: string }) => (
+  <Link to="/app/mapa" className="glass-panel group relative overflow-hidden rounded-[2rem]">
+    <img
+      src={image}
+      alt="Map Preview"
+      className="absolute inset-0 h-full w-full object-cover opacity-40 transition-transform duration-700 group-hover:scale-110"
+      referrerPolicy="no-referrer"
+    />
+    <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black via-black/20 to-transparent p-6">
+      <p className="text-sm font-bold text-white">Crowd Density</p>
+      <p className="mb-4 text-[10px] font-bold uppercase text-primary">LIVE HEATMAP</p>
+      <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/60 transition-colors group-hover:text-white">
+        Open Interactive Map
+        <ArrowRight className="h-3 w-3" />
       </span>
     </div>
   </Link>
@@ -139,7 +191,7 @@ const MapPreviewCard = ({ image }: { image: string }) => (
 
 const SocialHome = () => {
   const { currentAccount } = useAuth();
-  const [activeTab, setActiveTab] = useState<"eventos" | "feed">("eventos");
+  const [activeTab, setActiveTab] = useState("eventos");
   const accountId = currentAccount?.id;
   const { events } = useCatalogEvents();
   const { orders } = useAccountOrders(accountId);
@@ -148,24 +200,15 @@ const SocialHome = () => {
 
   const fullName = currentAccount?.fullName ?? "Visitante";
   const firstName = fullName.split(" ")[0];
+  const initials = firstName.slice(0, 2).toUpperCase();
 
   const heroEvent = useMemo(
     () => buildHeroEventFromBackend({ events, orders, tickets }) ?? mockHeroEvent,
     [events, orders, tickets],
   );
 
-  const heroEventData = useMemo(
-    () => events.find((event) => event.slug === heroEvent.slug) ?? events[0],
-    [events, heroEvent.slug],
-  );
-
-  const socialEvents = useMemo(() => {
-    const mappedEvents = buildSocialEventsFromBackend({ events, orders, tickets });
-    return mappedEvents.length > 0 ? mappedEvents : mockSocialEvents;
-  }, [events, orders, tickets]);
-
   const feedItems = useMemo(() => {
-    const mappedFeed = buildFeedItemsFromBackend({
+    const mapped = buildFeedItemsFromBackend({
       accountId,
       accountName: fullName,
       events,
@@ -173,154 +216,152 @@ const SocialHome = () => {
       tickets,
     });
 
-    return mappedFeed.length > 0 ? mappedFeed : mockFeedItems;
+    return mapped.length > 0 ? mapped : mockFeedItems;
   }, [accountId, events, fullName, orders, tickets]);
 
   const acceptedFriends = mockFriends.filter((friend) => friend.status === "accepted").length;
   const pendingRequests = mockFriends.length - acceptedFriends;
   const activeOrders = orders.filter((order) => order.status === "submitted" || order.status === "under_review").length;
-  const quickActionCounts = currentAccount
+  const actionCounts = currentAccount
     ? {
-        messages: 0,
         requests: notifications.length,
         splits: mockSplitRequests.length,
         orders: activeOrders,
       }
-    : mockNotificationCounts;
-  const avatarSeed = currentAccount?.id ?? currentAccount?.email ?? fullName;
+    : {
+        requests: mockNotificationCounts.requests,
+        splits: mockNotificationCounts.splits,
+        orders: mockNotificationCounts.orders,
+      };
 
-  const recentMovement = feedItems[0];
-  const venueLabel = heroEventData ? `${heroEventData.venueName}, ${heroEventData.city}` : heroEvent.tagline;
-  const heroDateLabel = heroEventData
-    ? `${heroEventData.weekday.toUpperCase()} • ${heroEventData.day.padStart(2, "0")}/${heroEventData.month.toUpperCase()} • ${heroEventData.time}`
-    : heroEvent.date;
-
-  const visibleEvents = socialEvents.slice(0, 3);
-  const visibleFeed = feedItems.slice(0, 3);
+  const heroHeadline = splitHeadline(heroEvent.name);
+  const visibleFeed = feedItems.slice(0, 2);
+  const recentItem = feedItems[0];
 
   return (
-    <div className="min-h-screen max-w-7xl px-4 pb-28 pt-4 sm:px-6 lg:px-8">
-      <header className="flex items-center justify-between py-6">
-        <div className="flex items-center gap-4">
-          <Avatar className="h-10 w-10 border border-white/10 bg-black/40">
-            <AvatarImage src={`https://i.pravatar.cc/160?u=${encodeURIComponent(avatarSeed)}`} alt={fullName} />
-            <AvatarFallback className="bg-black/40 text-xs font-bold text-primary">
-              {fullName.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h2 className="font-headline text-sm font-bold text-white">Olá, {firstName}</h2>
-            <p className="text-[10px] text-white/40">Sua rede, seus pedidos e seus rolês do momento.</p>
+    <div className="min-h-screen relative">
+      <div className="fixed inset-0 -z-10 bg-black/40" />
+
+      <main className="mx-auto max-w-7xl px-4 pb-32 sm:px-6 lg:px-8">
+        <header className="flex items-center justify-between py-6">
+          <div className="flex items-center gap-4">
+            <div className="glass-panel flex h-10 w-10 items-center justify-center rounded-full text-primary">
+              <span className="text-xs font-bold">{initials}</span>
+            </div>
+            <div>
+              <h2 className="font-headline text-sm font-bold text-white">Ola, {firstName}</h2>
+              <p className="text-[10px] text-white/40">Sua rede, seus pedidos e seus roles do momento.</p>
+            </div>
           </div>
+          <button className="glass-panel flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10">
+            <Search className="h-5 w-5" />
+          </button>
+        </header>
+
+        <section className="relative mt-4 mb-8 flex min-h-[500px] flex-col justify-end overflow-hidden rounded-[2.5rem] border border-white/5 p-8 shadow-2xl md:p-16">
+          <div className="hero-gradient absolute inset-0" />
+          <div className="relative z-10 w-full max-w-4xl">
+            <div className="mb-4">
+              <span className="rounded-full border border-primary/30 bg-primary/20 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                REDE EVENTHUB
+              </span>
+            </div>
+
+            <h1 className="mb-2 font-headline text-5xl font-extrabold leading-[0.9] tracking-tighter text-white md:text-7xl lg:text-8xl">
+              {heroHeadline.first}
+              {heroHeadline.second ? (
+                <>
+                  <br />
+                  {heroHeadline.second}
+                </>
+              ) : null}
+            </h1>
+            <p className="mb-8 font-headline text-sm font-bold uppercase tracking-[0.3em] text-white/60 md:text-lg">
+              {heroEvent.tagline}
+            </p>
+
+            <div className="mb-12 flex items-center gap-6 text-xs font-bold uppercase tracking-widest text-white/40">
+              <span>{formatHeroDate(heroEvent.date)}</span>
+            </div>
+
+            <div className="mb-12 flex flex-wrap gap-8 md:gap-12">
+              <ActionButton icon={MessageSquare} label="Mensagem" to="/app/amigos" />
+              <ActionButton icon={UserPlus} label="Solicitacoes" badge={actionCounts.requests} to="/app/amigos" />
+              <ActionButton icon={Percent} label="Divisao" badge={actionCounts.splits} to="/app/divisoes" />
+              <ActionButton icon={ShoppingBag} label="Pedidos" badge={actionCounts.orders} to="/app/bar" />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+              <InfoCard
+                title={`${acceptedFriends} amigos ativos`}
+                subtitle={`${pendingRequests} solicitacoes abertas`}
+                icon={Users}
+                colorClass="text-primary"
+                to="/app/amigos"
+              />
+              <InfoCard
+                title={`${activeOrders} pedidos em curso`}
+                subtitle="compras durante o evento"
+                icon={ShoppingCart}
+                colorClass="text-secondary"
+                to="/app/bar"
+              />
+              <InfoCard
+                title={`${mockSplitRequests.length} divisoes abertas`}
+                subtitle="rateios da sua galera"
+                icon={CreditCard}
+                colorClass="text-cyan-300"
+                to="/app/divisoes"
+              />
+              <InfoCard
+                title={recentItem?.eventName ?? "Pulso da rede"}
+                subtitle={recentItem?.socialProof ?? "rede em movimento agora"}
+                icon={Sparkles}
+                colorClass="text-white/40"
+                to="/app/amigos"
+              />
+            </div>
+          </div>
+        </section>
+
+        <div className="mb-8 flex gap-2">
+          <button
+            onClick={() => setActiveTab("eventos")}
+            className={cn(
+              "rounded-full px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all",
+              activeTab === "eventos" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
+            )}
+          >
+            Eventos
+          </button>
+          <button
+            onClick={() => setActiveTab("feed")}
+            className={cn(
+              "rounded-full px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all",
+              activeTab === "feed" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
+            )}
+          >
+            Feed Social
+          </button>
         </div>
-        <button className="glass-panel flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white transition-colors hover:bg-white/10">
-          <Search className="h-5 w-5" />
-        </button>
-      </header>
 
-      <section className="relative mb-8 mt-4 flex min-h-[68vh] flex-col justify-end overflow-hidden rounded-[2.5rem] border border-white/5 p-8 shadow-2xl md:min-h-[74vh] md:p-16 lg:min-h-[calc(100vh-10rem)]">
-        <img
-          src={heroEvent.image}
-          alt={heroEvent.name}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="hero-gradient absolute inset-0" />
-
-        <div className="relative z-10 w-full max-w-4xl">
-          <div className="mb-4">
-            <span className="rounded-full border border-primary/30 bg-primary/20 px-3 py-1 font-label text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-              REDE EVENTHUB
-            </span>
-          </div>
-
-          <h1 className="text-shadow-glow font-headline text-5xl font-extrabold leading-[0.9] tracking-tighter text-white md:text-7xl lg:text-8xl">
-            {heroEvent.name}
-          </h1>
-          <p className="mb-8 mt-2 font-headline text-sm font-bold uppercase tracking-[0.3em] text-white/60 md:text-lg">
-            {venueLabel}
-          </p>
-
-          <div className="mb-12 flex items-center gap-6 text-xs font-bold uppercase tracking-[0.18em] text-white/40">
-            <span>{heroDateLabel}</span>
-            <span>{formatCapacity(heroEventData?.seatMap.totalSeats)}</span>
-          </div>
-
-          <div className="mb-12 flex flex-wrap gap-8 md:gap-12">
-            <ActionPill icon={MessageCircle} label="Mensagem" to="/app/amigos" badge={quickActionCounts.messages || undefined} />
-            <ActionPill icon={UserPlus} label="Solicitações" to="/app/amigos" badge={quickActionCounts.requests || undefined} />
-            <ActionPill icon={Percent} label="Divisão" to="/app/divisoes" badge={quickActionCounts.splits || undefined} />
-            <ActionPill icon={ShoppingBag} label="Pedidos" to="/app/bar" badge={quickActionCounts.orders || undefined} />
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <InfoCard
-              title={`${acceptedFriends} amigos ativos`}
-              subtitle={pendingRequests > 0 ? `${pendingRequests} solicitações abertas` : "rede aquecida agora"}
-              icon={Users}
-              tone="primary"
-              to="/app/amigos"
+        <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {visibleFeed.map((item, index) => (
+            <NetworkFeedCard
+              key={item.id}
+              avatar={item.friendAvatar}
+              name={item.friendName}
+              role={(item.socialProof ?? item.eventName).toUpperCase()}
+              content={`${item.description} em ${item.eventName}.`}
+              actionLabel={index === 0 ? "Say Hello" : "Reply"}
+              roleColor={badgeColorByIndex[index] ?? "ring-primary/20 text-primary"}
             />
-            <InfoCard
-              title={`${activeOrders} pedidos em curso`}
-              subtitle="compras durante o evento"
-              icon={ShoppingBag}
-              tone="secondary"
-              to="/app/bar"
-            />
-            <InfoCard
-              title={`${mockSplitRequests.length} divisões abertas`}
-              subtitle="rateios da sua galera"
-              icon={Percent}
-              tone="tertiary"
-              to="/app/divisoes"
-            />
-            <InfoCard
-              title={recentMovement?.eventName ?? "Pulso da rede"}
-              subtitle={recentMovement ? `${recentMovement.friendName} ${recentMovement.description}` : "rede em movimento agora"}
-              icon={MessageCircle}
-              tone="neutral"
-              to="/app/amigos"
-            />
-          </div>
-        </div>
-      </section>
+          ))}
 
-      <div className="mb-8 flex gap-2">
-        <button
-          onClick={() => setActiveTab("eventos")}
-          className={`rounded-full px-6 py-2 text-xs font-bold uppercase tracking-[0.18em] transition-colors ${
-            activeTab === "eventos" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10"
-          }`}
-        >
-          Eventos
-        </button>
-        <button
-          onClick={() => setActiveTab("feed")}
-          className={`rounded-full px-6 py-2 text-xs font-bold uppercase tracking-[0.18em] transition-colors ${
-            activeTab === "feed" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10"
-          }`}
-        >
-          Feed Social
-        </button>
-      </div>
-
-      <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {activeTab === "eventos" ? (
-          <>
-            {visibleEvents.map((event, index) => (
-              <SocialEventCard key={event.id} event={event} index={index} />
-            ))}
-            <MapPreviewCard image={heroEvent.image} />
-          </>
-        ) : (
-          <>
-            {visibleFeed.map((item, index) => (
-              <FeedCard key={item.id} item={item} index={index} />
-            ))}
-            <OfficialAlertCard eventName={heroEvent.name} />
-          </>
-        )}
-      </section>
+          <OfficialAlertCard eventName={heroEvent.name} />
+          <MapCard image={heroEvent.image} />
+        </section>
+      </main>
     </div>
   );
 };
