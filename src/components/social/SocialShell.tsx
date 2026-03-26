@@ -7,9 +7,7 @@ import SocialDesktopRail from "@/components/social/SocialDesktopRail";
 
 const backgroundImage =
   "https://lh3.googleusercontent.com/aida/ADBb0ujjRIWQIYy1FeWu-Mtq7SifGiLts-cv6qhQbB6-NWCURug0u3T2q7nbr4eCxQFg_DXSd7IgXJOZQSvOWzlowBvTHXeUdcC3GNpu_1ETi6GPcPQbS-UJU344RNPn-43y6hdlG59zopaEV_w1tEN9JQU7u1a9v24Pd1Qzt9UJo52r4a_gyrggFmqfHXGNr2RoPv-iS_fY63Px45QJs1-qDnQyoWgLcAqkUv_bnWRRGgpLpnocx0h4RSalKBl4jrA8v6Kc02BAOkjKicY";
-const backgroundVideoMobileWebm = "/media/travis-fein-live-bg-mobile.webm";
 const backgroundVideoMobileMp4 = "/media/travis-fein-live-bg-mobile.mp4";
-const backgroundVideoWebm = "/media/travis-fein-live-bg.webm";
 const backgroundVideoMp4 = "/media/travis-fein-live-bg-optimized.mp4";
 const backgroundVideoPoster = "/media/travis-fein-live-bg-poster.webp";
 
@@ -162,9 +160,7 @@ const SocialShell = () => {
               onError={() => setVideoFailed(true)}
               style={{ willChange: "transform, opacity" }}
             >
-              <source media="(max-width: 768px)" src={backgroundVideoMobileWebm} type="video/webm" />
               <source media="(max-width: 768px)" src={backgroundVideoMobileMp4} type="video/mp4" />
-              <source src={backgroundVideoWebm} type="video/webm" />
               <source src={backgroundVideoMp4} type="video/mp4" />
             </video>
           ) : null}
