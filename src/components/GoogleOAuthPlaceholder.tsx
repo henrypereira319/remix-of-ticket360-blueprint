@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 interface GoogleOAuthPlaceholderProps {
   compact?: boolean;
   intent?: "login" | "register" | "continue";
+  surface?: "default" | "light";
 }
 
 const GOOGLE_IDENTITY_SCRIPT_ID = "google-identity-services";
@@ -79,7 +80,7 @@ const loadGoogleIdentityScript = () => {
   return googleIdentityScriptPromise;
 };
 
-const GoogleOAuthPlaceholder = ({ compact = false, intent = "continue" }: GoogleOAuthPlaceholderProps) => {
+const GoogleOAuthPlaceholder = ({ compact = false, intent = "continue", surface = "default" }: GoogleOAuthPlaceholderProps) => {
   const auth = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -90,6 +91,7 @@ const GoogleOAuthPlaceholder = ({ compact = false, intent = "continue" }: Google
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
   const copy = googleCopyByIntent[intent];
+  const isLightSurface = surface === "light";
 
   useEffect(() => {
     if (typeof window === "undefined" || !containerRef.current) {
@@ -218,9 +220,13 @@ const GoogleOAuthPlaceholder = ({ compact = false, intent = "continue" }: Google
         : "Carregando";
 
   const statusToneClass =
-    isSubmitting || (googleOAuthIsReady && isSdkReady)
-      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
-      : "border-amber-500/30 bg-amber-500/10 text-amber-100";
+    isLightSurface
+      ? isSubmitting || (googleOAuthIsReady && isSdkReady)
+        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+        : "border-amber-200 bg-amber-50 text-amber-700"
+      : isSubmitting || (googleOAuthIsReady && isSdkReady)
+        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
+        : "border-amber-500/30 bg-amber-500/10 text-amber-100";
 
   const helpCopy = setupError
     ? setupError
@@ -244,6 +250,55 @@ const GoogleOAuthPlaceholder = ({ compact = false, intent = "continue" }: Google
           <div ref={buttonRef} className="flex min-h-11 items-center justify-center" />
           <p className="mt-3 text-xs leading-5 text-muted-foreground">{helpCopy}</p>
         </div>
+      </div>
+    );
+  }
+
+  if (isLightSurface) {
+    return (
+      <div className="space-y-4 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+              <Chrome className="h-3.5 w-3.5" />
+              {copy.badge}
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-slate-900">{copy.title}</h3>
+              <p className="mt-1 text-sm leading-6 text-slate-600">{copy.description}</p>
+            </div>
+          </div>
+
+          <div className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${statusToneClass}`}>
+            {isSubmitting ? <LoaderCircle className="mr-1 h-3.5 w-3.5 animate-spin" /> : null}
+            {statusLabel}
+          </div>
+        </div>
+
+        <div ref={containerRef} className="rounded-[20px] border border-slate-200 bg-white p-3">
+          <div ref={buttonRef} className="flex min-h-12 items-center justify-center" />
+        </div>
+
+        <div className="rounded-[20px] border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-600">
+          <div className="flex items-start gap-2">
+            {setupError ? (
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+            ) : (
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+            )}
+            <p>{helpCopy}</p>
+          </div>
+        </div>
+
+        {setupError ? (
+          <div className="flex flex-wrap gap-2">
+            {googleOAuthEnvSlots.map((slot) => (
+              <span key={slot} className="rounded-full border border-slate-200 bg-white px-3 py-1 font-mono text-[11px] text-slate-700">
+                {slot}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
     );
   }
