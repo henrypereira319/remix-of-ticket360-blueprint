@@ -1,19 +1,40 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Chrome, LoaderCircle, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AlertCircle, CheckCircle2, Chrome, LoaderCircle, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { googleOAuthConfig, googleOAuthEnvSlots, googleOAuthIsReady } from "@/config/auth";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 
 interface GoogleOAuthPlaceholderProps {
   compact?: boolean;
+  intent?: "login" | "register" | "continue";
 }
 
 const GOOGLE_IDENTITY_SCRIPT_ID = "google-identity-services";
 
 let googleIdentityScriptPromise: Promise<void> | null = null;
+
+const googleCopyByIntent = {
+  login: {
+    title: "Entrar com Google",
+    description: "Acesse sua conta EventHub com o Google e volte direto para seus pedidos e ingressos.",
+    badge: "Login federado",
+    buttonText: "signin_with",
+  },
+  register: {
+    title: "Criar conta com Google",
+    description: "Crie sua conta em menos etapas usando um email Google verificado.",
+    badge: "Cadastro rapido",
+    buttonText: "signup_with",
+  },
+  continue: {
+    title: "Continuar com Google",
+    description: "Autentique com sua conta Google sem preencher o formulario inteiro de novo.",
+    badge: "Acesso rapido",
+    buttonText: "continue_with",
+  },
+} as const;
 
 const loadGoogleIdentityScript = () => {
   if (typeof window === "undefined") {
@@ -29,6 +50,11 @@ const loadGoogleIdentityScript = () => {
       const existingScript = document.getElementById(GOOGLE_IDENTITY_SCRIPT_ID) as HTMLScriptElement | null;
 
       if (existingScript) {
+        if (window.google?.accounts.id || existingScript.dataset.loaded === "true") {
+          resolve();
+          return;
+        }
+
         existingScript.addEventListener("load", () => resolve(), { once: true });
         existingScript.addEventListener("error", () => reject(new Error("Falha ao carregar Google Identity Services.")), {
           once: true,
@@ -41,7 +67,10 @@ const loadGoogleIdentityScript = () => {
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
       script.defer = true;
-      script.onload = () => resolve();
+      script.onload = () => {
+        script.dataset.loaded = "true";
+        resolve();
+      };
       script.onerror = () => reject(new Error("Falha ao carregar Google Identity Services."));
       document.head.appendChild(script);
     });
@@ -50,19 +79,58 @@ const loadGoogleIdentityScript = () => {
   return googleIdentityScriptPromise;
 };
 
-const GoogleOAuthPlaceholder = ({ compact = false }: GoogleOAuthPlaceholderProps) => {
+const GoogleOAuthPlaceholder = ({ compact = false, intent = "continue" }: GoogleOAuthPlaceholderProps) => {
   const auth = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLDivElement | null>(null);
+  const [buttonWidth, setButtonWidth] = useState(compact ? 220 : 360);
   const [isSdkReady, setIsSdkReady] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const buttonWidth = useMemo(() => (compact ? 180 : 360), [compact]);
+  const [setupError, setSetupError] = useState<string | null>(null);
+  const copy = googleCopyByIntent[intent];
 
   useEffect(() => {
+    if (typeof window === "undefined" || !containerRef.current) {
+      return;
+    }
+
+    const node = containerRef.current;
+    const updateWidth = () => {
+      const measuredWidth = Math.floor(node.getBoundingClientRect().width);
+      const minWidth = compact ? 180 : 260;
+      const maxWidth = compact ? 260 : 420;
+      const nextWidth = Math.min(Math.max(measuredWidth, minWidth), maxWidth);
+      setButtonWidth(nextWidth);
+    };
+
+    updateWidth();
+
+    if (typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const observer = new ResizeObserver(() => updateWidth());
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [compact]);
+
+  useEffect(() => {
+    if (!googleOAuthConfig.enabled) {
+      setIsSdkReady(false);
+      setSetupError(
+        googleOAuthConfig.clientId
+          ? "Ative VITE_GOOGLE_OAUTH_ENABLED=true para expor o login Google neste ambiente."
+          : "Defina VITE_GOOGLE_OAUTH_CLIENT_ID para habilitar o login Google.",
+      );
+      return;
+    }
+
     if (!googleOAuthIsReady) {
       setIsSdkReady(false);
+      setSetupError("Defina o client ID do Google para habilitar o login federado.");
       return;
     }
 
@@ -70,6 +138,7 @@ const GoogleOAuthPlaceholder = ({ compact = false }: GoogleOAuthPlaceholderProps
 
     const setupGoogleButton = async () => {
       try {
+        setSetupError(null);
         await loadGoogleIdentityScript();
 
         if (cancelled || !window.google?.accounts.id || !buttonRef.current) {
@@ -115,15 +184,20 @@ const GoogleOAuthPlaceholder = ({ compact = false }: GoogleOAuthPlaceholderProps
         window.google.accounts.id.renderButton(buttonRef.current, {
           theme: "outline",
           size: compact ? "medium" : "large",
-          text: "continue_with",
+          text: copy.buttonText,
           shape: "pill",
           width: buttonWidth,
           logo_alignment: "left",
         });
 
+        if (!compact) {
+          window.google.accounts.id.prompt();
+        }
+
         setIsSdkReady(true);
       } catch (error) {
         console.warn("Falha ao preparar o botao do Google.", error);
+        setSetupError(error instanceof Error ? error.message : "Falha ao carregar login Google.");
         setIsSdkReady(false);
       }
     };
@@ -133,78 +207,117 @@ const GoogleOAuthPlaceholder = ({ compact = false }: GoogleOAuthPlaceholderProps
     return () => {
       cancelled = true;
     };
-  }, [auth, buttonWidth, compact, navigate, toast]);
+  }, [auth, buttonWidth, compact, copy.buttonText, navigate, toast]);
+
+  const statusLabel = isSubmitting
+    ? "Conectando"
+    : googleOAuthIsReady && isSdkReady
+      ? "Pronto"
+      : setupError
+        ? "Configurar"
+        : "Carregando";
+
+  const statusToneClass =
+    isSubmitting || (googleOAuthIsReady && isSdkReady)
+      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
+      : "border-amber-500/30 bg-amber-500/10 text-amber-100";
+
+  const helpCopy = setupError
+    ? setupError
+    : "O Google valida o email, e a credencial segue para validacao do backend quando ele estiver ativo.";
 
   if (compact) {
     return (
-      <div className="rounded-lg border border-border bg-background p-4">
+      <div className="rounded-[28px] border border-border/80 bg-background/80 p-5">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-foreground">Entrar com Google</p>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Federado real com o client configurado neste ambiente.
-            </p>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-foreground">{copy.title}</p>
+            <p className="text-sm leading-6 text-muted-foreground">{copy.description}</p>
           </div>
-          <Button type="button" variant="outline" className="shrink-0" disabled>
-            {isSubmitting ? <LoaderCircle className="w-4 h-4 animate-spin" /> : <Chrome className="w-4 h-4" />}
-            Google
-          </Button>
+          <div className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${statusToneClass}`}>
+            {isSubmitting ? <LoaderCircle className="mr-1 h-3.5 w-3.5 animate-spin" /> : null}
+            {statusLabel}
+          </div>
         </div>
-        <div className="mt-4 flex justify-start">
-          <div ref={buttonRef} />
+
+        <div ref={containerRef} className="mt-4 rounded-3xl border border-border/70 bg-card/70 p-4">
+          <div ref={buttonRef} className="flex min-h-11 items-center justify-center" />
+          <p className="mt-3 text-xs leading-5 text-muted-foreground">{helpCopy}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <Card className="border-border bg-card">
-      <CardContent className="space-y-4 p-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-            <Chrome className="w-5 h-5 text-foreground" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-foreground">Google OAuth</h3>
-            <p className="text-sm text-muted-foreground">Login federado ativo neste ambiente</p>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <div ref={buttonRef} className="min-h-11" />
-
-          <Button type="button" className="w-full" disabled={!googleOAuthIsReady || !isSdkReady || isSubmitting}>
-            {isSubmitting ? <LoaderCircle className="w-4 h-4 animate-spin" /> : <Chrome className="w-4 h-4" />}
-            {isSubmitting
-              ? "Conectando..."
-              : googleOAuthIsReady
-                ? "Botao Google carregado abaixo"
-                : "Google OAuth em preparacao"}
-          </Button>
-        </div>
-
-        <div className="rounded-md bg-background p-4 text-sm leading-6 text-muted-foreground">
-          <div className="mb-2 flex items-center gap-2 text-foreground">
-            <ShieldCheck className="w-4 h-4 text-primary" />
-            Fluxo seguro
-          </div>
-          <p>
-            O client ID fica no frontend, e o token Google segue para validacao no backend quando ele estiver configurado.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          {googleOAuthEnvSlots.map((slot) => (
-            <div key={slot} className="rounded-md bg-background px-3 py-2 font-mono text-xs text-foreground">
-              {slot}
+    <Card className="overflow-hidden border-border/80 bg-background/60">
+      <CardContent className="space-y-4 p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">
+              <Chrome className="h-3.5 w-3.5 text-primary" />
+              {copy.badge}
             </div>
-          ))}
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">{copy.title}</h3>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">{copy.description}</p>
+            </div>
+          </div>
+
+          <div className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${statusToneClass}`}>
+            {isSubmitting ? <LoaderCircle className="mr-1 h-3.5 w-3.5 animate-spin" /> : null}
+            {statusLabel}
+          </div>
         </div>
 
-        <div className="rounded-md bg-background px-3 py-2 text-xs text-muted-foreground">
-          Status atual: {googleOAuthConfig.enabled ? "habilitado" : "desabilitado"} | SDK:{" "}
-          {isSdkReady ? "pronto" : googleOAuthIsReady ? "carregando" : "aguardando env"}
+        <div ref={containerRef} className="rounded-[28px] border border-border/80 bg-card/70 p-4">
+          <div ref={buttonRef} className="flex min-h-12 items-center justify-center" />
+          <div className="mt-4 flex items-start gap-2 rounded-2xl border border-border/70 bg-background/80 p-3 text-sm text-muted-foreground">
+            {setupError ? (
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+            ) : (
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            )}
+            <p className="leading-6">{helpCopy}</p>
+          </div>
         </div>
+
+        {googleOAuthIsReady && !setupError ? (
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-2xl border border-border/70 bg-card/70 p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                Menos atrito na entrada
+              </div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                O usuario entra com a conta Google e cai direto na area autenticada do EventHub.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-card/70 p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Validacao de credencial
+              </div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Quando o backend estiver ativo, a credencial tambem e validada no servidor antes de hidratar a conta.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-border/80 bg-background/70 p-4 text-sm leading-6 text-muted-foreground">
+            <p className="font-semibold text-foreground">Ambiente ainda nao configurado para Google OAuth</p>
+            <p className="mt-2">
+              Para ativar, preencha estas variaveis de ambiente e reinicie o frontend:
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {googleOAuthEnvSlots.map((slot) => (
+                <span key={slot} className="rounded-full border border-border/70 bg-card px-3 py-1 font-mono text-[11px] text-foreground">
+                  {slot}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

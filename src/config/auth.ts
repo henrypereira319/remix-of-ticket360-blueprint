@@ -1,7 +1,10 @@
-const googleOAuthClientId = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID ?? "";
+const googleOAuthClientId = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID?.trim() ?? "";
+const googleOAuthEnabledFlag = import.meta.env.VITE_GOOGLE_OAUTH_ENABLED?.trim().toLowerCase() ?? "";
+const googleOAuthEnabledByConfig =
+  googleOAuthEnabledFlag === "true" || (googleOAuthEnabledFlag !== "false" && Boolean(googleOAuthClientId));
 
 export const googleOAuthConfig = {
-  enabled: import.meta.env.VITE_GOOGLE_OAUTH_ENABLED === "true",
+  enabled: googleOAuthEnabledByConfig,
   clientId: googleOAuthClientId,
 };
 
