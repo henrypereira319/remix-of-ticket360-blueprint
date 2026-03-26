@@ -67,7 +67,7 @@ const ActionButton = ({
   to: string;
 }) => (
   <Link to={to} className="flex flex-col items-center gap-2">
-    <button className="relative h-20 w-20 rounded-3xl bg-black/60 border border-white/10 transition-all group hover:bg-white/10">
+    <button className="pop-out-button group relative h-20 w-20 rounded-3xl border border-white/10 bg-black/60 hover:bg-white/10">
       <span className="flex h-full w-full items-center justify-center">
         <Icon className="h-6 w-6 text-white transition-transform group-hover:scale-110" />
       </span>
@@ -139,7 +139,7 @@ const NetworkFeedCard = ({
       </div>
     </div>
     <p className="mb-6 text-xs leading-relaxed text-white/60">"{content}"</p>
-    <button className="w-full rounded-full border border-white/5 bg-white/5 py-2 text-[10px] font-bold uppercase tracking-widest text-white transition-all hover:bg-white/10">
+    <button className="pop-out-button w-full rounded-full border border-white/5 bg-white/5 py-2 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-white/10">
       {actionLabel}
     </button>
   </motion.div>
@@ -163,7 +163,7 @@ const OfficialAlertCard = ({ eventName }: { eventName: string }) => (
       <p className="mb-8 text-[10px] font-medium text-primary-foreground/80">
         Exclusive invite for session holders at {eventName}. Access through the side entrance after the headliner.
       </p>
-      <button className="w-full rounded-full bg-black py-3 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:scale-[1.02] active:scale-95">
+      <button className="pop-out-button w-full rounded-full bg-black py-3 text-[10px] font-black uppercase tracking-widest text-white">
         Claim Ticket
       </button>
     </div>
@@ -253,7 +253,7 @@ const SocialHome = () => {
               <p className="text-[10px] text-white/40">Sua rede, seus pedidos e seus roles do momento.</p>
             </div>
           </div>
-          <button className="glass-panel flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10">
+          <button className="pop-out-button glass-panel flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-white/10">
             <Search className="h-5 w-5" />
           </button>
         </header>
@@ -328,7 +328,7 @@ const SocialHome = () => {
           <button
             onClick={() => setActiveTab("eventos")}
             className={cn(
-              "rounded-full px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all",
+              "pop-out-button rounded-full px-6 py-2 text-xs font-bold uppercase tracking-widest",
               activeTab === "eventos" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
             )}
           >
@@ -337,7 +337,7 @@ const SocialHome = () => {
           <button
             onClick={() => setActiveTab("feed")}
             className={cn(
-              "rounded-full px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all",
+              "pop-out-button rounded-full px-6 py-2 text-xs font-bold uppercase tracking-widest",
               activeTab === "feed" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
             )}
           >
