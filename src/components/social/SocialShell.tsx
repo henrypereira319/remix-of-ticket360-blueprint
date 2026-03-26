@@ -52,54 +52,68 @@ const SocialShell = () => {
   }, [routeIndex]);
 
   return (
-    <div className="app-nocturne relative min-h-screen overflow-x-hidden font-['Manrope'] text-foreground">
-      <div
-        className="pointer-events-none fixed inset-0 -z-20 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
-      />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-black/40" />
-
+    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
       {isHome ? (
-        <main className="relative min-h-screen">
-          <AnimatePresence mode="wait" initial={false} custom={direction}>
-            <motion.div
-              key={location.pathname}
-              custom={direction}
-              variants={pageTransition}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={pageSpring}
-              className="relative min-h-screen"
-            >
-              {outlet}
-            </motion.div>
-          </AnimatePresence>
-        </main>
-      ) : (
-        <div className="relative mx-auto w-full max-w-7xl px-4 pb-28 pt-4 sm:px-6 lg:flex lg:gap-6 lg:px-8 lg:pt-8">
-          <SocialDesktopRail />
-          <main className="min-w-0 flex-1">
-            <div className="glass-panel min-h-[calc(100vh-6rem)] overflow-hidden rounded-[2rem] border border-white/10 px-1 py-1 shadow-card">
-              <div className="relative min-h-[calc(100vh-6.5rem)] rounded-[1.75rem] bg-black/30 [perspective:1800px]">
-                <AnimatePresence mode="wait" initial={false} custom={direction}>
-                  <motion.div
-                    key={location.pathname}
-                    custom={direction}
-                    variants={pageTransition}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={pageSpring}
-                    className="relative min-h-[calc(100vh-6.5rem)]"
-                  >
-                    {outlet}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
+        <div className="app-nocturne relative min-h-screen overflow-x-hidden font-['Manrope'] text-foreground">
+          <div
+            className="pointer-events-none fixed inset-0 -z-20 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${backgroundImage})` }}
+          />
+          <div className="pointer-events-none fixed inset-0 -z-10 bg-black/40" />
+
+          <main className="relative min-h-screen">
+            <AnimatePresence mode="wait" initial={false} custom={direction}>
+              <motion.div
+                key={location.pathname}
+                custom={direction}
+                variants={pageTransition}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={pageSpring}
+                className="relative min-h-screen"
+              >
+                {outlet}
+              </motion.div>
+            </AnimatePresence>
           </main>
         </div>
+      ) : (
+        <>
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(178,241,52,0.1),transparent_26%),radial-gradient(circle_at_top_right,rgba(249,115,22,0.1),transparent_24%)]" />
+          <div className="relative mx-auto w-full max-w-[1600px] lg:grid lg:min-h-screen lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-6 lg:px-6 xl:grid-cols-[320px_minmax(0,1fr)] xl:px-8">
+            <SocialDesktopRail />
+
+            <main className="min-w-0 lg:py-8">
+              <div className="pb-24 lg:min-h-[calc(100vh-4rem)] lg:overflow-hidden lg:rounded-[2rem] lg:border lg:border-border/60 lg:bg-background/60 lg:pb-0 lg:shadow-card">
+                <div className="relative min-h-screen [perspective:1800px] lg:min-h-[calc(100vh-4rem)]">
+                  <AnimatePresence mode="wait" initial={false} custom={direction}>
+                    <motion.div
+                      key={location.pathname}
+                      custom={direction}
+                      variants={pageTransition}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={pageSpring}
+                      className="relative min-h-screen origin-center will-change-transform lg:min-h-[calc(100vh-4rem)]"
+                    >
+                      <motion.div
+                        aria-hidden="true"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-black/25 to-transparent"
+                      />
+                      {outlet}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </div>
+            </main>
+          </div>
+        </>
       )}
 
       <BottomNav />

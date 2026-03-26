@@ -218,7 +218,7 @@ const SocialHome = () => {
         </button>
       </header>
 
-      <section className="relative mb-8 mt-4 flex min-h-[500px] flex-col justify-end overflow-hidden rounded-[2.5rem] border border-white/5 p-8 shadow-2xl md:p-16">
+      <section className="relative mb-8 mt-4 flex min-h-[68vh] flex-col justify-end overflow-hidden rounded-[2.5rem] border border-white/5 p-8 shadow-2xl md:min-h-[74vh] md:p-16 lg:min-h-[calc(100vh-10rem)]">
         <img
           src={heroEvent.image}
           alt={heroEvent.name}
