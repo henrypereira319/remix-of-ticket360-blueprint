@@ -16,6 +16,8 @@ export default {
       fontFamily: {
         display: ["Poppins", "sans-serif"],
         body: ["Roboto", "sans-serif"],
+        headline: ["Plus Jakarta Sans", "sans-serif"],
+        label: ["Manrope", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

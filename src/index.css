@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,700;0,800;1,800&family=Manrope:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -92,6 +92,35 @@
   }
 }
 
+@layer base {
+  .app-nocturne {
+    --background: 0 0% 5%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 83 100% 84%;
+    --primary-foreground: 91 100% 20%;
+    --primary-glow: 83 96% 50%;
+    --secondary: 17 100% 61%;
+    --secondary-foreground: 18 100% 12%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 67%;
+    --accent: 188 100% 75%;
+    --accent-foreground: 188 100% 19%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 83 96% 50%;
+    --social: 83 96% 50%;
+    --social-foreground: 91 100% 20%;
+    --surface: 0 0% 5%;
+    --surface-elevated: 0 0% 10%;
+    --shadow-card: 0 20px 50px rgba(0, 0, 0, 0.5);
+    --shadow-card-hover: 0 28px 70px rgba(0, 0, 0, 0.65);
+  }
+}
+
 /* Card hover effect */
 @layer utilities {
   .card-lift {
@@ -132,5 +161,53 @@
   }
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  .glass-panel {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .hero-gradient {
+    background: linear-gradient(to top, rgba(14, 14, 14, 0.92) 0%, rgba(14, 14, 14, 0.48) 50%, rgba(14, 14, 14, 0.88) 100%);
+  }
+
+  .text-shadow-glow {
+    text-shadow: 0 0 18px rgba(153, 238, 0, 0.24);
+  }
+
+  .action-button {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  .action-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .action-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: hsl(var(--secondary));
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    width: 18px;
+    height: 18px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
