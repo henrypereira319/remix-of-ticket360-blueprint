@@ -18,6 +18,7 @@ import event6 from "@/assets/event-6.jpg";
 import event7 from "@/assets/event-7.jpg";
 import event8 from "@/assets/event-8.jpg";
 import { teatroMunicipalManifest } from "@/data/teatroMunicipalManifest";
+import { teatroBradescoManifest } from "@/data/teatroBradescoManifest";
 
 export type EventSeatStatus = "available" | "reserved" | "sold" | "accessible";
 export type EventSeatTag = "partial-view" | "wheelchair" | "low-vision" | "reduced-mobility" | "plus-size";
@@ -887,6 +888,7 @@ const createTheaterSeatMap = (options: { hallName: string; stageLabel: string })
 };
 
 const teatroMunicipalOfficialSeatMap: EventSeatMap = teatroMunicipalManifest;
+const teatroBradescoOfficialSeatMap: EventSeatMap = teatroBradescoManifest;
 
 const createEventDetailsContent = (event: Omit<EventData, "details">, overrides: EventDetailsOverrides): EventDetailsContent => ({
   organizer: overrides.organizer,
@@ -1234,6 +1236,38 @@ const eventSeeds: EventSeed[] = [
       agePolicy: "Menores de 10 anos devem estar acompanhados por um responsavel legal.",
     },
   },
+  {
+    id: "e9",
+    slug: "espetaculo-teatro-bradesco",
+    title: "Espetáculo no Teatro Bradesco",
+    image: event8,
+    bannerImage: banner1,
+    category: "Teatro e Musicais",
+    discoveryLabel: "Em cartaz",
+    tags: ["Teatro", "Musical", "Teatro Bradesco", "Mapa de sala"],
+    searchTerms: ["teatro", "bradesco", "musical", "assento numerado"],
+    salesBadge: "Estreia Nacional",
+    month: "Abr",
+    day: "15",
+    weekday: "Ter",
+    time: "20:30",
+    city: "São Paulo / SP",
+    venueName: "Teatro Bradesco",
+    summary: "Integração real do mapa do Teatro Bradesco importado da Sympla, com geometria normalizada e background de alta fidelidade preservado.",
+    description: "O pipeline de importação consumiu o snapshot bruto e gerou o manifest interno. O resultado reflete a fonte da verdade sem scraping visual.",
+    priceFrom: 150,
+    securityNotes: [
+      "Integração oficial baseada no Sympla Bileto",
+      "Geometria assento a assento fidedigna"
+    ],
+    seatMap: teatroBradescoOfficialSeatMap,
+    detailsOverrides: {
+      organizer: "Opus Entretenimento",
+      address: "Bourbon Shopping São Paulo - Perdizes",
+      openingTime: "19:00",
+      ageRating: "Livre",
+    },
+  }
 ];
 
 export const events: EventData[] = eventSeeds.map(({ detailsOverrides, ...event }) => ({

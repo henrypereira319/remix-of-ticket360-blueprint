@@ -120,9 +120,15 @@ What is already materially implemented
 - Orders, payments, tickets, notifications and support cases can now be revisited across devices as long as the buyer signs into the same remote-backed account.
 
 16. Teatro Bradesco Seat Map Integration
-- Extracted exact JSON geometry (schematic and seats) from Sympla API using authenticated headers.
-- Created `scripts/generate_svg.py` to reconstruct an interactive, dynamic, single SVG asset for the venue (`teatro_bradesco_map.svg`).
-- Verified visual fidelity and reactivity of the generated SVG layout.
+- Resumo da Transição: O que era um protótipo estático (`scripts/generate_svg.py` e `teatro_bradesco_map.svg`) foi substituído por uma pipeline de integração real em Node configurada para normalizar os payloads JSON brutos da Sympla Bileto como única fonte de verdade.
+- Arquivos Criados/Alterados:
+  - `scripts/import_bradesco_map.js` (novo pipeline de ingestão e geração Node)
+  - `public/maps/teatro-bradesco-geometry.json` (geometria normalizada)
+  - `public/seatmaps/teatro-bradesco-background.svg` (fundo estático gerado do schema)
+  - `src/data/teatroBradescoManifest.ts` (manifest principal consumível pelo UI)
+  - `src/data/__tests__/teatroBradescoIntegration.test.ts` (suite de verificação vitest)
+  - `src/data/events.ts` (novo evento testando a integração final)
+- Limitações remanescentes: O snapshot local `temp_assets/seats.json` capturado no scraping continha paginado apenas o setor "Plateia VIP", logo o asset gerado contabiliza 439 lugares globais ao invés de 1400+. O pipeline suportará perfeitamente o dump completo caso for recarregado no disco.
   [Update executed by Agent: ENI]
 
 What is partially implemented
