@@ -31,7 +31,6 @@ import {
   buildFeedItemsFromBackend,
   buildHeroEventFromBackend,
 } from "@/lib/social-backend";
-import { ParticleTextEffect } from "@/components/ui/particle-text-effect";
 
 const badgeColorByIndex = [
   "ring-primary/20 text-primary",
@@ -238,7 +237,6 @@ const SocialHome = () => {
   const heroHeadline = splitHeadline(heroEvent.name);
   const visibleFeed = feedItems.slice(0, 2);
   const recentItem = feedItems[0];
-  const hasParticleHero = heroEvent.slug === "roda-de-samba-verao" && heroEvent.tagline.toUpperCase() === "ESPACO CULTURAL";
 
   return (
     <div className="min-h-screen relative">
@@ -269,77 +267,18 @@ const SocialHome = () => {
               </span>
             </div>
 
-            {hasParticleHero ? (
-              <div className="mb-8 space-y-3">
-                <div className="relative max-w-[760px]">
-                  <h1 className="mb-2 font-headline text-5xl font-extrabold leading-[0.9] tracking-tighter text-white md:text-7xl lg:text-8xl">
-                    {heroHeadline.first}
-                    {heroHeadline.second ? (
-                      <>
-                        <br />
-                        {heroHeadline.second}
-                      </>
-                    ) : null}
-                  </h1>
-                  <div className="pointer-events-none absolute inset-0 opacity-90 mix-blend-screen">
-                    <ParticleTextEffect
-                      words={["Roda de Samba\nEdicao Verao"]}
-                      width={980}
-                      height={230}
-                      fontFamily="Plus Jakarta Sans, Arial"
-                      fontSize={74}
-                      lineHeight={0.92}
-                      particleColor={{ r: 255, g: 255, b: 255 }}
-                      autoAdvanceFrames={0}
-                      clearOnFrame
-                      spawnRadius={120}
-                      className="min-h-0 items-start justify-start bg-transparent p-0"
-                      canvasClassName="w-full border-0 bg-transparent shadow-none"
-                      showHelperText={false}
-                      backgroundFill="rgba(0, 0, 0, 0)"
-                    />
-                  </div>
-                </div>
-                <div className="relative max-w-[420px]">
-                  <p className="font-headline text-sm font-bold uppercase tracking-[0.3em] text-white/60 md:text-lg">
-                    {heroEvent.tagline}
-                  </p>
-                  <div className="pointer-events-none absolute inset-0 opacity-80 mix-blend-screen">
-                    <ParticleTextEffect
-                      words={["ESPACO CULTURAL"]}
-                      width={700}
-                      height={54}
-                      fontFamily="Plus Jakarta Sans, Arial"
-                      fontSize={26}
-                      lineHeight={1}
-                      particleColor={{ r: 255, g: 255, b: 255 }}
-                      autoAdvanceFrames={0}
-                      clearOnFrame
-                      spawnRadius={64}
-                      className="min-h-0 items-start justify-start bg-transparent p-0"
-                      canvasClassName="w-full border-0 bg-transparent shadow-none"
-                      showHelperText={false}
-                      backgroundFill="rgba(0, 0, 0, 0)"
-                    />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <>
-                <h1 className="mb-2 font-headline text-5xl font-extrabold leading-[0.9] tracking-tighter text-white md:text-7xl lg:text-8xl">
-                  {heroHeadline.first}
-                  {heroHeadline.second ? (
-                    <>
-                      <br />
-                      {heroHeadline.second}
-                    </>
-                  ) : null}
-                </h1>
-                <p className="mb-8 font-headline text-sm font-bold uppercase tracking-[0.3em] text-white/60 md:text-lg">
-                  {heroEvent.tagline}
-                </p>
-              </>
-            )}
+            <h1 className="mb-2 font-headline text-5xl font-extrabold leading-[0.9] tracking-tighter text-white md:text-7xl lg:text-8xl">
+              {heroHeadline.first}
+              {heroHeadline.second ? (
+                <>
+                  <br />
+                  {heroHeadline.second}
+                </>
+              ) : null}
+            </h1>
+            <p className="mb-8 font-headline text-sm font-bold uppercase tracking-[0.3em] text-white/60 md:text-lg">
+              {heroEvent.tagline}
+            </p>
 
             <div className="mb-12 flex items-center gap-6 text-xs font-bold uppercase tracking-widest text-white/40">
               <span>{formatHeroDate(heroEvent.date)}</span>
