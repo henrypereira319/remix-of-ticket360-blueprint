@@ -51,8 +51,9 @@ const SocialShell = () => {
   const direction = routeIndex === previousRouteIndexRef.current ? 0 : routeIndex > previousRouteIndexRef.current ? 1 : -1;
   const isHome = location.pathname === "/app";
   const [canUseVideoBackground, setCanUseVideoBackground] = useState(true);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
-  const [videoFailed, setVideoFailed] = useState(false);
+  const activeBackgroundVideo = isMobileViewport ? backgroundVideoMobileMp4 : backgroundVideoMp4;
 
   useEffect(() => {
     previousRouteIndexRef.current = routeIndex;
@@ -60,6 +61,7 @@ const SocialShell = () => {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const viewportQuery = window.matchMedia("(max-width: 768px)");
     const connection = navigator.connection as
       | {
           saveData?: boolean;
@@ -72,16 +74,19 @@ const SocialShell = () => {
     const updatePreference = () => {
       const slowConnection = connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g";
       setCanUseVideoBackground(!mediaQuery.matches && !connection?.saveData && !slowConnection);
+      setIsMobileViewport(viewportQuery.matches);
     };
 
     updatePreference();
 
     const handleMediaChange = () => updatePreference();
     mediaQuery.addEventListener("change", handleMediaChange);
+    viewportQuery.addEventListener("change", handleMediaChange);
     connection?.addEventListener?.("change", handleMediaChange);
 
     return () => {
       mediaQuery.removeEventListener("change", handleMediaChange);
+      viewportQuery.removeEventListener("change", handleMediaChange);
       connection?.removeEventListener?.("change", handleMediaChange);
     };
   }, []);
@@ -89,12 +94,15 @@ const SocialShell = () => {
   useEffect(() => {
     if (!isHome) {
       setVideoReady(false);
-      setVideoFailed(false);
     }
   }, [isHome]);
 
   useEffect(() => {
-    if (!isHome || !canUseVideoBackground || videoFailed) {
+    setVideoReady(false);
+  }, [activeBackgroundVideo, canUseVideoBackground, isHome]);
+
+  useEffect(() => {
+    if (!isHome || !canUseVideoBackground) {
       videoRef.current?.pause();
       return;
     }
@@ -110,7 +118,9 @@ const SocialShell = () => {
 
       const playPromise = video.play();
       if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => setVideoFailed(true));
+        playPromise.catch(() => {
+          // Keep the poster/background visible while the browser settles autoplay.
+        });
       }
     };
 
@@ -121,12 +131,15 @@ const SocialShell = () => {
       document.removeEventListener("visibilitychange", syncPlayback);
       video.pause();
     };
-  }, [canUseVideoBackground, isHome, videoFailed]);
+  }, [activeBackgroundVideo, canUseVideoBackground, isHome]);
 
   const handleVideoReady = () => {
     if (videoRef.current) {
       videoRef.current.defaultPlaybackRate = 0.82;
       videoRef.current.playbackRate = 0.82;
+      videoRef.current.play().catch(() => {
+        // The background can stay on the poster until the browser allows playback.
+      });
     }
     setVideoReady(true);
   };
@@ -139,8 +152,9 @@ const SocialShell = () => {
             className="pointer-events-none fixed inset-0 z-0 bg-black bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${backgroundVideoPoster}), url(${backgroundImage})` }}
           />
-          {canUseVideoBackground && !videoFailed ? (
+          {canUseVideoBackground ? (
             <video
+              key={activeBackgroundVideo}
               ref={videoRef}
               aria-hidden="true"
               className={`pointer-events-none fixed inset-0 z-[5] h-full w-full scale-[1.02] object-cover transition-opacity duration-1000 ease-out ${
@@ -151,18 +165,17 @@ const SocialShell = () => {
               muted
               playsInline
               preload="auto"
+              src={activeBackgroundVideo}
               poster={backgroundVideoPoster}
               disablePictureInPicture
               disableRemotePlayback
+              onLoadedMetadata={handleVideoReady}
               onCanPlay={handleVideoReady}
               onLoadedData={handleVideoReady}
               onPlaying={handleVideoReady}
-              onError={() => setVideoFailed(true)}
-              style={{ willChange: "transform, opacity" }}
-            >
-              <source media="(max-width: 768px)" src={backgroundVideoMobileMp4} type="video/mp4" />
-              <source src={backgroundVideoMp4} type="video/mp4" />
-            </video>
+              onError={() => setVideoReady(false)}
+              style={{ transform: "translateZ(0)", willChange: "opacity" }}
+            />
           ) : null}
           <div className="pointer-events-none fixed inset-0 z-10 bg-black/52" />
           <div className="pointer-events-none fixed inset-0 z-[11] bg-[radial-gradient(circle_at_top,rgba(8,145,178,0.12),transparent_38%),linear-gradient(to_bottom,rgba(0,0,0,0.12),rgba(0,0,0,0.2))]" />
