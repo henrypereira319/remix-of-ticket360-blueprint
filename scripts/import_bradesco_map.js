@@ -1,5 +1,5 @@
-const fs = require("fs/promises");
-const path = require("path");
+import fs from "node:fs/promises";
+import path from "node:path";
 
 async function run() {
   console.log("Starting Teatro Bradesco import pipeline (CommonJS)...");
@@ -136,7 +136,7 @@ export const teatroBradescoManifest = ${JSON.stringify(manifestData, null, 2)} a
   await fs.mkdir(path.resolve(process.cwd(), "public/seatmaps"), { recursive: true });
 
   await fs.writeFile(path.resolve(process.cwd(), "public/seatmaps/teatro-bradesco-background.svg"), svgContent);
-  await fs.writeFile(path.resolve(process.cwd(), "public/maps/teatro-bradesco-geometry.json"), JSON.stringify(normalizedSeats, null, 2));
+  await fs.writeFile(path.resolve(process.cwd(), "public/maps/teatro-bradesco-geometry.json"), JSON.stringify({ seats: normalizedSeats }, null, 2));
   await fs.writeFile(path.resolve(process.cwd(), "src/data/teatroBradescoManifest.ts"), manifestTs);
 
   console.log("Import pipeline complete.");

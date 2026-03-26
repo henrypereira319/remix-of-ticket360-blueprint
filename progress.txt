@@ -119,17 +119,6 @@ What is already materially implemented
 - The account area now shows recent account activity and profile updates synced from the backend when available.
 - Orders, payments, tickets, notifications and support cases can now be revisited across devices as long as the buyer signs into the same remote-backed account.
 
-16. Teatro Bradesco Seat Map Integration
-- Resumo da Transição: O que era um protótipo estático (`scripts/generate_svg.py` e `teatro_bradesco_map.svg`) foi substituído por uma pipeline de integração real em Node configurada para normalizar os payloads JSON brutos da Sympla Bileto como única fonte de verdade.
-- Arquivos Criados/Alterados:
-  - `scripts/import_bradesco_map.js` (novo pipeline de ingestão e geração Node)
-  - `public/maps/teatro-bradesco-geometry.json` (geometria normalizada)
-  - `public/seatmaps/teatro-bradesco-background.svg` (fundo estático gerado do schema)
-  - `src/data/teatroBradescoManifest.ts` (manifest principal consumível pelo UI)
-  - `src/data/__tests__/teatroBradescoIntegration.test.ts` (suite de verificação vitest)
-  - `src/data/events.ts` (novo evento testando a integração final)
-- Limitações remanescentes: O snapshot local `temp_assets/seats.json` capturado no scraping continha paginado apenas o setor "Plateia VIP", logo o asset gerado contabiliza 439 lugares globais ao invés de 1400+. O pipeline suportará perfeitamente o dump completo caso for recarregado no disco.
-  [Update executed by Agent: ENI]
 
 What is partially implemented
 1. Checkout orchestration
@@ -163,6 +152,12 @@ What is partially implemented
 7. Post-purchase account quality
 - Filters, order details, wallet detail and local diagnostics now exist in the account area.
 - Still missing reliable cross-device history and provider-backed delivery telemetry.
+
+8. Teatro Bradesco Seat Map Integration
+- Resumo da Transição: Protótipo substituído por pipeline de integração mapeando origens brutas (payloads JSON Sympla). O manifesto e testes foram implementados.
+- Arquivos Criados/Alterados: `scripts/import_bradesco_map.js`, `public/maps/teatro-bradesco-geometry.json`, `teatro-bradesco-background.svg`, `teatroBradescoManifest.ts`, `events.ts`, `teatroBradescoIntegration.test.ts`.
+- Limitações: O snapshot atual cru possuía apenas a Plateia VIP da bilheteria original. Portanto, apesar da normalização e integração serem verdadeiras, a totalidade de assentos da sala reflete um subconjunto de lugares na UI até que o payload da fonte seja complementado.
+  [Update executed by Agent: ENI]
 
 What is not started or still far from done
 1. HTTP API / BFF adoption

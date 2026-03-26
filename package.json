@@ -12,6 +12,7 @@
     "backend:http:smoke": "node scripts/backend-http-smoke.mjs",
     "db:migrate": "node scripts/db-migrate.mjs",
     "generate:teatro-municipal": "node scripts/generate-teatro-municipal-seatmap.mjs",
+    "import:bradesco": "node scripts/import_bradesco_map.js",
     "export:seatmaps": "node scripts/export-seatmaps.mjs",
     "postgres:inspect": "node scripts/postgres-inspect.mjs",
     "postgres:smoke": "node scripts/postgres-smoke.mjs",

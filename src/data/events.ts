@@ -887,8 +887,8 @@ const createTheaterSeatMap = (options: { hallName: string; stageLabel: string })
   };
 };
 
-const teatroMunicipalOfficialSeatMap: EventSeatMap = teatroMunicipalManifest;
-const teatroBradescoOfficialSeatMap: EventSeatMap = teatroBradescoManifest;
+const teatroMunicipalOfficialSeatMap: EventSeatMap = teatroMunicipalManifest as unknown as EventSeatMap;
+const teatroBradescoOfficialSeatMap: EventSeatMap = teatroBradescoManifest as unknown as EventSeatMap;
 
 const createEventDetailsContent = (event: Omit<EventData, "details">, overrides: EventDetailsOverrides): EventDetailsContent => ({
   organizer: overrides.organizer,
@@ -1253,8 +1253,8 @@ const eventSeeds: EventSeed[] = [
     time: "20:30",
     city: "São Paulo / SP",
     venueName: "Teatro Bradesco",
-    summary: "Integração real do mapa do Teatro Bradesco importado da Sympla, com geometria normalizada e background de alta fidelidade preservado.",
-    description: "O pipeline de importação consumiu o snapshot bruto e gerou o manifest interno. O resultado reflete a fonte da verdade sem scraping visual.",
+    summary: "Integração parcial do mapa do Teatro Bradesco importado da Sympla, focada na Plateia VIP, com geometria normalizada e background estático isolado.",
+    description: "O pipeline consumiu o snapshot bruto atual que, por limitação da extração, continha apenas o mapeamento do setor VIP. A UI renderiza exatamente esse payload preservando a fidúcia da fonte.",
     priceFrom: 150,
     securityNotes: [
       "Integração oficial baseada no Sympla Bileto",
