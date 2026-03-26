@@ -177,6 +177,13 @@ const SocialShell = () => {
         // The background can stay on the poster until the browser allows playback.
       });
     }
+  };
+
+  const handleVideoPlaying = () => {
+    if (videoRef.current) {
+      videoRef.current.defaultPlaybackRate = 0.82;
+      videoRef.current.playbackRate = 0.82;
+    }
     setVideoReady(true);
   };
 
@@ -208,7 +215,13 @@ const SocialShell = () => {
               onLoadedMetadata={handleVideoReady}
               onCanPlay={handleVideoReady}
               onLoadedData={handleVideoReady}
-              onPlaying={handleVideoReady}
+              onPlaying={handleVideoPlaying}
+              onTimeUpdate={handleVideoPlaying}
+              onPause={() => {
+                if ((videoRef.current?.currentTime ?? 0) === 0) {
+                  setVideoReady(false);
+                }
+              }}
               onError={() => setVideoReady(false)}
               style={{ transform: "translateZ(0)", willChange: "opacity" }}
             />
