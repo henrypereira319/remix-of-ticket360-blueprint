@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Percent, ShoppingBag, Users } from "lucide-react";
+import { Sparkles, Percent, ShoppingBag, Users } from "lucide-react";
 import SocialHeader from "@/components/social/SocialHeader";
 import SocialHeroBanner from "@/components/social/HeroBanner";
 import QuickActions from "@/components/social/QuickActions";
@@ -66,14 +66,99 @@ const SocialHome = () => {
         orders: activeOrders,
       }
     : mockNotificationCounts;
+  const recentMovement = feedItems[0];
+  const heroUtilityLinks = [
+    {
+      to: "/app/amigos",
+      icon: Users,
+      title: `${acceptedFriends} amigos ativos`,
+      description: pendingRequests > 0 ? `${pendingRequests} solicitações abertas` : "rede aquecida agora",
+      tone: "social",
+    },
+    {
+      to: "/app/bar",
+      icon: ShoppingBag,
+      title: `${activeOrders} pedidos em curso`,
+      description: activeOrders > 0 ? "acompanhar agora" : "compras durante o evento",
+      tone: "primary",
+    },
+    {
+      to: "/app/divisoes",
+      icon: Percent,
+      title: `${mockSplitRequests.length} divisões abertas`,
+      description: "rateios da sua galera",
+      tone: "secondary",
+    },
+    {
+      to: "/app/amigos",
+      icon: Sparkles,
+      title: recentMovement?.eventName ?? "Pulso da rede",
+      description: recentMovement ? `${recentMovement.friendName} ${recentMovement.description}` : "o que sua rede está fazendo agora",
+      tone: "muted",
+    },
+  ] as const;
 
   return (
     <div className="space-y-0">
       <SocialHeader fullName={name} />
-      <div className="space-y-4 pb-6 xl:grid xl:grid-cols-[minmax(0,1fr)_320px] xl:gap-6 xl:px-6 xl:pt-2">
+      <div className="space-y-4 pb-6 xl:px-6 xl:pt-2">
         <div className="space-y-4">
-          <SocialHeroBanner event={heroEvent} />
-          <QuickActions counts={quickActionCounts} />
+          <SocialHeroBanner
+            event={heroEvent}
+            headerSlot={
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <span className="rounded-full border border-white/12 bg-black/35 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/78 backdrop-blur-md">
+                  Rede EventHub
+                </span>
+                {recentMovement ? (
+                  <Link
+                    to="/app/amigos"
+                    className="max-w-[18rem] rounded-full border border-white/12 bg-black/35 px-3 py-1.5 text-right text-[11px] font-medium text-white/76 backdrop-blur-md transition-colors hover:bg-black/45"
+                  >
+                    {recentMovement.friendName} • {recentMovement.eventName}
+                  </Link>
+                ) : null}
+              </div>
+            }
+            footerSlot={
+              <>
+                <QuickActions counts={quickActionCounts} variant="hero" />
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                  {heroUtilityLinks.map((item) => {
+                    const Icon = item.icon;
+
+                    return (
+                      <Link
+                        key={item.title}
+                        to={item.to}
+                        className="group rounded-[1.35rem] border border-white/10 bg-black/36 p-3 backdrop-blur-md transition-colors hover:bg-black/44"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-white">{item.title}</p>
+                            <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-white/66">{item.description}</p>
+                          </div>
+                          <div
+                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl ${
+                              item.tone === "social"
+                                ? "bg-social/16 text-social"
+                                : item.tone === "primary"
+                                  ? "bg-primary/16 text-primary"
+                                  : item.tone === "secondary"
+                                    ? "bg-secondary/16 text-secondary"
+                                    : "bg-white/10 text-white/76"
+                            }`}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </>
+            }
+          />
 
           <div className="flex gap-1 px-4 pb-1 lg:px-0">
             <button
@@ -108,60 +193,6 @@ const SocialHome = () => {
                 ))}
           </div>
         </div>
-
-        <aside className="hidden xl:flex xl:flex-col xl:gap-4 xl:pr-0 xl:pt-1">
-          <div className="rounded-[1.75rem] border border-white/5 bg-surface/70 p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-social">Sua rede agora</p>
-            <div className="mt-4 grid grid-cols-1 gap-3">
-              <div className="rounded-2xl bg-background/55 p-4">
-                <div className="flex items-center gap-2 text-social">
-                  <Users className="h-4 w-4" />
-                  <span className="text-xs font-semibold uppercase tracking-[0.16em]">Amigos ativos</span>
-                </div>
-                <p className="mt-3 text-3xl font-semibold text-foreground">{acceptedFriends}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{pendingRequests} solicitações ainda abertas.</p>
-              </div>
-              <div className="rounded-2xl bg-background/55 p-4">
-                <div className="flex items-center gap-2 text-primary">
-                  <ShoppingBag className="h-4 w-4" />
-                  <span className="text-xs font-semibold uppercase tracking-[0.16em]">Pedidos em curso</span>
-                </div>
-                <p className="mt-3 text-3xl font-semibold text-foreground">{activeOrders}</p>
-                <p className="mt-1 text-sm text-muted-foreground">Pedidos reais da sua conta conectados ao backend.</p>
-              </div>
-              <div className="rounded-2xl bg-background/55 p-4">
-                <div className="flex items-center gap-2 text-secondary">
-                  <Percent className="h-4 w-4" />
-                  <span className="text-xs font-semibold uppercase tracking-[0.16em]">Divisões abertas</span>
-                </div>
-                <p className="mt-3 text-3xl font-semibold text-foreground">{mockSplitRequests.length}</p>
-                <p className="mt-1 text-sm text-muted-foreground">Rateios prontos para aprovação com a sua rede.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[1.75rem] border border-white/5 bg-surface/70 p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Pulso social</p>
-                <h2 className="mt-1 text-lg font-semibold text-foreground">Movimentos recentes</h2>
-              </div>
-              <Link to="/app/amigos" className="text-xs font-semibold text-social transition-colors hover:text-social/80">
-                Ver rede
-              </Link>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {feedItems.slice(0, 3).map((item) => (
-                <div key={item.id} className="rounded-2xl bg-background/55 p-4">
-                  <p className="text-sm font-semibold text-foreground">{item.friendName}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
-                  <p className="mt-2 text-xs font-medium uppercase tracking-[0.14em] text-social">{item.eventName}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </aside>
       </div>
     </div>
   );

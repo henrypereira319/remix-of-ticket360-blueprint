@@ -1,4 +1,4 @@
-import { ArrowRight, Building2, Map, Sparkles, Ticket } from "lucide-react";
+import { ArrowRight, Building2, Flame, Map, Sparkles, Ticket, Users, Wine } from "lucide-react";
 import { Link } from "react-router-dom";
 import DiscoveryHero from "@/components/DiscoveryHero";
 import EventCard from "@/components/EventCard";
@@ -199,6 +199,86 @@ const Index = () => {
             description="Shows, festivais e experiências com uma linguagem mais próxima de ticketing marketplace."
             events={nightlifeEvents}
           />
+        </div>
+
+        <div className="container">
+          <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+            <div className="rounded-[2rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-[0_24px_90px_-50px_rgba(15,23,42,0.95)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Ecossistema EventHub</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight">A plataforma pai fica no centro. As vertentes nascem por publico.</h2>
+              <p className="mt-3 text-sm leading-7 text-white/72">
+                Em vez de uma unica home tentando falar com todo mundo do mesmo jeito, o EventHub passa a abrir rotas alternativas
+                com curadoria, linguagem e descoberta especificas para cada audiencia.
+              </p>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+                  <Flame className="h-5 w-5 text-lime-300" />
+                  <p className="mt-3 text-sm font-semibold text-white">Pulse</p>
+                  <p className="mt-2 text-sm leading-6 text-white/65">Noite, grupo, ego, consumo e rede social de evento.</p>
+                </div>
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+                  <Users className="h-5 w-5 text-sky-300" />
+                  <p className="mt-3 text-sm font-semibold text-white">Vertentes futuras</p>
+                  <p className="mt-2 text-sm leading-6 text-white/65">Familia, corporativo, classicos e outros recortes podem nascer depois.</p>
+                </div>
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+                  <Wine className="h-5 w-5 text-orange-300" />
+                  <p className="mt-3 text-sm font-semibold text-white">Receita ampliada</p>
+                  <p className="mt-2 text-sm leading-6 text-white/65">Ingresso, in-bar, experiencias e coordenacao de grupo no mesmo ecossistema.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Link
+                to="/pulse"
+                className="group overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition-transform hover:-translate-y-0.5"
+              >
+                <div className="relative min-h-[220px] overflow-hidden">
+                  <img
+                    src={(nightlifeEvents[0] ?? spotlightEvent).bannerImage}
+                    alt="Pulse by EventHub"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-lime-300">Vertente ativa</p>
+                    <h3 className="mt-2 text-2xl font-semibold tracking-tight">EventHub Pulse</h3>
+                    <p className="mt-2 text-sm leading-6 text-white/75">
+                      A rota jovem/social do ecossistema, com eventos de noite, feed, grupo e desejo.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-3 border-t border-slate-200 p-5">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-950">Explorar vertente</p>
+                    <p className="mt-1 text-sm text-slate-600">Curadoria alternativa ligada ao EventHub pai.</p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-slate-700" />
+                </div>
+              </Link>
+
+              <div className="rounded-[2rem] border border-dashed border-slate-300 bg-white p-5 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">House of brands</p>
+                <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Estrutura pronta para abracar mais publicos.</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600">
+                  A ideia nao e um produto generico tentando ser tudo ao mesmo tempo. E uma plataforma central com vertentes fortes,
+                  cada uma com linguagem, oferta e discovery proprios.
+                </p>
+                <div className="mt-5 space-y-3">
+                  <div className="rounded-[1.4rem] bg-slate-50 p-4">
+                    <p className="text-sm font-semibold text-slate-950">Pai: EventHub</p>
+                    <p className="mt-1 text-sm text-slate-600">Conta, operacao, checkout, tickets, catalogo e motor de descoberta.</p>
+                  </div>
+                  <div className="rounded-[1.4rem] bg-slate-50 p-4">
+                    <p className="text-sm font-semibold text-slate-950">Filhos: vertentes</p>
+                    <p className="mt-1 text-sm text-slate-600">Pulse agora. Outras rotas depois, cada uma falando com um comportamento especifico.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
         <div className="container space-y-8">

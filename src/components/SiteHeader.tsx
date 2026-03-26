@@ -1,4 +1,4 @@
-import { ChevronDown, Menu, ShoppingCart, Ticket, User, X } from "lucide-react";
+import { ChevronDown, Flame, Menu, ShoppingCart, Ticket, User, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import EventSearchBox from "@/components/EventSearchBox";
@@ -67,6 +67,14 @@ const SiteHeader = () => {
             Ingressos
           </Link>
 
+          <Link
+            to="/pulse"
+            className="inline-flex items-center gap-2 rounded-full border border-lime-200 bg-lime-50 px-3 py-2 text-sm font-medium text-slate-800 transition-colors hover:border-lime-300 hover:bg-lime-100"
+          >
+            <Flame className="h-4 w-4 text-lime-700" />
+            Pulse
+          </Link>
+
           <button className="relative rounded-full border border-slate-200 p-2.5 transition-colors hover:border-slate-300 hover:bg-slate-50" aria-label="Carrinho">
             <ShoppingCart className="h-5 w-5 text-slate-800" />
             <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">
@@ -130,6 +138,13 @@ const SiteHeader = () => {
                 className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-800"
               >
                 Explorar eventos
+              </Link>
+              <Link
+                to="/pulse"
+                onClick={() => setMenuOpen(false)}
+                className="rounded-2xl border border-lime-200 bg-lime-50 px-4 py-3 text-sm font-semibold text-slate-900"
+              >
+                Abrir vertente Pulse
               </Link>
               <Link
                 to={isAuthenticated ? "/conta" : "/conta/acesso"}
