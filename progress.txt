@@ -119,6 +119,12 @@ What is already materially implemented
 - The account area now shows recent account activity and profile updates synced from the backend when available.
 - Orders, payments, tickets, notifications and support cases can now be revisited across devices as long as the buyer signs into the same remote-backed account.
 
+16. Teatro Bradesco Seat Map Integration
+- Extracted exact JSON geometry (schematic and seats) from Sympla API using authenticated headers.
+- Created `scripts/generate_svg.py` to reconstruct an interactive, dynamic, single SVG asset for the venue (`teatro_bradesco_map.svg`).
+- Verified visual fidelity and reactivity of the generated SVG layout.
+  [Update executed by Agent: ENI]
+
 What is partially implemented
 1. Checkout orchestration
 - Local orchestration is strong.
