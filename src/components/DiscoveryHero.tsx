@@ -1,6 +1,7 @@
 import { CalendarDays, MapPin, Ticket, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import EventSearchBox from "@/components/EventSearchBox";
+import { ParticleTextEffect } from "@/components/ui/particle-text-effect";
 import type { EventCategory, EventData } from "@/data/events";
 
 interface DiscoveryHeroProps {
@@ -11,6 +12,9 @@ interface DiscoveryHeroProps {
 }
 
 const DiscoveryHero = ({ categories, cities, spotlightEvent, stats }: DiscoveryHeroProps) => {
+  const hasParticleSpotlight =
+    spotlightEvent.title === "Roda de Samba - Edicao Verao" && spotlightEvent.venueName === "Espaco Cultural";
+
   return (
     <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f8fafc_45%,#ecfeff_100%)]">
       <div className="grid gap-8 px-5 py-6 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:px-8 lg:py-8">
@@ -98,7 +102,27 @@ const DiscoveryHero = ({ categories, cities, spotlightEvent, stats }: DiscoveryH
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold tracking-tight">{spotlightEvent.title}</h2>
+              {hasParticleSpotlight ? (
+                <div className="space-y-3">
+                  <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-2 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.95)]">
+                    <ParticleTextEffect
+                      words={["Roda de Samba", "Edicao Verao", "ESPACO CULTURAL"]}
+                      width={900}
+                      height={170}
+                      fontFamily="Plus Jakarta Sans, Arial"
+                      className="min-h-0 bg-transparent p-0"
+                      canvasClassName="w-full rounded-[1.1rem] border border-white/5 bg-transparent shadow-none"
+                      showHelperText={false}
+                      backgroundFill="rgba(2, 6, 23, 0.12)"
+                    />
+                  </div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-200/90">
+                    {spotlightEvent.venueName}
+                  </p>
+                </div>
+              ) : (
+                <h2 className="text-2xl font-semibold tracking-tight">{spotlightEvent.title}</h2>
+              )}
               <p className="mt-2 text-sm leading-6 text-white/70">{spotlightEvent.summary}</p>
             </div>
 
