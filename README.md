@@ -36,6 +36,20 @@ npm i
 npm run dev
 ```
 
+## Documentation protocol
+
+This project uses the Obsidian vault in `ticket/` as a required operational memory.
+
+- Every meaningful project change must also update at least one Markdown note inside `ticket/`.
+- The repository includes a pre-commit guard for this rule.
+- You can run the check manually with:
+
+```sh
+npm run obsidian:check
+```
+
+- If the change affects milestone progress, also update `progress.txt` and `checklist-roadmap.md`.
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).

@@ -17,6 +17,7 @@ Este vault agora funciona como base de conhecimento do projeto `remix-of-ticket3
 - [[03 - Engenharia/Arquitetura]]
 - [[03 - Engenharia/Mapa do Repositorio]]
 - [[03 - Engenharia/Comandos]]
+- [[03 - Engenharia/Protocolo de Atualizacao]]
 - [[04 - Operacao/Proximos Passos]]
 
 ## Snapshot rapido
@@ -41,4 +42,5 @@ Este vault agora funciona como base de conhecimento do projeto `remix-of-ticket3
 1. Capture ideias soltas em [[01 - Inbox/Inbox]].
 2. Atualize [[02 - Projeto/Estado Atual]] quando houver marco relevante.
 3. Registre decisoes tecnicas novas perto da area correspondente em `03 - Engenharia`.
-4. Mantenha o plano imediato em [[04 - Operacao/Proximos Passos]].
+4. Toda mudanca relevante no projeto deve gerar atualizacao em pelo menos uma nota Markdown do vault.
+5. Mantenha o plano imediato em [[04 - Operacao/Proximos Passos]].

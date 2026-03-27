@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "obsidian:check": "node scripts/check-obsidian-sync.mjs",
     "backend:flow:smoke": "node scripts/backend-flow-smoke.mjs",
     "backend:serve": "node server/http/serve.mjs",
     "backend:http:smoke": "node scripts/backend-http-smoke.mjs",
