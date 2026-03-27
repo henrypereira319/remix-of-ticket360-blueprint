@@ -208,48 +208,61 @@ const SocialShell = () => {
   };
 
   return (
-    <div className={`app-nocturne relative min-h-screen overflow-x-hidden text-foreground ${isHome ? "bg-transparent" : "bg-background"}`}>
-      {isHome ? (
-        <div className="relative isolate min-h-screen overflow-x-hidden font-['Manrope'] text-foreground">
-          <div
-            className="pointer-events-none fixed inset-0 z-0 bg-black bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${backgroundVideoPoster}), url(${backgroundImage})` }}
-          />
-          {canUseVideoBackground ? (
-            <video
-              key={activeBackgroundVideo}
-              ref={videoRef}
-              aria-hidden="true"
-              className={`pointer-events-none fixed inset-0 z-[5] h-full w-full scale-100 object-cover transition-opacity duration-1000 ease-out md:scale-[1.02] ${
-                videoReady ? "opacity-100" : "opacity-0"
-              }`}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload={isMobileViewport ? "metadata" : "auto"}
-              src={activeBackgroundVideo}
-              poster={backgroundVideoPoster}
-              disablePictureInPicture
-              disableRemotePlayback
-              onLoadedMetadata={handleVideoReady}
-              onCanPlay={handleVideoReady}
-              onLoadedData={handleVideoReady}
-              onPlaying={handleVideoPlaying}
-              onTimeUpdate={handleVideoPlaying}
-              onPause={() => {
-                if ((videoRef.current?.currentTime ?? 0) === 0) {
-                  setVideoReady(false);
-                }
-              }}
-              onError={() => setVideoReady(false)}
-              style={{ transform: "translateZ(0)", willChange: "opacity" }}
-            />
-          ) : null}
-          <div className="pointer-events-none fixed inset-0 z-10 bg-black/52" />
-          <div className="pointer-events-none fixed inset-0 z-[11] bg-[radial-gradient(circle_at_top,rgba(8,145,178,0.12),transparent_38%),linear-gradient(to_bottom,rgba(0,0,0,0.12),rgba(0,0,0,0.2))]" />
+    <div className="app-nocturne relative min-h-screen overflow-x-hidden bg-transparent font-['Manrope'] text-foreground">
+      <div
+        className={`pointer-events-none fixed inset-0 z-0 bg-black bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${
+          isHome ? "opacity-100" : "opacity-0"
+        }`}
+        style={{ backgroundImage: `url(${backgroundVideoPoster}), url(${backgroundImage})` }}
+      />
+      {canUseVideoBackground ? (
+        <video
+          key={activeBackgroundVideo}
+          ref={videoRef}
+          aria-hidden="true"
+          className={`pointer-events-none fixed inset-0 z-[5] h-full w-full scale-100 object-cover transition-opacity duration-1000 ease-out md:scale-[1.02] ${
+            isHome && videoReady ? "opacity-100" : "opacity-0"
+          }`}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload={isMobileViewport ? "metadata" : "auto"}
+          src={activeBackgroundVideo}
+          poster={backgroundVideoPoster}
+          disablePictureInPicture
+          disableRemotePlayback
+          onLoadedMetadata={handleVideoReady}
+          onCanPlay={handleVideoReady}
+          onLoadedData={handleVideoReady}
+          onPlaying={handleVideoPlaying}
+          onTimeUpdate={handleVideoPlaying}
+          onPause={() => {
+            if ((videoRef.current?.currentTime ?? 0) === 0) {
+              setVideoReady(false);
+            }
+          }}
+          onError={() => setVideoReady(false)}
+          style={{ transform: "translateZ(0)", willChange: "opacity" }}
+        />
+      ) : null}
+      <div className={`pointer-events-none fixed inset-0 z-10 transition-opacity duration-500 ${isHome ? "bg-black/52 opacity-100" : "opacity-0"}`} />
+      <div
+        className={`pointer-events-none fixed inset-0 z-[11] transition-opacity duration-500 ${
+          isHome
+            ? "opacity-100 bg-[radial-gradient(circle_at_top,rgba(8,145,178,0.12),transparent_38%),linear-gradient(to_bottom,rgba(0,0,0,0.12),rgba(0,0,0,0.2))]"
+            : "opacity-0"
+        }`}
+      />
+      <div
+        className={`pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_top_left,rgba(153,238,0,0.1),transparent_26%),radial-gradient(circle_at_top_right,rgba(255,116,57,0.13),transparent_24%)] transition-opacity duration-500 ${
+          isHome ? "opacity-0" : "opacity-100"
+        }`}
+      />
 
-          <main className="relative z-20 min-h-screen overflow-hidden">
+      <div className={`relative z-20 ${isHome ? "min-h-screen overflow-x-hidden" : "mx-auto w-full max-w-7xl px-4 pb-32 sm:px-6 lg:px-8"}`}>
+        <main className={`relative min-h-screen overflow-hidden ${isHome ? "" : "py-4 lg:py-8"}`}>
+          <div className={`relative min-h-screen overflow-hidden [perspective:1800px] ${isHome ? "" : "lg:min-h-[calc(100vh-4rem)]"}`}>
             <AnimatePresence mode="wait" initial={false} custom={direction}>
               <motion.div
                 key={location.pathname}
@@ -259,48 +272,24 @@ const SocialShell = () => {
                 animate="center"
                 exit="exit"
                 transition={pageSpring}
-                className="relative min-h-screen"
+                className={`relative min-h-screen origin-center will-change-transform ${isHome ? "" : "lg:min-h-[calc(100vh-4rem)]"}`}
               >
+                {!isHome ? (
+                  <motion.div
+                    aria-hidden="true"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: shouldReduceMotion ? 0 : 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: shouldReduceMotion ? 0.12 : 0.24, ease: "easeOut" }}
+                    className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[linear-gradient(90deg,rgba(153,238,0,0.05),transparent_18%,transparent_82%,rgba(255,116,57,0.05))]"
+                  />
+                ) : null}
                 {outlet}
               </motion.div>
             </AnimatePresence>
-          </main>
-        </div>
-      ) : (
-        <>
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(153,238,0,0.1),transparent_26%),radial-gradient(circle_at_top_right,rgba(255,116,57,0.13),transparent_24%)]" />
-          <div className="relative mx-auto w-full max-w-7xl px-4 pb-32 sm:px-6 lg:px-8">
-            <main className="min-w-0 py-4 lg:py-8">
-              <div className="lg:min-h-[calc(100vh-4rem)]">
-                <div className="relative min-h-screen overflow-hidden [perspective:1800px] lg:min-h-[calc(100vh-4rem)]">
-                  <AnimatePresence mode="wait" initial={false} custom={direction}>
-                    <motion.div
-                      key={location.pathname}
-                      custom={direction}
-                      variants={pageTransition}
-                      initial="enter"
-                      animate="center"
-                      exit="exit"
-                      transition={pageSpring}
-                      className="relative min-h-screen origin-center will-change-transform lg:min-h-[calc(100vh-4rem)]"
-                    >
-                      <motion.div
-                        aria-hidden="true"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: shouldReduceMotion ? 0 : 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: shouldReduceMotion ? 0.12 : 0.24, ease: "easeOut" }}
-                        className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[linear-gradient(90deg,rgba(153,238,0,0.05),transparent_18%,transparent_82%,rgba(255,116,57,0.05))]"
-                      />
-                      {outlet}
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-              </div>
-            </main>
           </div>
-        </>
-      )}
+        </main>
+      </div>
 
       <BottomNav />
     </div>
