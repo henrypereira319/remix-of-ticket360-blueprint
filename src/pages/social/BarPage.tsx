@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import SocialPageHero from "@/components/social/SocialPageHero";
 import BarItemCard from "@/components/social/BarItemCard";
 import BarOrderCard from "@/components/social/BarOrderCard";
 import { mockBarItems, mockBarOrders, type BarItem, type BarOrder } from "@/data/social-mock";
-import { ShoppingBag, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 type Tab = "menu" | "pedidos";
 type Category = "all" | BarItem["category"];
@@ -14,7 +16,7 @@ const categoryLabels: Record<Category, string> = {
   combos: "Combos",
   premium: "Premium",
   merch: "Merch",
-  experience: "Experiência",
+  experience: "Experiencia",
 };
 
 const BarPage = () => {
@@ -24,18 +26,15 @@ const BarPage = () => {
   const [cart, setCart] = useState<{ item: BarItem; quantity: number }[]>([]);
   const [orders, setOrders] = useState<BarOrder[]>(mockBarOrders);
 
-  const filteredItems = category === "all"
-    ? mockBarItems
-    : mockBarItems.filter((i) => i.category === category);
-
-  const cartTotal = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
-  const cartCount = cart.reduce((sum, c) => sum + c.quantity, 0);
+  const filteredItems = category === "all" ? mockBarItems : mockBarItems.filter((item) => item.category === category);
+  const cartTotal = cart.reduce((sum, current) => sum + current.item.price * current.quantity, 0);
+  const cartCount = cart.reduce((sum, current) => sum + current.quantity, 0);
 
   const addToCart = (item: BarItem) => {
     setCart((prev) => {
-      const existing = prev.find((c) => c.item.id === item.id);
+      const existing = prev.find((current) => current.item.id === item.id);
       if (existing) {
-        return prev.map((c) => c.item.id === item.id ? { ...c, quantity: c.quantity + 1 } : c);
+        return prev.map((current) => (current.item.id === item.id ? { ...current, quantity: current.quantity + 1 } : current));
       }
       return [...prev, { item, quantity: 1 }];
     });
@@ -43,6 +42,7 @@ const BarPage = () => {
 
   const handleOrder = () => {
     if (cart.length === 0) return;
+
     const newOrder: BarOrder = {
       id: `bo-${Date.now()}`,
       items: cart,
@@ -52,67 +52,99 @@ const BarPage = () => {
       createdAt: new Date().toISOString(),
       estimatedMinutes: 10,
     };
+
     setOrders((prev) => [newOrder, ...prev]);
     setCart([]);
     setTab("pedidos");
   };
 
   return (
-    <div className="space-y-4 safe-top lg:px-6 lg:pb-6">
-      <div className="flex items-center gap-3 px-4 pt-4 lg:px-0 lg:pt-6">
-        <button onClick={() => navigate(-1)} className="rounded-lg p-1.5 text-muted-foreground active:bg-surface">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-foreground font-display">Comprar no Bar</h1>
-          <p className="text-[11px] text-muted-foreground">11.11 Full Open Bar</p>
-        </div>
-        <div className="relative">
-          <ShoppingBag className="h-5 w-5 text-muted-foreground" />
-          {cartCount > 0 && (
-            <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
-              {cartCount}
-            </span>
-          )}
-        </div>
-      </div>
+    <div className="space-y-5 safe-top lg:px-6 lg:pb-6">
+      <div className="px-4 pt-4 lg:px-0 lg:pt-6">
+        <SocialPageHero
+          eyebrow="Open bar"
+          title="Consumo, pedidos e retirada em um fluxo premium"
+          subtitle="O cardapio e o acompanhamento dos pedidos agora usam a mesma UI da home, com destaque mais forte para categorias, itens e CTA final."
+          action={
+            <div className="flex items-center gap-3">
+              <button onClick={() => navigate(-1)} className="pop-out-button flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/10 bg-black/55 text-white hover:bg-white/10">
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <div className="relative flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/10 bg-black/55 text-white">
+                <ShoppingBag className="h-5 w-5 text-white/80" />
+                {cartCount > 0 ? (
+                  <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] font-black text-white">
+                    {cartCount}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          }
+          footer={
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setTab("menu")}
+                  className={cn(
+                    "pop-out-button rounded-full px-5 py-2 text-xs font-bold uppercase tracking-[0.2em] transition-colors",
+                    tab === "menu" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
+                  )}
+                >
+                  Cardapio
+                </button>
+                <button
+                  onClick={() => setTab("pedidos")}
+                  className={cn(
+                    "pop-out-button rounded-full px-5 py-2 text-xs font-bold uppercase tracking-[0.2em] transition-colors",
+                    tab === "pedidos" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
+                  )}
+                >
+                  Meus Pedidos ({orders.length})
+                </button>
+              </div>
 
-      <div className="flex gap-1 px-4 lg:px-0">
-        <button
-          onClick={() => setTab("menu")}
-          className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
-            tab === "menu" ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground"
-          }`}
-        >
-          Cardápio
-        </button>
-        <button
-          onClick={() => setTab("pedidos")}
-          className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
-            tab === "pedidos" ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground"
-          }`}
-        >
-          Meus Pedidos ({orders.length})
-        </button>
+              {tab === "menu" ? (
+                <div className="flex gap-2 overflow-x-auto scrollbar-none">
+                  {(Object.keys(categoryLabels) as Category[]).map((currentCategory) => (
+                    <button
+                      key={currentCategory}
+                      onClick={() => setCategory(currentCategory)}
+                      className={cn(
+                        "pop-out-button shrink-0 rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] transition-colors",
+                        category === currentCategory ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
+                      )}
+                    >
+                      {categoryLabels[currentCategory]}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  <div className="glass-panel rounded-[1.6rem] border border-white/10 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-primary">Pedidos ativos</p>
+                    <p className="mt-3 text-4xl font-black tracking-tight text-white">{orders.length}</p>
+                    <p className="mt-1 text-xs text-white/45">Historico de pedidos enviados no evento.</p>
+                  </div>
+                  <div className="glass-panel rounded-[1.6rem] border border-white/10 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-secondary">Carrinho</p>
+                    <p className="mt-3 text-4xl font-black tracking-tight text-white">{cartCount}</p>
+                    <p className="mt-1 text-xs text-white/45">Itens aguardando confirmacao de compra.</p>
+                  </div>
+                  <div className="glass-panel rounded-[1.6rem] border border-white/10 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/45">Subtotal atual</p>
+                    <p className="mt-3 text-2xl font-black tracking-tight text-white">R$ {cartTotal.toFixed(2)}</p>
+                    <p className="mt-1 text-xs text-white/45">Pronto para seguir direto para o envio.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          }
+        />
       </div>
 
       {tab === "menu" ? (
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6">
           <div className="space-y-4">
-            <div className="flex gap-1.5 overflow-x-auto px-4 scrollbar-none lg:px-0">
-              {(Object.keys(categoryLabels) as Category[]).map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setCategory(cat)}
-                  className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition-colors ${
-                    category === cat ? "bg-social text-social-foreground" : "bg-surface text-muted-foreground"
-                  }`}
-                >
-                  {categoryLabels[cat]}
-                </button>
-              ))}
-            </div>
-
             <div className="grid gap-2 px-4 lg:px-0 xl:grid-cols-2">
               {filteredItems.map((item) => (
                 <BarItemCard key={item.id} item={item} onAdd={addToCart} />
@@ -121,25 +153,25 @@ const BarPage = () => {
           </div>
 
           <aside className="hidden lg:block">
-            <div className="sticky top-8 space-y-4 rounded-[1.75rem] border border-white/5 bg-surface/70 p-5">
+            <div className="nocturne-panel sticky top-8 space-y-4 p-5">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-social">Carrinho atual</p>
-                <h2 className="mt-2 text-lg font-semibold text-foreground">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Carrinho atual</p>
+                <h2 className="mt-2 text-lg font-semibold text-white">
                   {cartCount > 0 ? `${cartCount} itens selecionados` : "Monte seu pedido"}
                 </h2>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Adicione consumíveis do cardápio para confirmar seu pedido sem fila.
+                <p className="mt-1 text-sm leading-6 text-white/55">
+                  Adicione consumiveis do cardapio para confirmar seu pedido sem fila.
                 </p>
               </div>
 
               {cart.length > 0 ? (
                 <div className="space-y-3">
-                  <div className="space-y-2 rounded-2xl bg-background/55 p-4">
+                  <div className="nocturne-panel-soft space-y-2 p-4">
                     {cart.map(({ item, quantity }) => (
                       <div key={item.id} className="flex items-center justify-between gap-3 text-sm">
                         <div className="min-w-0">
-                          <p className="truncate font-medium text-foreground">{item.name}</p>
-                          <p className="text-xs text-muted-foreground">{quantity}x no carrinho</p>
+                          <p className="truncate font-medium text-white">{item.name}</p>
+                          <p className="text-xs text-white/45">{quantity}x no carrinho</p>
                         </div>
                         <p className="font-semibold text-primary">R$ {(item.price * quantity).toFixed(2)}</p>
                       </div>
@@ -148,42 +180,44 @@ const BarPage = () => {
 
                   <button
                     onClick={handleOrder}
-                    className="flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+                    className="pop-out-button flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground"
                   >
                     <span>Confirmar pedido</span>
                     <span>R$ {cartTotal.toFixed(2)}</span>
                   </button>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-border bg-background/35 p-4 text-sm leading-6 text-muted-foreground">
+                <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-white/45">
                   Os itens adicionados aparecem aqui com subtotal e CTA final de compra.
                 </div>
               )}
             </div>
           </aside>
 
-          {cartCount > 0 && (
-            <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-lg safe-bottom lg:hidden">
+          {cartCount > 0 ? (
+            <div className="safe-bottom fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-black/90 px-4 py-3 backdrop-blur-2xl lg:hidden">
               <button
                 onClick={handleOrder}
-                className="flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground active:bg-primary/80"
+                className="pop-out-button flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground"
               >
                 <span>Confirmar pedido ({cartCount} itens)</span>
                 <span>R$ {cartTotal.toFixed(2)}</span>
               </button>
             </div>
-          )}
+          ) : null}
         </div>
       ) : (
         <div className="space-y-3 px-4 pb-6 lg:px-0">
           {orders.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-12 text-center">
-              <ShoppingBag className="h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">Nenhum pedido ainda</p>
+            <div className="nocturne-empty-state flex flex-col items-center gap-2 py-12">
+              <ShoppingBag className="h-10 w-10 text-white/25" />
+              <p className="text-sm text-white/55">Nenhum pedido ainda</p>
             </div>
           ) : (
             <div className="grid gap-3 xl:grid-cols-2">
-              {orders.map((order) => <BarOrderCard key={order.id} order={order} />)}
+              {orders.map((order) => (
+                <BarOrderCard key={order.id} order={order} />
+              ))}
             </div>
           )}
         </div>

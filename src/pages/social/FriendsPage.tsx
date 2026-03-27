@@ -1,7 +1,9 @@
 import { useState } from "react";
 import FriendCard from "@/components/social/FriendCard";
+import SocialPageHero from "@/components/social/SocialPageHero";
 import { mockFriends, type Friend } from "@/data/social-mock";
 import { Search, UserPlus } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Tab = "todos" | "pendentes";
 
@@ -10,100 +12,99 @@ const FriendsPage = () => {
   const [tab, setTab] = useState<Tab>("todos");
   const [search, setSearch] = useState("");
 
-  const accepted = friends.filter((f) => f.status === "accepted");
-  const pending = friends.filter((f) => f.status === "pending_received" || f.status === "pending_sent");
+  const accepted = friends.filter((friend) => friend.status === "accepted");
+  const pending = friends.filter((friend) => friend.status === "pending_received" || friend.status === "pending_sent");
 
   const filtered =
     tab === "todos"
-      ? accepted.filter((f) => f.fullName.toLowerCase().includes(search.toLowerCase()))
+      ? accepted.filter((friend) => friend.fullName.toLowerCase().includes(search.toLowerCase()))
       : pending;
 
   const handleAccept = (id: string) => {
-    setFriends((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, status: "accepted" as const } : f))
-    );
+    setFriends((prev) => prev.map((friend) => (friend.id === id ? { ...friend, status: "accepted" as const } : friend)));
   };
 
   const handleRemove = (id: string) => {
-    setFriends((prev) => prev.filter((f) => f.id !== id));
+    setFriends((prev) => prev.filter((friend) => friend.id !== id));
   };
 
   return (
-    <div className="space-y-4 safe-top lg:px-6 lg:pb-6">
-      <div className="flex items-center justify-between px-4 pt-4 lg:px-0 lg:pt-6">
-        <h1 className="text-xl font-bold text-foreground font-display">Amigos</h1>
-        <button className="flex h-9 w-9 items-center justify-center rounded-xl bg-social text-social-foreground">
-          <UserPlus className="h-4 w-4" strokeWidth={2.5} />
-        </button>
+    <div className="space-y-5 safe-top lg:px-6 lg:pb-6">
+      <div className="px-4 pt-4 lg:px-0 lg:pt-6">
+        <SocialPageHero
+          eyebrow="Rede EventHub"
+          title="Sua rede e os encontros do evento"
+          subtitle="Acompanhe quem ja entrou na sua orbita, filtre as solicitacoes e mantenha a conversa fluindo com a mesma energia visual da home."
+          action={
+            <button className="pop-out-button flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/10 bg-black/55 text-white hover:bg-white/10">
+              <UserPlus className="h-5 w-5" strokeWidth={2.4} />
+            </button>
+          }
+          footer={
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1.5fr)_repeat(2,minmax(0,0.75fr))]">
+              <div className="glass-panel rounded-[1.6rem] border border-white/10 p-4">
+                <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/45 px-4 py-3">
+                  <Search className="h-4 w-4 text-white/45" />
+                  <input
+                    type="text"
+                    placeholder="Buscar amigos..."
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    className="flex-1 bg-transparent text-sm text-white placeholder:text-white/35 outline-none"
+                  />
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setTab("todos")}
+                    className={cn(
+                      "pop-out-button rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] transition-colors",
+                      tab === "todos" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
+                    )}
+                  >
+                    Todos ({accepted.length})
+                  </button>
+                  <button
+                    onClick={() => setTab("pendentes")}
+                    className={cn(
+                      "pop-out-button rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] transition-colors",
+                      tab === "pendentes" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
+                    )}
+                  >
+                    Pendentes ({pending.length})
+                  </button>
+                </div>
+              </div>
+
+              <div className="glass-panel rounded-[1.6rem] border border-white/10 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-primary">Conectados</p>
+                <p className="mt-3 text-4xl font-black tracking-tight text-white">{accepted.length}</p>
+                <p className="mt-1 text-xs text-white/45">Amigos ativos dentro da sua rede do evento.</p>
+              </div>
+
+              <div className="glass-panel rounded-[1.6rem] border border-white/10 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-secondary">Pendentes</p>
+                <p className="mt-3 text-4xl font-black tracking-tight text-white">{pending.length}</p>
+                <p className="mt-1 text-xs text-white/45">Solicitacoes aguardando a sua resposta.</p>
+              </div>
+            </div>
+          }
+        />
       </div>
 
-      <div className="lg:grid lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-6">
-        <div className="space-y-4 px-4 lg:px-0">
-          <div className="rounded-[1.75rem] border border-white/5 bg-surface/70 p-4">
-            <div className="flex items-center gap-2 rounded-xl bg-background/55 px-3 py-2.5">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Buscar amigos..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-              />
-            </div>
-
-            <div className="mt-4 flex gap-1">
-              <button
-                onClick={() => setTab("todos")}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
-                  tab === "todos" ? "bg-social text-social-foreground" : "bg-background/60 text-muted-foreground"
-                }`}
-              >
-                Todos ({accepted.length})
-              </button>
-              <button
-                onClick={() => setTab("pendentes")}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
-                  tab === "pendentes" ? "bg-social text-social-foreground" : "bg-background/60 text-muted-foreground"
-                }`}
-              >
-                Pendentes ({pending.length})
-              </button>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-background/55 p-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Conectados</p>
-                <p className="mt-2 text-2xl font-semibold text-foreground">{accepted.length}</p>
-              </div>
-              <div className="rounded-2xl bg-background/55 p-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Pendentes</p>
-                <p className="mt-2 text-2xl font-semibold text-foreground">{pending.length}</p>
-              </div>
-            </div>
+      <div className="px-4 pb-6 lg:px-0">
+        {filtered.length === 0 ? (
+          <div className="nocturne-empty-state flex min-h-[18rem] flex-col items-center justify-center gap-2 py-12">
+            <UserPlus className="h-10 w-10 text-white/25" />
+            <p className="text-sm text-white/55">{tab === "todos" ? "Nenhum amigo encontrado" : "Sem solicitacoes pendentes"}</p>
           </div>
-        </div>
-
-        <div className="space-y-2 px-4 pb-6 lg:px-0">
-          {filtered.length === 0 ? (
-            <div className="flex min-h-[18rem] flex-col items-center justify-center gap-2 rounded-[1.75rem] border border-dashed border-border bg-surface/40 py-12 text-center">
-              <UserPlus className="h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">
-                {tab === "todos" ? "Nenhum amigo encontrado" : "Sem solicitações pendentes"}
-              </p>
-            </div>
-          ) : (
-            <div className="grid gap-2 xl:grid-cols-2">
-              {filtered.map((friend) => (
-                <FriendCard
-                  key={friend.id}
-                  friend={friend}
-                  onAccept={handleAccept}
-                  onRemove={handleRemove}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="grid gap-3 xl:grid-cols-2">
+            {filtered.map((friend) => (
+              <FriendCard key={friend.id} friend={friend} onAccept={handleAccept} onRemove={handleRemove} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

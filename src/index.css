@@ -236,4 +236,29 @@
   .pop-out-button:active {
     transform: translateY(-1px) scale(0.985);
   }
+
+  .nocturne-panel {
+    @apply rounded-[1.75rem] border border-white/10 bg-black/60 backdrop-blur-2xl;
+    box-shadow: 0 24px 60px -35px rgba(0, 0, 0, 0.95);
+  }
+
+  .nocturne-panel-soft {
+    @apply rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl;
+  }
+
+  .nocturne-kpi {
+    @apply rounded-2xl border border-white/10 bg-black/35;
+  }
+
+  .nocturne-chip {
+    @apply rounded-full border border-white/10 bg-white/[0.04] text-white/60;
+  }
+
+  .nocturne-icon-button {
+    @apply pop-out-button flex items-center justify-center border border-white/10 bg-black/55 text-white/70 backdrop-blur-xl transition-colors hover:bg-white/10 hover:text-white;
+  }
+
+  .nocturne-empty-state {
+    @apply rounded-[1.75rem] border border-white/10 bg-black/35 text-center;
+  }
 }

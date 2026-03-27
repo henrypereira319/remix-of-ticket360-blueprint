@@ -12,22 +12,22 @@ const SocialDesktopRail = () => {
 
   return (
     <aside className="hidden lg:flex lg:h-screen lg:flex-col lg:py-8">
-      <div className="sticky top-8 flex h-[calc(100vh-4rem)] flex-col overflow-hidden rounded-[2rem] border border-border/70 bg-surface/80 p-5 shadow-card backdrop-blur-xl">
-        <Link to="/app" className="rounded-[1.5rem] border border-white/5 bg-background/70 px-4 py-4 transition-colors hover:border-social/30">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-social">EventHub Social</p>
+      <div className="sticky top-8 flex h-[calc(100vh-4rem)] flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-black/55 p-5 shadow-[0_28px_90px_-52px_rgba(0,0,0,1)] backdrop-blur-2xl">
+        <Link to="/app" className="glass-panel rounded-[1.5rem] border border-white/10 px-4 py-4 transition-colors hover:border-primary/30">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">EventHub Social</p>
           <h2 className="mt-2 text-2xl font-semibold text-foreground">Rede pessoal do evento</h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Feed social, pedidos in-bar e divisão de itens premium no mesmo fluxo.
+          <p className="mt-2 text-sm leading-6 text-white/60">
+            Feed social, pedidos in-bar e divisao de itens premium no mesmo fluxo.
           </p>
         </Link>
 
-        <div className="mt-5 rounded-[1.5rem] border border-white/5 bg-background/60 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Sua sessão</p>
-          <h3 className="mt-2 text-lg font-semibold text-foreground">Olá, {firstName}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">{currentAccount?.email ?? "Entre para sincronizar sua rede."}</p>
+        <div className="nocturne-panel mt-5 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/45">Sua sessao</p>
+          <h3 className="mt-2 text-lg font-semibold text-foreground">Ola, {firstName}</h3>
+          <p className="mt-1 text-sm text-white/60">{currentAccount?.email ?? "Entre para sincronizar sua rede."}</p>
           <Link
             to="/conta"
-            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-social transition-colors hover:text-social/80"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
           >
             Abrir painel da conta
             <ArrowUpRight className="h-4 w-4" />
@@ -44,8 +44,8 @@ const SocialDesktopRail = () => {
                 cn(
                   "flex items-center gap-3 rounded-[1.25rem] px-4 py-3 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-social text-social-foreground shadow-[0_18px_45px_-28px_hsl(var(--social)/0.95)]"
-                    : "bg-background/40 text-muted-foreground hover:bg-background/70 hover:text-foreground",
+                    ? "bg-primary text-primary-foreground shadow-[0_18px_45px_-28px_rgba(153,238,0,0.48)]"
+                    : "bg-white/[0.04] text-white/60 hover:bg-white/[0.08] hover:text-white",
                 )
               }
             >
@@ -60,7 +60,7 @@ const SocialDesktopRail = () => {
         </nav>
 
         <div className="mt-6">
-          <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Atalhos</p>
+          <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Atalhos</p>
           <div className="mt-3 space-y-2">
             {socialQuickLinks.map(({ to, icon: Icon, label, description }) => (
               <NavLink
@@ -70,8 +70,8 @@ const SocialDesktopRail = () => {
                   cn(
                     "flex items-center gap-3 rounded-[1.25rem] border px-4 py-3 transition-colors",
                     isActive
-                      ? "border-social/35 bg-social/10"
-                      : "border-white/5 bg-background/35 hover:border-white/10 hover:bg-background/55",
+                      ? "border-primary/30 bg-primary/10"
+                      : "border-white/10 bg-white/[0.04] hover:border-white/20 hover:bg-white/[0.07]",
                   )
                 }
               >
@@ -80,16 +80,16 @@ const SocialDesktopRail = () => {
                     <div
                       className={cn(
                         "flex h-10 w-10 items-center justify-center rounded-xl",
-                        isActive ? "bg-social text-social-foreground" : "bg-surface-elevated text-social",
+                        isActive ? "bg-primary text-primary-foreground" : "bg-white/[0.06] text-primary",
                       )}
                     >
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-foreground">{label}</p>
-                      <p className="truncate text-xs text-muted-foreground">{description}</p>
+                      <p className="truncate text-xs text-white/50">{description}</p>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    <ChevronRight className="h-4 w-4 text-white/35" />
                   </>
                 )}
               </NavLink>
@@ -97,11 +97,11 @@ const SocialDesktopRail = () => {
           </div>
         </div>
 
-        <div className="mt-auto rounded-[1.5rem] border border-white/5 bg-gradient-to-br from-social/18 via-transparent to-primary/18 p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-social">Resumo rápido</p>
+        <div className="mt-auto rounded-[1.5rem] border border-white/10 bg-gradient-to-br from-primary/18 via-transparent to-secondary/16 p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Resumo rapido</p>
           <p className="mt-2 text-3xl font-semibold text-foreground">{pendingInbox}</p>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            itens aguardando sua atenção entre solicitações, divisões e pedidos ativos.
+          <p className="mt-1 text-sm leading-6 text-white/60">
+            itens aguardando sua atencao entre solicitacoes, divisoes e pedidos ativos.
           </p>
         </div>
       </div>

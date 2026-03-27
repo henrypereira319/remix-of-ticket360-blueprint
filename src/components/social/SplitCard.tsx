@@ -3,12 +3,12 @@ import { Check, Clock, X } from "lucide-react";
 import type { SplitRequest, SplitStatus } from "@/data/social-mock";
 
 const statusIcon: Record<SplitStatus, React.ReactNode> = {
-  paid: <Check className="h-3 w-3 text-social" />,
+  paid: <Check className="h-3 w-3 text-primary" />,
   accepted: <Check className="h-3 w-3 text-secondary" />,
-  pending: <Clock className="h-3 w-3 text-muted-foreground" />,
+  pending: <Clock className="h-3 w-3 text-white/45" />,
   declined: <X className="h-3 w-3 text-destructive" />,
   expired: <Clock className="h-3 w-3 text-destructive" />,
-  completed: <Check className="h-3 w-3 text-social" />,
+  completed: <Check className="h-3 w-3 text-primary" />,
 };
 
 const statusLabel: Record<SplitStatus, string> = {
@@ -17,7 +17,7 @@ const statusLabel: Record<SplitStatus, string> = {
   pending: "Pendente",
   declined: "Recusado",
   expired: "Expirado",
-  completed: "Concluído",
+  completed: "Concluido",
 };
 
 interface Props {
@@ -27,70 +27,71 @@ interface Props {
 }
 
 const SplitCard = ({ split, onAccept, onDecline }: Props) => {
-  const paidCount = split.participants.filter((p) => p.status === "paid").length;
+  const paidCount = split.participants.filter((participant) => participant.status === "paid").length;
   const totalCount = split.participants.length;
   const progress = (paidCount / totalCount) * 100;
-  const myParticipation = split.participants.find((p) => p.friendId === "current");
+  const myParticipation = split.participants.find((participant) => participant.friendId === "current");
 
   return (
-    <div className="rounded-2xl bg-surface p-4 space-y-3">
+    <div className="glass-panel space-y-4 rounded-[1.9rem] border border-white/10 p-4 transition-colors hover:bg-white/[0.05]">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-elevated text-2xl">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-2xl">
           {split.itemImage}
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className="truncate text-sm font-semibold text-foreground">{split.itemName}</h4>
-          <p className="text-[11px] text-muted-foreground">{split.eventName}</p>
+          <h4 className="truncate text-sm font-semibold text-white">{split.itemName}</h4>
+          <p className="text-[11px] text-white/45">{split.eventName}</p>
         </div>
         <div className="text-right">
           <p className="text-sm font-bold text-primary">R$ {split.totalAmount.toFixed(2)}</p>
-          <p className="text-[10px] text-muted-foreground">÷ {totalCount}</p>
+          <p className="text-[10px] text-white/35">/ {totalCount}</p>
         </div>
       </div>
 
-      {/* Participants */}
       <div className="space-y-2">
-        {split.participants.map((p) => (
-          <div key={p.friendId} className="flex items-center gap-2">
+        {split.participants.map((participant) => (
+          <div key={participant.friendId} className="flex items-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.04] px-3 py-3">
             <Avatar className="h-6 w-6">
-              <AvatarImage src={p.friendAvatar} />
-              <AvatarFallback className="bg-surface-elevated text-[8px]">{p.friendName.slice(0, 2)}</AvatarFallback>
+              <AvatarImage src={participant.friendAvatar} />
+              <AvatarFallback className="bg-black/40 text-[8px] text-white">
+                {participant.friendName.slice(0, 2)}
+              </AvatarFallback>
             </Avatar>
-            <span className="flex-1 truncate text-xs text-foreground">{p.friendName}</span>
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              R$ {p.amount.toFixed(2)}
-              {statusIcon[p.status]}
-              <span>{statusLabel[p.status]}</span>
+            <span className="flex-1 truncate text-xs text-white">{participant.friendName}</span>
+            <span className="flex items-center gap-1 text-[10px] text-white/55">
+              R$ {participant.amount.toFixed(2)}
+              {statusIcon[participant.status]}
+              <span>{statusLabel[participant.status]}</span>
             </span>
           </div>
         ))}
       </div>
 
-      {/* Progress */}
       <div className="space-y-1">
-        <div className="h-1.5 overflow-hidden rounded-full bg-surface-elevated">
-          <div className="h-full rounded-full bg-social transition-all duration-500" style={{ width: `${progress}%` }} />
+        <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+          <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${progress}%` }} />
         </div>
-        <p className="text-[10px] text-muted-foreground">{paidCount}/{totalCount} pagos</p>
+        <p className="text-[10px] text-white/45">
+          {paidCount}/{totalCount} pagos
+        </p>
       </div>
 
-      {/* CTA for current user */}
-      {myParticipation && myParticipation.status === "pending" && (
+      {myParticipation && myParticipation.status === "pending" ? (
         <div className="flex gap-2 pt-1">
           <button
             onClick={() => onAccept?.(split.id)}
-            className="flex-1 rounded-xl bg-primary py-2.5 text-xs font-bold text-primary-foreground active:bg-primary/80"
+            className="pop-out-button flex-1 rounded-[1.15rem] bg-primary py-3 text-xs font-bold uppercase tracking-[0.16em] text-primary-foreground"
           >
-            Aceitar · R$ {myParticipation.amount.toFixed(2)}
+            Aceitar - R$ {myParticipation.amount.toFixed(2)}
           </button>
           <button
             onClick={() => onDecline?.(split.id)}
-            className="rounded-xl border border-border px-4 py-2.5 text-xs font-medium text-muted-foreground active:bg-surface-elevated"
+            className="pop-out-button rounded-[1.15rem] border border-white/10 bg-black/45 px-4 py-3 text-xs font-medium text-white/75 hover:bg-white/10 hover:text-white"
           >
             Recusar
           </button>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };
