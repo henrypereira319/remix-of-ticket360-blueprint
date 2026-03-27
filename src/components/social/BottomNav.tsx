@@ -34,14 +34,22 @@ const BottomNav = () => {
               to={to}
               aria-label={label}
               className={cn(
-                "flex h-11 w-11 flex-col items-center justify-center rounded-full transition-all",
-                isActive
-                  ? "scale-110 bg-primary/18 text-primary shadow-[0_0_30px_rgba(153,238,0,0.16)]"
-                  : "text-white/40 hover:bg-white/5 hover:text-white",
+                "glass-button-wrap rounded-full transition-all",
+                isActive ? "glass-button-primary scale-110" : "glass-button-soft",
               )}
             >
-                <Icon className="h-5 w-5" strokeWidth={isActive ? 2.4 : 1.9} />
-              </Link>
+              <span className="glass-button all-unset">
+                <span
+                  className={cn(
+                    "glass-button-text flex h-11 w-11 items-center justify-center",
+                    isActive ? "text-primary-foreground" : "text-white/80",
+                  )}
+                >
+                  <Icon className="h-5 w-5" strokeWidth={isActive ? 2.4 : 1.9} />
+                </span>
+              </span>
+              <span className="glass-button-shadow rounded-full" />
+            </Link>
           );
         })}
       </nav>

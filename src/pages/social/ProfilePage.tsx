@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlassButton } from "@/components/ui/glass-button";
 import SocialPageHero from "@/components/social/SocialPageHero";
 import { Bell, ChevronRight, CreditCard, HelpCircle, LogOut, Shield } from "lucide-react";
 
@@ -28,12 +29,13 @@ const ProfilePage = () => {
           title={currentAccount?.fullName ?? "Seu espaco pessoal"}
           subtitle="Seu perfil agora herda a mesma linguagem premium da home para organizar identidade, configuracoes e acessos, sem mexer no fluxo das acoes que ja existem."
           action={
-            <button
+            <GlassButton
               onClick={() => navigate("/conta")}
-              className="pop-out-button rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] text-primary-foreground"
+              className="glass-button-primary"
+              contentClassName="text-xs font-bold uppercase tracking-[0.18em] text-primary-foreground"
             >
               Editar perfil
-            </button>
+            </GlassButton>
           }
           footer={
             <div className="grid gap-3 md:grid-cols-[minmax(0,1.3fr)_repeat(2,minmax(0,0.7fr))]">
@@ -98,13 +100,14 @@ const ProfilePage = () => {
             </p>
           </div>
 
-          <button
+          <GlassButton
             onClick={handleLogout}
-            className="pop-out-button flex w-full items-center justify-center gap-2 rounded-[1.4rem] border border-destructive/30 bg-black/45 py-4 text-sm font-semibold text-destructive"
+            className="glass-button-danger glass-button-fill"
+            contentClassName="flex items-center justify-center gap-2 py-4 text-sm font-semibold text-destructive"
           >
             <LogOut className="h-4 w-4" />
             Sair da conta
-          </button>
+          </GlassButton>
         </div>
       </div>
     </div>

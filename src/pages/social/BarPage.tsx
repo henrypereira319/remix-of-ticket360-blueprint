@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SocialPageHero from "@/components/social/SocialPageHero";
+import { GlassButton } from "@/components/ui/glass-button";
 import BarItemCard from "@/components/social/BarItemCard";
 import BarOrderCard from "@/components/social/BarOrderCard";
 import { mockBarItems, mockBarOrders, type BarItem, type BarOrder } from "@/data/social-mock";
@@ -67,11 +68,24 @@ const BarPage = () => {
           subtitle="O cardapio e o acompanhamento dos pedidos agora usam a mesma UI da home, com destaque mais forte para categorias, itens e CTA final."
           action={
             <div className="flex items-center gap-3">
-              <button onClick={() => navigate(-1)} className="pop-out-button flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/10 bg-black/55 text-white hover:bg-white/10">
+              <GlassButton
+                size="icon"
+                className="glass-button-ghost glass-button-icon-lg"
+                contentClassName="flex items-center justify-center text-white"
+                onClick={() => navigate(-1)}
+                aria-label="Voltar"
+              >
                 <ArrowLeft className="h-5 w-5" />
-              </button>
-              <div className="relative flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/10 bg-black/55 text-white">
-                <ShoppingBag className="h-5 w-5 text-white/80" />
+              </GlassButton>
+              <div className="relative">
+                <div className="glass-button-wrap glass-button-ghost glass-button-icon-lg rounded-full">
+                  <div className="glass-button all-unset">
+                    <div className="glass-button-text flex items-center justify-center text-white/80">
+                      <ShoppingBag className="h-5 w-5 text-white/80" />
+                    </div>
+                  </div>
+                  <div className="glass-button-shadow rounded-full" />
+                </div>
                 {cartCount > 0 ? (
                   <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] font-black text-white">
                     {cartCount}
@@ -83,39 +97,45 @@ const BarPage = () => {
           footer={
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2">
-                <button
+                <GlassButton
                   onClick={() => setTab("menu")}
-                  className={cn(
-                    "pop-out-button rounded-full px-5 py-2 text-xs font-bold uppercase tracking-[0.2em] transition-colors",
-                    tab === "menu" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
+                  size="sm"
+                  className={tab === "menu" ? "glass-button-primary" : "glass-button-soft"}
+                  contentClassName={cn(
+                    "text-xs font-bold uppercase tracking-[0.2em]",
+                    tab === "menu" ? "text-primary-foreground" : "text-white/80",
                   )}
                 >
                   Cardapio
-                </button>
-                <button
+                </GlassButton>
+                <GlassButton
                   onClick={() => setTab("pedidos")}
-                  className={cn(
-                    "pop-out-button rounded-full px-5 py-2 text-xs font-bold uppercase tracking-[0.2em] transition-colors",
-                    tab === "pedidos" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
+                  size="sm"
+                  className={tab === "pedidos" ? "glass-button-primary" : "glass-button-soft"}
+                  contentClassName={cn(
+                    "text-xs font-bold uppercase tracking-[0.2em]",
+                    tab === "pedidos" ? "text-primary-foreground" : "text-white/80",
                   )}
                 >
                   Meus Pedidos ({orders.length})
-                </button>
+                </GlassButton>
               </div>
 
               {tab === "menu" ? (
                 <div className="flex gap-2 overflow-x-auto scrollbar-none">
                   {(Object.keys(categoryLabels) as Category[]).map((currentCategory) => (
-                    <button
+                    <GlassButton
                       key={currentCategory}
                       onClick={() => setCategory(currentCategory)}
-                      className={cn(
-                        "pop-out-button shrink-0 rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] transition-colors",
-                        category === currentCategory ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
+                      size="sm"
+                      className={category === currentCategory ? "glass-button-primary" : "glass-button-soft"}
+                      contentClassName={cn(
+                        "text-[11px] font-bold uppercase tracking-[0.18em]",
+                        category === currentCategory ? "text-primary-foreground" : "text-white/80",
                       )}
                     >
                       {categoryLabels[currentCategory]}
-                    </button>
+                    </GlassButton>
                   ))}
                 </div>
               ) : (
@@ -178,13 +198,14 @@ const BarPage = () => {
                     ))}
                   </div>
 
-                  <button
+                  <GlassButton
                     onClick={handleOrder}
-                    className="pop-out-button flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground"
+                    className="glass-button-primary glass-button-fill"
+                    contentClassName="flex items-center justify-between px-5 py-3.5 text-sm font-bold text-primary-foreground"
                   >
                     <span>Confirmar pedido</span>
                     <span>R$ {cartTotal.toFixed(2)}</span>
-                  </button>
+                  </GlassButton>
                 </div>
               ) : (
                 <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-white/45">
@@ -196,13 +217,14 @@ const BarPage = () => {
 
           {cartCount > 0 ? (
             <div className="safe-bottom fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-black/90 px-4 py-3 backdrop-blur-2xl lg:hidden">
-              <button
+              <GlassButton
                 onClick={handleOrder}
-                className="pop-out-button flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground"
+                className="glass-button-primary glass-button-fill"
+                contentClassName="flex items-center justify-between px-5 py-3.5 text-sm font-bold text-primary-foreground"
               >
                 <span>Confirmar pedido ({cartCount} itens)</span>
                 <span>R$ {cartTotal.toFixed(2)}</span>
-              </button>
+              </GlassButton>
             </div>
           ) : null}
         </div>

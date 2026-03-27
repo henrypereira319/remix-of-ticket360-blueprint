@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SocialPageHero from "@/components/social/SocialPageHero";
+import { GlassButton } from "@/components/ui/glass-button";
 import SplitCard from "@/components/social/SplitCard";
 import { mockSplitRequests } from "@/data/social-mock";
 import { useState } from "react";
@@ -47,9 +48,15 @@ const SplitsPage = () => {
           title="Divisao premium da sua galera"
           subtitle="Os convites de pagamento agora entram no mesmo clima visual da home, com leitura mais forte para progresso, valor e resposta pendente."
           action={
-            <button onClick={() => navigate(-1)} className="pop-out-button flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/10 bg-black/55 text-white hover:bg-white/10">
+            <GlassButton
+              size="icon"
+              className="glass-button-ghost glass-button-icon-lg"
+              contentClassName="flex items-center justify-center text-white"
+              onClick={() => navigate(-1)}
+              aria-label="Voltar"
+            >
               <ArrowLeft className="h-5 w-5" />
-            </button>
+            </GlassButton>
           }
           footer={
             <div className="grid gap-3 md:grid-cols-3">
