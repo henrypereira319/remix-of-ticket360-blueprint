@@ -271,7 +271,6 @@
     --anim-ease: cubic-bezier(.25, 1, .5, 1);
     --border-width: clamp(1px, .0625em, 4px);
     z-index: 2;
-    display: inline-block;
     transform-style: preserve-3d;
     transition: transform var(--anim-time) var(--anim-ease);
     position: relative;
@@ -325,7 +324,6 @@
     filter: blur(clamp(2px, .125em, 12px));
     transition: filter var(--anim-time) var(--anim-ease);
     pointer-events: none;
-    opacity: 0;
     position: absolute;
   }
 
@@ -340,7 +338,7 @@
     left: calc(var(--shadow-cutoff-fix) - .875em);
     box-sizing: border-box;
     transition: all var(--anim-time) var(--anim-ease);
-    opacity: 0;
+    opacity: 1;
     border-radius: 9999px;
     padding: .125em;
     position: absolute;
@@ -399,7 +397,7 @@
   }
 
   .glass-button-text:after {
-    content: none;
+    content: "";
     width: calc(100% - var(--border-width));
     height: calc(100% - var(--border-width));
     top: calc(0% + var(--border-width) / 2);
@@ -409,7 +407,9 @@
     z-index: 3;
     mix-blend-mode: screen;
     pointer-events: none;
-    transition: background-position calc(var(--anim-time) * 1.25) var(--anim-ease), --angle-2 calc(var(--anim-time) * 1.25) var(--anim-ease);
+    transition:
+      background-position calc(var(--anim-time) * 1.25) var(--anim-ease),
+      --angle-2 calc(var(--anim-time) * 1.25) var(--anim-ease);
     background-position: 0%;
     background-size: 200% 200%;
     border-radius: 9999px;
@@ -428,7 +428,7 @@
   }
 
   .glass-button:after {
-    content: none;
+    content: "";
     z-index: 1;
     width: calc(100% + var(--border-width));
     height: calc(100% + var(--border-width));
@@ -477,7 +477,7 @@
 
   .glass-button-wrap:has(.glass-button:hover) .glass-button-shadow:after {
     top: calc(var(--shadow-cutoff-fix) - .875em);
-    opacity: 0;
+    opacity: 1;
   }
 
   .glass-button-wrap:has(.glass-button:active) .glass-button-shadow {
@@ -486,7 +486,7 @@
 
   .glass-button-wrap:has(.glass-button:active) .glass-button-shadow:after {
     top: calc(var(--shadow-cutoff-fix) - .5em);
-    opacity: 0;
+    opacity: .75;
   }
 
   .glass-button-wrap:has(.glass-button:active) .glass-button-text {
