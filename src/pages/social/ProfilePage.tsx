@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlassButton } from "@/components/ui/glass-button";
 import SocialPageHero from "@/components/social/SocialPageHero";
 import { Bell, ChevronRight, CreditCard, HelpCircle, LogOut, Shield } from "lucide-react";
 
@@ -28,12 +29,14 @@ const ProfilePage = () => {
           title={currentAccount?.fullName ?? "Seu espaco pessoal"}
           subtitle="Seu perfil agora herda a mesma linguagem premium da home para organizar identidade, configuracoes e acessos, sem mexer no fluxo das acoes que ja existem."
           action={
-            <button
+            <GlassButton
               onClick={() => navigate("/conta")}
-              className="pop-out-button rounded-full bg-primary px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] text-primary-foreground"
+              size="sm"
+              className="text-primary"
+              contentClassName="px-5 py-3 text-xs font-bold uppercase tracking-[0.18em]"
             >
               Editar perfil
-            </button>
+            </GlassButton>
           }
           footer={
             <div className="grid gap-3 md:grid-cols-[minmax(0,1.3fr)_repeat(2,minmax(0,0.7fr))]">
@@ -75,16 +78,17 @@ const ProfilePage = () => {
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/45">Preferencias e conta</p>
             <div className="mt-4 space-y-2">
               {menuItems.map(({ icon: Icon, label }) => (
-                <button
+                <GlassButton
                   key={label}
-                  className="pop-out-button flex w-full items-center gap-4 rounded-[1.35rem] border border-white/10 bg-white/[0.04] px-4 py-4 text-left transition-colors hover:bg-white/[0.08]"
+                  className="w-full"
+                  contentClassName="flex w-full items-center gap-4 px-4 py-4 text-left"
                 >
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-black/35">
                     <Icon className="h-5 w-5 text-white/55" />
                   </div>
                   <span className="flex-1 text-sm font-semibold text-white">{label}</span>
                   <ChevronRight className="h-4 w-4 text-white/30" />
-                </button>
+                </GlassButton>
               ))}
             </div>
           </div>
@@ -98,13 +102,14 @@ const ProfilePage = () => {
             </p>
           </div>
 
-          <button
+          <GlassButton
             onClick={handleLogout}
-            className="pop-out-button flex w-full items-center justify-center gap-2 rounded-[1.4rem] border border-destructive/30 bg-black/45 py-4 text-sm font-semibold text-destructive"
+            className="w-full text-destructive"
+            contentClassName="flex items-center justify-center gap-2 px-4 py-4 text-sm font-semibold"
           >
             <LogOut className="h-4 w-4" />
             Sair da conta
-          </button>
+          </GlassButton>
         </div>
       </div>
     </div>

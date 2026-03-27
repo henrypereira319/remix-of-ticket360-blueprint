@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Check, UserPlus, X } from "lucide-react";
 import type { Friend } from "@/data/social-mock";
 
@@ -29,22 +30,19 @@ const FriendCard = ({ friend, onAccept, onRemove }: Props) => (
     </div>
 
     {friend.status === "accepted" ? (
-      <button onClick={() => onRemove?.(friend.id)} className="pop-out-button flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-black/45 text-white/70 hover:bg-white/10 hover:text-white">
+      <GlassButton onClick={() => onRemove?.(friend.id)} size="icon" aria-label={`Remover ${friend.fullName}`}>
         <X className="h-4 w-4" />
-      </button>
+      </GlassButton>
     ) : null}
 
     {friend.status === "pending_received" ? (
       <div className="flex gap-1.5">
-        <button
-          onClick={() => onAccept?.(friend.id)}
-          className="pop-out-button flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground"
-        >
+        <GlassButton onClick={() => onAccept?.(friend.id)} size="icon" className="text-primary" aria-label={`Aceitar ${friend.fullName}`}>
           <Check className="h-4 w-4" strokeWidth={2.5} />
-        </button>
-        <button onClick={() => onRemove?.(friend.id)} className="pop-out-button flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-black/45 text-white/70 hover:bg-white/10 hover:text-white">
+        </GlassButton>
+        <GlassButton onClick={() => onRemove?.(friend.id)} size="icon" aria-label={`Recusar ${friend.fullName}`}>
           <X className="h-4 w-4" />
-        </button>
+        </GlassButton>
       </div>
     ) : null}
 

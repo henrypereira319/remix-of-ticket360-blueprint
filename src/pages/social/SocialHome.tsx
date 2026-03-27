@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GlassButton } from "@/components/ui/glass-button";
 import {
   mockFeedItems,
   mockFriends,
@@ -59,26 +60,26 @@ const ActionButton = ({
   icon: Icon,
   label,
   badge,
-  to,
+  onClick,
 }: {
   icon: typeof MessageSquare;
   label: string;
   badge?: number;
-  to: string;
+  onClick: () => void;
 }) => (
-  <Link to={to} className="flex flex-col items-center gap-2">
-    <button className="pop-out-button group relative h-20 w-20 rounded-3xl border border-white/10 bg-black/60 hover:bg-white/10">
-      <span className="flex h-full w-full items-center justify-center">
-        <Icon className="h-6 w-6 text-white transition-transform group-hover:scale-110" />
-      </span>
+  <div className="flex flex-col items-center gap-2">
+    <div className="relative">
+      <GlassButton size="icon" onClick={onClick} className="h-20 w-20" aria-label={label}>
+        <Icon className="h-6 w-6" />
+      </GlassButton>
       {badge !== undefined ? (
         <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] font-black text-white">
           {badge}
         </span>
       ) : null}
-    </button>
+    </div>
     <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">{label}</span>
-  </Link>
+  </div>
 );
 
 const InfoCard = ({
@@ -86,24 +87,25 @@ const InfoCard = ({
   subtitle,
   icon: Icon,
   colorClass,
-  to,
+  onClick,
 }: {
   title: string;
   subtitle: string;
   icon: typeof Users;
   colorClass: string;
-  to: string;
+  onClick: () => void;
 }) => (
-  <Link
-    to={to}
-    className="glass-panel group flex items-center justify-between rounded-2xl p-4 transition-colors hover:bg-white/5"
+  <GlassButton
+    onClick={onClick}
+    className="w-full"
+    contentClassName="flex w-full items-center justify-between gap-4 px-4 py-4 text-left"
   >
-    <div>
+    <div className="text-left">
       <p className="text-xs font-bold text-white">{title}</p>
       <p className="text-[10px] text-white/40">{subtitle}</p>
     </div>
     <Icon className={cn("h-4 w-4", colorClass)} />
-  </Link>
+  </GlassButton>
 );
 
 const NetworkFeedCard = ({
@@ -139,9 +141,9 @@ const NetworkFeedCard = ({
       </div>
     </div>
     <p className="mb-6 text-xs leading-relaxed text-white/60">"{content}"</p>
-    <button className="pop-out-button w-full rounded-full border border-white/5 bg-white/5 py-2 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-white/10">
+    <GlassButton className="w-full" contentClassName="px-4 py-2 text-[10px] font-bold uppercase tracking-widest">
       {actionLabel}
-    </button>
+    </GlassButton>
   </motion.div>
 );
 
@@ -163,9 +165,9 @@ const OfficialAlertCard = ({ eventName }: { eventName: string }) => (
       <p className="mb-8 text-[10px] font-medium text-primary-foreground/80">
         Exclusive invite for session holders at {eventName}. Access through the side entrance after the headliner.
       </p>
-      <button className="pop-out-button w-full rounded-full bg-black py-3 text-[10px] font-black uppercase tracking-widest text-white">
+      <GlassButton className="w-full" contentClassName="px-4 py-3 text-[10px] font-black uppercase tracking-widest">
         Claim Ticket
-      </button>
+      </GlassButton>
     </div>
   </motion.div>
 );
@@ -190,6 +192,7 @@ const MapCard = ({ image }: { image: string }) => (
 );
 
 const SocialHome = () => {
+  const navigate = useNavigate();
   const { currentAccount } = useAuth();
   const [activeTab, setActiveTab] = useState("eventos");
   const accountId = currentAccount?.id;
@@ -242,7 +245,7 @@ const SocialHome = () => {
     <div className="min-h-screen relative">
       <div className="fixed inset-0 -z-10 bg-black/40" />
 
-      <main className="mx-auto max-w-7xl px-4 pb-32 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 pb-44 sm:px-6 lg:px-8">
         <header className="flex items-center justify-between py-6">
           <div className="flex items-center gap-4">
             <div className="glass-panel flex h-10 w-10 items-center justify-center rounded-full text-primary">
@@ -253,12 +256,12 @@ const SocialHome = () => {
               <p className="text-[10px] text-white/40">Sua rede, seus pedidos e seus roles do momento.</p>
             </div>
           </div>
-          <button className="pop-out-button glass-panel flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-white/10">
+          <GlassButton size="icon" aria-label="Buscar">
             <Search className="h-5 w-5" />
-          </button>
+          </GlassButton>
         </header>
 
-        <section className="relative mt-4 mb-8 flex min-h-[500px] flex-col justify-end overflow-hidden rounded-[2.5rem] border border-white/5 p-8 shadow-2xl md:p-16">
+        <section className="relative mt-4 mb-8 flex min-h-[420px] flex-col justify-end overflow-hidden rounded-[2.5rem] border border-white/5 p-8 shadow-2xl md:min-h-[460px] md:p-16">
           <div className="hero-gradient absolute inset-0" />
           <div className="relative z-10 w-full max-w-4xl">
             <div className="mb-4">
@@ -285,10 +288,10 @@ const SocialHome = () => {
             </div>
 
             <div className="mb-12 flex flex-wrap gap-8 md:gap-12">
-              <ActionButton icon={MessageSquare} label="Mensagem" to="/app/amigos" />
-              <ActionButton icon={UserPlus} label="Solicitacoes" badge={actionCounts.requests} to="/app/amigos" />
-              <ActionButton icon={Percent} label="Divisao" badge={actionCounts.splits} to="/app/divisoes" />
-              <ActionButton icon={ShoppingBag} label="Pedidos" badge={actionCounts.orders} to="/app/bar" />
+              <ActionButton icon={MessageSquare} label="Mensagem" onClick={() => navigate("/app/amigos")} />
+              <ActionButton icon={UserPlus} label="Solicitacoes" badge={actionCounts.requests} onClick={() => navigate("/app/amigos")} />
+              <ActionButton icon={Percent} label="Divisao" badge={actionCounts.splits} onClick={() => navigate("/app/divisoes")} />
+              <ActionButton icon={ShoppingBag} label="Pedidos" badge={actionCounts.orders} onClick={() => navigate("/app/bar")} />
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -297,55 +300,53 @@ const SocialHome = () => {
                 subtitle={`${pendingRequests} solicitacoes abertas`}
                 icon={Users}
                 colorClass="text-primary"
-                to="/app/amigos"
+                onClick={() => navigate("/app/amigos")}
               />
               <InfoCard
                 title={`${activeOrders} pedidos em curso`}
                 subtitle="compras durante o evento"
                 icon={ShoppingCart}
                 colorClass="text-secondary"
-                to="/app/bar"
+                onClick={() => navigate("/app/bar")}
               />
               <InfoCard
                 title={`${mockSplitRequests.length} divisoes abertas`}
                 subtitle="rateios da sua galera"
                 icon={CreditCard}
                 colorClass="text-cyan-300"
-                to="/app/divisoes"
+                onClick={() => navigate("/app/divisoes")}
               />
               <InfoCard
                 title={recentItem?.eventName ?? "Pulso da rede"}
                 subtitle={recentItem?.socialProof ?? "rede em movimento agora"}
                 icon={Sparkles}
                 colorClass="text-white/40"
-                to="/app/amigos"
+                onClick={() => navigate("/app/amigos")}
               />
             </div>
           </div>
         </section>
 
         <div className="mb-8 flex gap-2">
-          <button
+          <GlassButton
             onClick={() => setActiveTab("eventos")}
-            className={cn(
-              "pop-out-button rounded-full px-6 py-2 text-xs font-bold uppercase tracking-widest",
-              activeTab === "eventos" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
-            )}
+            size="sm"
+            className={cn(activeTab === "eventos" && "text-primary")}
+            contentClassName="text-xs font-bold uppercase tracking-widest"
           >
             Eventos
-          </button>
-          <button
+          </GlassButton>
+          <GlassButton
             onClick={() => setActiveTab("feed")}
-            className={cn(
-              "pop-out-button rounded-full px-6 py-2 text-xs font-bold uppercase tracking-widest",
-              activeTab === "feed" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
-            )}
+            size="sm"
+            className={cn(activeTab === "feed" && "text-primary")}
+            contentClassName="text-xs font-bold uppercase tracking-widest"
           >
             Feed Social
-          </button>
+          </GlassButton>
         </div>
 
-        <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid grid-cols-1 gap-6 pb-10 sm:grid-cols-2 lg:grid-cols-4">
           {visibleFeed.map((item, index) => (
             <NetworkFeedCard
               key={item.id}

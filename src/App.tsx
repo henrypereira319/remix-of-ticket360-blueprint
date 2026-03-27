@@ -16,6 +16,7 @@ const EventSeatExperience = lazy(() => import("./pages/EventSeatExperience.tsx")
 const OrganizerEventsDashboard = lazy(() => import("./pages/OrganizerEventsDashboard.tsx"));
 const OperationsDashboard = lazy(() => import("./pages/OperationsDashboard.tsx"));
 const PulseIndex = lazy(() => import("./pages/PulseIndex.tsx"));
+const GlassButtonDemo = lazy(() => import("./pages/demo.tsx"));
 
 // Social mobile experience
 const SocialShell = lazy(() => import("./components/social/SocialShell.tsx"));
@@ -46,6 +47,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/pulse" element={<PulseIndex />} />
+              <Route path="/demo/glass-button" element={<GlassButtonDemo />} />
               <Route path="/eventos/:slug" element={<EventDetails />} />
               <Route path="/eventos/:slug/assentos" element={<EventSeatExperience />} />
               <Route path="/eventos/:slug/checkout" element={<EventCheckout />} />

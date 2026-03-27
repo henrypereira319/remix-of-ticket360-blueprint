@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { socialNavTabs } from "@/components/social/navigation";
 import { cn } from "@/lib/utils";
+import { GlassButton } from "@/components/ui/glass-button";
 
 const isTabActive = (pathname: string, to: string) => (to === "/app" ? pathname === "/app" : pathname.startsWith(to));
 
@@ -11,7 +12,7 @@ const BottomNav = () => {
     <div
       className="pointer-events-none fixed inset-x-0 bottom-0 z-[80] flex justify-center px-4"
       style={{
-        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 2rem)",
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.25rem)",
       }}
     >
       <nav
@@ -33,15 +34,16 @@ const BottomNav = () => {
               key={to}
               to={to}
               aria-label={label}
-              className={cn(
-                "flex h-11 w-11 flex-col items-center justify-center rounded-full transition-all",
-                isActive
-                  ? "scale-110 bg-primary/18 text-primary shadow-[0_0_30px_rgba(153,238,0,0.16)]"
-                  : "text-white/40 hover:bg-white/5 hover:text-white",
-              )}
+              className="block"
             >
+              <GlassButton
+                size="icon"
+                className={cn("h-11 w-11", isActive ? "text-primary" : "text-white/40")}
+                contentClassName="flex items-center justify-center"
+              >
                 <Icon className="h-5 w-5" strokeWidth={isActive ? 2.4 : 1.9} />
-              </Link>
+              </GlassButton>
+            </Link>
           );
         })}
       </nav>

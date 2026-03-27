@@ -1,6 +1,7 @@
 import { useState } from "react";
 import FriendCard from "@/components/social/FriendCard";
 import SocialPageHero from "@/components/social/SocialPageHero";
+import { GlassButton } from "@/components/ui/glass-button";
 import { mockFriends, type Friend } from "@/data/social-mock";
 import { Search, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -36,9 +37,9 @@ const FriendsPage = () => {
           title="Sua rede e os encontros do evento"
           subtitle="Acompanhe quem ja entrou na sua orbita, filtre as solicitacoes e mantenha a conversa fluindo com a mesma energia visual da home."
           action={
-            <button className="pop-out-button flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/10 bg-black/55 text-white hover:bg-white/10">
+            <GlassButton size="icon" className="h-14 w-14" aria-label="Adicionar amigo">
               <UserPlus className="h-5 w-5" strokeWidth={2.4} />
-            </button>
+            </GlassButton>
           }
           footer={
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1.5fr)_repeat(2,minmax(0,0.75fr))]">
@@ -55,24 +56,22 @@ const FriendsPage = () => {
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <button
+                  <GlassButton
                     onClick={() => setTab("todos")}
-                    className={cn(
-                      "pop-out-button rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] transition-colors",
-                      tab === "todos" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
-                    )}
+                    size="sm"
+                    className={cn(tab === "todos" && "text-primary")}
+                    contentClassName="text-xs font-bold uppercase tracking-[0.2em]"
                   >
                     Todos ({accepted.length})
-                  </button>
-                  <button
+                  </GlassButton>
+                  <GlassButton
                     onClick={() => setTab("pendentes")}
-                    className={cn(
-                      "pop-out-button rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] transition-colors",
-                      tab === "pendentes" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
-                    )}
+                    size="sm"
+                    className={cn(tab === "pendentes" && "text-primary")}
+                    contentClassName="text-xs font-bold uppercase tracking-[0.2em]"
                   >
                     Pendentes ({pending.length})
-                  </button>
+                  </GlassButton>
                 </div>
               </div>
 

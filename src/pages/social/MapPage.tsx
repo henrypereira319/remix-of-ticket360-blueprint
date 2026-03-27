@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { LoaderCircle, MapPin, Navigation, Ticket } from "lucide-react";
 import SocialPageHero from "@/components/social/SocialPageHero";
+import { GlassButton } from "@/components/ui/glass-button";
 import { useCatalogEvents } from "@/hooks/use-catalog-events";
 import { geocodeEvents, loadGoogleMapsSdk, type EventMapLocation } from "@/lib/google-maps";
 
 const MapPage = () => {
+  const navigate = useNavigate();
   const { events, isLoading } = useCatalogEvents();
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
@@ -206,9 +208,17 @@ const MapPage = () => {
                   const isSelected = selectedLocation?.event.slug === location.event.slug;
 
                   return (
-                    <button
+                    <div
                       key={location.event.id}
                       onClick={() => setSelectedSlug(location.event.slug)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setSelectedSlug(location.event.slug);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
                       className={`w-full rounded-2xl border p-4 text-left transition-colors ${
                         isSelected
                           ? "border-primary/30 bg-primary/10"
@@ -233,16 +243,19 @@ const MapPage = () => {
                         <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
                           {location.event.weekday} - {location.event.day} {location.event.month}
                         </span>
-                        <Link
-                          to={`/eventos/${location.event.slug}`}
-                          onClick={(event) => event.stopPropagation()}
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-white"
+                        <GlassButton
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            navigate(`/eventos/${location.event.slug}`);
+                          }}
+                          size="sm"
+                          contentClassName="flex items-center gap-1 px-3 py-1.5 text-[11px] font-semibold"
                         >
                           <Ticket className="h-3.5 w-3.5" />
                           Ver evento
-                        </Link>
+                        </GlassButton>
                       </div>
-                    </button>
+                    </div>
                   );
                 })
               ) : (
