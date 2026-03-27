@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -31,7 +31,6 @@ import {
   buildFeedItemsFromBackend,
   buildHeroEventFromBackend,
 } from "@/lib/social-backend";
-import { GlassButton } from "@/components/ui/glass-button";
 
 const badgeColorByIndex = [
   "ring-primary/20 text-primary",
@@ -56,29 +55,6 @@ const splitHeadline = (value: string) => {
 
 const formatHeroDate = (value: string) => value.replaceAll("â€¢", "•");
 
-const GlassLinkButton = ({
-  to,
-  className,
-  contentClassName,
-  children,
-  ariaLabel,
-}: {
-  to: string;
-  className?: string;
-  contentClassName?: string;
-  children: ReactNode;
-  ariaLabel?: string;
-}) => (
-  <Link to={to} aria-label={ariaLabel} className={cn("glass-button-wrap rounded-full", className)}>
-    <span className="glass-button all-unset">
-      <span className={cn("glass-button-text relative block select-none tracking-tighter", contentClassName)}>
-        {children}
-      </span>
-    </span>
-    <span className="glass-button-shadow rounded-full" />
-  </Link>
-);
-
 const ActionButton = ({
   icon: Icon,
   label,
@@ -90,24 +66,19 @@ const ActionButton = ({
   badge?: number;
   to: string;
 }) => (
-  <div className="flex flex-col items-center gap-2">
-    <div className="relative">
-      <GlassLinkButton
-        to={to}
-        className="glass-button-action glass-button-ghost"
-        contentClassName="flex items-center justify-center text-white"
-        ariaLabel={label}
-      >
-        <Icon className="h-6 w-6 text-white" />
-      </GlassLinkButton>
+  <Link to={to} className="flex flex-col items-center gap-2">
+    <button className="pop-out-button group relative h-20 w-20 rounded-3xl border border-white/10 bg-black/60 hover:bg-white/10">
+      <span className="flex h-full w-full items-center justify-center">
+        <Icon className="h-6 w-6 text-white transition-transform group-hover:scale-110" />
+      </span>
       {badge !== undefined ? (
         <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] font-black text-white">
           {badge}
         </span>
       ) : null}
-    </div>
+    </button>
     <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">{label}</span>
-  </div>
+  </Link>
 );
 
 const InfoCard = ({
@@ -168,13 +139,9 @@ const NetworkFeedCard = ({
       </div>
     </div>
     <p className="mb-6 text-xs leading-relaxed text-white/60">"{content}"</p>
-    <GlassButton
-      size="sm"
-      className="glass-button-soft glass-button-fill"
-      contentClassName="text-[10px] font-bold uppercase tracking-widest text-white"
-    >
+    <button className="pop-out-button w-full rounded-full border border-white/5 bg-white/5 py-2 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-white/10">
       {actionLabel}
-    </GlassButton>
+    </button>
   </motion.div>
 );
 
@@ -196,12 +163,9 @@ const OfficialAlertCard = ({ eventName }: { eventName: string }) => (
       <p className="mb-8 text-[10px] font-medium text-primary-foreground/80">
         Exclusive invite for session holders at {eventName}. Access through the side entrance after the headliner.
       </p>
-      <GlassButton
-        className="glass-button-ghost glass-button-fill"
-        contentClassName="text-[10px] font-black uppercase tracking-widest text-white"
-      >
+      <button className="pop-out-button w-full rounded-full bg-black py-3 text-[10px] font-black uppercase tracking-widest text-white">
         Claim Ticket
-      </GlassButton>
+      </button>
     </div>
   </motion.div>
 );
@@ -289,14 +253,9 @@ const SocialHome = () => {
               <p className="text-[10px] text-white/40">Sua rede, seus pedidos e seus roles do momento.</p>
             </div>
           </div>
-          <GlassButton
-            size="icon"
-            className="glass-button-ghost"
-            contentClassName="flex items-center justify-center text-white"
-            aria-label="Buscar"
-          >
+          <button className="pop-out-button glass-panel flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-white/10">
             <Search className="h-5 w-5" />
-          </GlassButton>
+          </button>
         </header>
 
         <section className="relative mt-4 mb-8 flex min-h-[500px] flex-col justify-end overflow-hidden rounded-[2.5rem] border border-white/5 p-8 shadow-2xl md:p-16">
@@ -366,28 +325,24 @@ const SocialHome = () => {
         </section>
 
         <div className="mb-8 flex gap-2">
-          <GlassButton
+          <button
             onClick={() => setActiveTab("eventos")}
-            size="sm"
-            className={activeTab === "eventos" ? "glass-button-primary" : "glass-button-soft"}
-            contentClassName={cn(
-              "text-xs font-bold uppercase tracking-widest",
-              activeTab === "eventos" ? "text-primary-foreground" : "text-white/80",
+            className={cn(
+              "pop-out-button rounded-full px-6 py-2 text-xs font-bold uppercase tracking-widest",
+              activeTab === "eventos" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
             )}
           >
             Eventos
-          </GlassButton>
-          <GlassButton
+          </button>
+          <button
             onClick={() => setActiveTab("feed")}
-            size="sm"
-            className={activeTab === "feed" ? "glass-button-primary" : "glass-button-soft"}
-            contentClassName={cn(
-              "text-xs font-bold uppercase tracking-widest",
-              activeTab === "feed" ? "text-primary-foreground" : "text-white/80",
+            className={cn(
+              "pop-out-button rounded-full px-6 py-2 text-xs font-bold uppercase tracking-widest",
+              activeTab === "feed" ? "bg-primary text-primary-foreground" : "bg-white/5 text-white/60 hover:bg-white/10",
             )}
           >
             Feed Social
-          </GlassButton>
+          </button>
         </div>
 
         <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

@@ -1,4 +1,3 @@
-import { GlassButton } from "@/components/ui/glass-button";
 import { Plus } from "lucide-react";
 import type { BarItem } from "@/data/social-mock";
 
@@ -24,15 +23,12 @@ const BarItemCard = ({ item, onAdd }: Props) => (
       <p className="mt-1 truncate text-[11px] text-white/45">{item.description}</p>
       <p className="mt-1 text-sm font-bold text-primary">R$ {item.price.toFixed(2)}</p>
     </div>
-    <GlassButton
+    <button
       onClick={() => onAdd(item)}
-      size="icon"
-      className="glass-button-primary glass-button-icon-md shrink-0"
-      contentClassName="flex items-center justify-center text-primary-foreground"
-      aria-label={`Adicionar ${item.name}`}
+      className="pop-out-button flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground"
     >
       <Plus className="h-4 w-4" strokeWidth={2.5} />
-    </GlassButton>
+    </button>
   </div>
 );
 

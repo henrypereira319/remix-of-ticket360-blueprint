@@ -1,5 +1,4 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { GlassButton } from "@/components/ui/glass-button";
 import { Check, Clock, X } from "lucide-react";
 import type { SplitRequest, SplitStatus } from "@/data/social-mock";
 
@@ -79,20 +78,18 @@ const SplitCard = ({ split, onAccept, onDecline }: Props) => {
 
       {myParticipation && myParticipation.status === "pending" ? (
         <div className="flex gap-2 pt-1">
-          <GlassButton
+          <button
             onClick={() => onAccept?.(split.id)}
-            className="glass-button-primary glass-button-fill"
-            contentClassName="text-xs font-bold uppercase tracking-[0.16em] text-primary-foreground"
+            className="pop-out-button flex-1 rounded-[1.15rem] bg-primary py-3 text-xs font-bold uppercase tracking-[0.16em] text-primary-foreground"
           >
             Aceitar - R$ {myParticipation.amount.toFixed(2)}
-          </GlassButton>
-          <GlassButton
+          </button>
+          <button
             onClick={() => onDecline?.(split.id)}
-            className="glass-button-soft"
-            contentClassName="px-4 py-3 text-xs font-medium text-white/80"
+            className="pop-out-button rounded-[1.15rem] border border-white/10 bg-black/45 px-4 py-3 text-xs font-medium text-white/75 hover:bg-white/10 hover:text-white"
           >
             Recusar
-          </GlassButton>
+          </button>
         </div>
       ) : null}
     </div>

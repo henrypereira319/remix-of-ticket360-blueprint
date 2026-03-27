@@ -1,5 +1,4 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { GlassButton } from "@/components/ui/glass-button";
 import { Check, UserPlus, X } from "lucide-react";
 import type { Friend } from "@/data/social-mock";
 
@@ -30,37 +29,22 @@ const FriendCard = ({ friend, onAccept, onRemove }: Props) => (
     </div>
 
     {friend.status === "accepted" ? (
-      <GlassButton
-        size="icon"
-        className="glass-button-soft"
-        contentClassName="flex items-center justify-center text-white/80"
-        onClick={() => onRemove?.(friend.id)}
-        aria-label={`Remover ${friend.fullName}`}
-      >
+      <button onClick={() => onRemove?.(friend.id)} className="pop-out-button flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-black/45 text-white/70 hover:bg-white/10 hover:text-white">
         <X className="h-4 w-4" />
-      </GlassButton>
+      </button>
     ) : null}
 
     {friend.status === "pending_received" ? (
       <div className="flex gap-1.5">
-        <GlassButton
+        <button
           onClick={() => onAccept?.(friend.id)}
-          size="icon"
-          className="glass-button-primary"
-          contentClassName="flex items-center justify-center text-primary-foreground"
-          aria-label={`Aceitar ${friend.fullName}`}
+          className="pop-out-button flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground"
         >
           <Check className="h-4 w-4" strokeWidth={2.5} />
-        </GlassButton>
-        <GlassButton
-          size="icon"
-          className="glass-button-soft"
-          contentClassName="flex items-center justify-center text-white/80"
-          onClick={() => onRemove?.(friend.id)}
-          aria-label={`Recusar ${friend.fullName}`}
-        >
+        </button>
+        <button onClick={() => onRemove?.(friend.id)} className="pop-out-button flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-black/45 text-white/70 hover:bg-white/10 hover:text-white">
           <X className="h-4 w-4" />
-        </GlassButton>
+        </button>
       </div>
     ) : null}
 

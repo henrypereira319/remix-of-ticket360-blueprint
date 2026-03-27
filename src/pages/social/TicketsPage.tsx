@@ -1,33 +1,11 @@
-import { type ReactNode, useMemo } from "react";
+import { useMemo } from "react";
 import { ExternalLink, MapPin, QrCode, Ticket } from "lucide-react";
 import { Link } from "react-router-dom";
 import SocialPageHero from "@/components/social/SocialPageHero";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useAccountTickets } from "@/hooks/use-account-tickets";
 import { useCatalogEvents } from "@/hooks/use-catalog-events";
 import { getEventDateLabel } from "@/lib/social-backend";
-
-const GlassLinkButton = ({
-  to,
-  className,
-  contentClassName,
-  children,
-}: {
-  to: string;
-  className?: string;
-  contentClassName?: string;
-  children: ReactNode;
-}) => (
-  <Link to={to} className={cn("glass-button-wrap rounded-full", className)}>
-    <span className="glass-button all-unset">
-      <span className={cn("glass-button-text relative block select-none tracking-tighter", contentClassName)}>
-        {children}
-      </span>
-    </span>
-    <span className="glass-button-shadow rounded-full" />
-  </Link>
-);
 
 const TicketsPage = () => {
   const { currentAccount } = useAuth();
@@ -147,22 +125,20 @@ const TicketsPage = () => {
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-2">
-                        <GlassLinkButton
+                        <Link
                           to={`/eventos/${ticket.eventSlug}`}
-                          className="glass-button-primary"
-                          contentClassName="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-primary-foreground"
+                          className="pop-out-button inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/15"
                         >
                           <Ticket className="h-3.5 w-3.5" />
                           Ver evento
-                        </GlassLinkButton>
-                        <GlassLinkButton
+                        </Link>
+                        <Link
                           to={ticket.walletUrl}
-                          className="glass-button-soft"
-                          contentClassName="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white"
+                          className="pop-out-button inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/[0.08]"
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                           Abrir wallet
-                        </GlassLinkButton>
+                        </Link>
                       </div>
 
                       <p className="mt-4 text-[11px] text-white/40">
