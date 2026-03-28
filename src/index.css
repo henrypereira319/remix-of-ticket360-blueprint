@@ -329,7 +329,7 @@
 
   .glass-button-shadow:after {
     content: "";
-    background: linear-gradient(180deg, oklch(from hsl(var(--foreground)) l c h / 20%), oklch(from hsl(var(--foreground)) l c h / 10%));
+    background: linear-gradient(180deg, oklch(from hsl(var(--foreground)) l c h / 28%), oklch(from hsl(var(--foreground)) l c h / 14%));
     width: calc(100% - var(--shadow-cutoff-fix) - .25em);
     height: calc(100% - var(--shadow-cutoff-fix) - .25em);
     top: calc(var(--shadow-cutoff-fix) - .5em);
@@ -360,6 +360,13 @@
     mask-mode: match-source, match-source;
   }
 
+  .glass-button-wrap.w-full > .glass-button-shadow:after {
+    top: calc(var(--shadow-cutoff-fix) - .75em);
+    left: calc(var(--shadow-cutoff-fix) - .75em);
+    width: calc(100% - var(--shadow-cutoff-fix) - .5em);
+    height: calc(100% - var(--shadow-cutoff-fix) - .5em);
+  }
+
   .glass-button {
     -webkit-tap-highlight-color: transparent;
     -webkit-backdrop-filter: blur(clamp(1px, .125em, 4px));
@@ -369,8 +376,8 @@
     box-shadow:
       inset 0 .125em .125em oklch(from hsl(var(--foreground)) l c h / 5%),
       inset 0 -.125em .125em oklch(from hsl(var(--background)) l c h / 50%),
-      0 .25em .125em -.125em oklch(from hsl(var(--foreground)) l c h / 20%),
-      0 0 .1em .25em inset oklch(from hsl(var(--background)) l c h / 20%),
+      0 .25em .125em -.125em oklch(from hsl(var(--foreground)) l c h / 24%),
+      0 0 .1em .25em inset oklch(from hsl(var(--background)) l c h / 24%),
       0 0 oklch(from hsl(var(--background)) l c h);
   }
 
@@ -380,8 +387,8 @@
     box-shadow:
       inset 0 .125em .125em oklch(from hsl(var(--foreground)) l c h / 5%),
       inset 0 -.125em .125em oklch(from hsl(var(--background)) l c h / 50%),
-      0 .15em .05em -.1em oklch(from hsl(var(--foreground)) l c h / 25%),
-      0 0 .05em .1em inset oklch(from hsl(var(--background)) l c h / 50%),
+      0 .18em .08em -.08em oklch(from hsl(var(--foreground)) l c h / 34%),
+      0 0 .06em .12em inset oklch(from hsl(var(--background)) l c h / 58%),
       0 0 oklch(from hsl(var(--background)) l c h);
     transform: scale(.975);
   }
@@ -418,13 +425,32 @@
     overflow: clip;
   }
 
+  .glass-button-wrap.w-full .glass-button-text:after {
+    width: calc(100% - 2.75rem);
+    height: calc(100% - var(--border-width) - .125rem);
+    top: calc(0% + var(--border-width) / 2 + .0625rem);
+    left: 1.375rem;
+    background: linear-gradient(var(--angle-2), transparent 0%, oklch(from hsl(var(--background)) l c h / 32%) 42% 50%, transparent 58%);
+    background-size: 180% 180%;
+  }
+
   .glass-button:hover .glass-button-text:after {
     background-position: 25%;
+  }
+
+  .glass-button-wrap.w-full .glass-button:hover .glass-button-text:after,
+  .glass-button-wrap.w-full:has(.glass-button:hover) .glass-button-text:after {
+    background-position: 18%;
   }
 
   .glass-button:active .glass-button-text:after {
     --angle-2: -15deg;
     background-position: 50% 15%;
+  }
+
+  .glass-button-wrap.w-full .glass-button:active .glass-button-text:after,
+  .glass-button-wrap.w-full:has(.glass-button:active) .glass-button-text:after {
+    background-position: 34% 12%;
   }
 
   .glass-button:after {
@@ -439,7 +465,7 @@
     padding: var(--border-width);
     box-sizing: border-box;
     background:
-      conic-gradient(from var(--angle-1) at 50% 50%, oklch(from hsl(var(--foreground)) l c h / 50%) 0%, transparent 5% 40%, oklch(from hsl(var(--foreground)) l c h / 50%) 50%, transparent 60% 95%, oklch(from hsl(var(--foreground)) l c h / 50%) 100%),
+      conic-gradient(from var(--angle-1) at 50% 50%, oklch(from hsl(var(--foreground)) l c h / 60%) 0%, transparent 5% 40%, oklch(from hsl(var(--foreground)) l c h / 60%) 50%, transparent 60% 95%, oklch(from hsl(var(--foreground)) l c h / 60%) 100%),
       linear-gradient(180deg, oklch(from hsl(var(--background)) l c h / 50%), oklch(from hsl(var(--background)) l c h / 50%));
     transition: all var(--anim-time) var(--anim-ease), --angle-1 .5s ease;
     box-shadow: inset 0 0 0 calc(var(--border-width) / 2) oklch(from hsl(var(--background)) l c h / 50%);
@@ -472,12 +498,16 @@
   }
 
   .glass-button-wrap:has(.glass-button:hover) .glass-button-shadow {
-    filter: blur(clamp(2px, .0625em, 6px));
+    filter: blur(clamp(3px, .08em, 8px));
   }
 
   .glass-button-wrap:has(.glass-button:hover) .glass-button-shadow:after {
     top: calc(var(--shadow-cutoff-fix) - .875em);
     opacity: 1;
+  }
+
+  .glass-button-wrap.w-full:has(.glass-button:hover) .glass-button-shadow:after {
+    top: calc(var(--shadow-cutoff-fix) - .875em);
   }
 
   .glass-button-wrap:has(.glass-button:active) .glass-button-shadow {
@@ -487,6 +517,10 @@
   .glass-button-wrap:has(.glass-button:active) .glass-button-shadow:after {
     top: calc(var(--shadow-cutoff-fix) - .5em);
     opacity: .75;
+  }
+
+  .glass-button-wrap.w-full:has(.glass-button:active) .glass-button-shadow:after {
+    top: calc(var(--shadow-cutoff-fix) - .625em);
   }
 
   .glass-button-wrap:has(.glass-button:active) .glass-button-text {
