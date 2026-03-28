@@ -38,10 +38,13 @@ const BottomNav = () => {
             >
               <GlassButton
                 size="icon"
-                className={cn("h-11 w-11", isActive ? "text-primary" : "text-white/40")}
+                className="h-11 w-11"
                 contentClassName="flex items-center justify-center"
               >
-                <Icon className="h-5 w-5" strokeWidth={isActive ? 2.4 : 1.9} />
+                <Icon
+                  className={cn("social-nav-icon h-5 w-5", isActive && "social-nav-icon-active")}
+                  strokeWidth={isActive ? 2.4 : 1.9}
+                />
               </GlassButton>
             </Link>
           );
