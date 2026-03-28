@@ -38,7 +38,7 @@ const BottomNav = () => {
             >
               <GlassButton
                 size="icon"
-                className="h-11 w-11"
+                className={cn("social-nav-button h-11 w-11", isActive && "social-nav-button-active")}
                 contentClassName="flex items-center justify-center"
               >
                 <Icon

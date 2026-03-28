@@ -275,12 +275,59 @@
       transform 0.28s ease;
   }
 
+  .social-nav-button > .glass-button {
+    transition:
+      box-shadow 0.28s ease,
+      background 0.28s ease,
+      transform 0.28s ease,
+      border-color 0.28s ease;
+  }
+
+  .social-nav-button > .glass-button-shadow:after {
+    transition:
+      background 0.28s ease,
+      opacity 0.28s ease,
+      filter 0.28s ease,
+      top 0.28s ease;
+  }
+
+  .social-nav-button-active > .glass-button {
+    box-shadow:
+      inset 0 .125em .125em oklch(from hsl(var(--foreground)) l c h / 6%),
+      inset 0 -.125em .125em oklch(from hsl(var(--background)) l c h / 50%),
+      0 .18em .08em -.12em hsl(var(--primary) / 0.22),
+      0 0 .08em .12em inset hsl(var(--primary) / 0.08),
+      0 0 0 1px hsl(var(--primary) / 0.08);
+  }
+
+  .social-nav-button-active > .glass-button-shadow:after {
+    background: linear-gradient(180deg, hsl(var(--primary) / 0.28), hsl(var(--primary) / 0.1));
+    opacity: 0.92;
+  }
+
   .social-nav-icon-active {
     color: hsl(var(--primary) / 0.95);
     opacity: 1;
     filter:
       drop-shadow(0 0 6px hsl(var(--primary) / 0.28))
       drop-shadow(0 0 16px hsl(var(--primary) / 0.14));
+  }
+
+  .social-nav-button:hover > .glass-button,
+  .social-nav-button:has(.glass-button:hover) > .glass-button {
+    box-shadow:
+      inset 0 .125em .125em oklch(from hsl(var(--foreground)) l c h / 6%),
+      inset 0 -.125em .125em oklch(from hsl(var(--background)) l c h / 50%),
+      0 .22em .12em -.12em hsl(var(--primary) / 0.28),
+      0 0 .08em .16em inset hsl(var(--primary) / 0.12),
+      0 0 0 1px hsl(var(--primary) / 0.12);
+  }
+
+  .social-nav-button:hover > .glass-button-shadow:after,
+  .social-nav-button:has(.glass-button:hover) > .glass-button-shadow:after {
+    background: linear-gradient(180deg, hsl(var(--primary) / 0.34), hsl(var(--primary) / 0.12));
+    opacity: 1;
+    filter: drop-shadow(0 0 10px hsl(var(--primary) / 0.12));
   }
 
   .glass-button:hover .social-nav-icon {
@@ -290,6 +337,21 @@
       drop-shadow(0 0 6px hsl(var(--primary) / 0.24))
       drop-shadow(0 0 16px hsl(var(--primary) / 0.1));
     transform: translateY(-0.5px);
+  }
+
+  .social-nav-button:has(.glass-button:active) > .glass-button {
+    box-shadow:
+      inset 0 .125em .125em oklch(from hsl(var(--foreground)) l c h / 5%),
+      inset 0 -.125em .125em oklch(from hsl(var(--background)) l c h / 50%),
+      0 .14em .06em -.12em hsl(var(--primary) / 0.24),
+      0 0 .08em .14em inset hsl(var(--primary) / 0.14),
+      0 0 0 1px hsl(var(--primary) / 0.16);
+  }
+
+  .social-nav-button:has(.glass-button:active) > .glass-button-shadow:after {
+    background: linear-gradient(180deg, hsl(var(--primary) / 0.38), hsl(var(--primary) / 0.16));
+    opacity: 1;
+    filter: drop-shadow(0 0 12px hsl(var(--primary) / 0.16));
   }
 
   .nocturne-empty-state {
