@@ -10,18 +10,37 @@ Esta nota traduz `../progress.txt` e `../checklist-roadmap.md` em sequencia de e
 
 ## Leitura rapida
 
-O projeto ja saiu da fase de prototipo local. O foco agora e remover pontos criticos que ainda dependem de fallback local e transformar o backend real na fonte principal de verdade.
+O projeto ja saiu da fase de prototipo local. O foco imediato agora e produtor e repasse: o dashboard ficou forte, mas ainda precisa virar operacao financeira real no backend.
 
 ## Ordem recomendada
 
-1. Fechar adocao do backend real nas jornadas criticas.
-2. Endurecer operacao, permissao e auditoria.
-3. Melhorar pos-compra e comunicacao real.
-4. Entrar em plataforma, SEO e confiabilidade.
+1. Fechar produtor e repasse como modulo confiavel.
+2. Fechar adocao do backend real nas jornadas criticas.
+3. Endurecer operacao, permissao e auditoria.
+4. Melhorar pos-compra e comunicacao real.
+5. Entrar em plataforma, SEO e confiabilidade.
 
 ## Agora
 
-### Bloco 1 — Adocao total do backend real
+### Bloco 0 - Produtor e repasse
+
+Objetivo: transformar o dashboard do produtor em ferramenta de trabalho real, nao so em painel de leitura.
+
+Entrega esperada:
+
+- [x] consolidar cockpit com charts, agenda, preview, tabela detalhada e bloco visivel de repasse
+- [ ] criar fluxo formal de solicitacao de repasse
+- [ ] persistir dados bancarios do produtor e do artista
+- [ ] registrar historico de repasses com status e auditoria
+- [ ] preparar exportacoes e fechamento financeiro por evento e lote
+
+Criterio de pronto:
+
+- produtor entende bruto, taxa e liquido sem abrir varias telas
+- pedido de repasse tem estado, ator, data e historico
+- dashboard deixa claro o que e leitura operacional e o que e dado financeiro fechado
+
+### Bloco 1 - Adocao total do backend real
 
 Objetivo: garantir que conta, checkout, operacao e inventario leiam e gravem prioritariamente no backend HTTP/BFF.
 
@@ -33,19 +52,13 @@ Entrega esperada:
 - [ ] manter contratos de tela estaveis durante a troca de persistencia
 - [ ] cobrir o caminho principal com smoke test ou contrato automatizado
 
-Critério de pronto:
+Criterio de pronto:
 
 - comprador consegue navegar, comprar e rever pedido em outro dispositivo
 - operacao consegue ler e agir sobre o mesmo estado persistido
 - nao existe divergencia entre estado local e estado remoto em fluxo principal
 
-Riscos:
-
-- estados duplicados entre client e servidor
-- regressao silenciosa em fallback
-- inconsistencias de sessao/autenticacao
-
-### Bloco 2 — Operacao, permissoes e auditoria
+### Bloco 2 - Operacao, permissoes e auditoria
 
 Objetivo: tirar o backoffice de um estado funcional-local e levar para um modelo minimamente governado.
 
@@ -57,13 +70,7 @@ Entrega esperada:
 - [ ] enriquecer metadados de revisao manual
 - [ ] preparar regras de fila ou atribuicao operacional
 
-Critério de pronto:
-
-- toda acao sensivel tem ator, data e contexto registrados
-- usuario sem papel correto nao acessa operacao sensivel
-- revisao manual deixa rastros suficientes para investigacao
-
-### Bloco 3 — Pos-compra e comunicacao
+### Bloco 3 - Pos-compra e comunicacao
 
 Objetivo: fechar lacunas depois da compra, principalmente historico, entrega e suporte.
 
@@ -71,14 +78,8 @@ Entrega esperada:
 
 - [ ] revisar a experiencia de meus pedidos, ingressos e suporte com backend como fonte primaria
 - [ ] introduzir telemetria minima de entrega e falha de notificacao
-- [ ] preparar integracao real de email/SMS/push
+- [ ] preparar integracao real de email, SMS ou push
 - [ ] detalhar fluxos de autosservico ainda ausentes
-
-Critério de pronto:
-
-- usuario consegue reencontrar pedido, ticket e suporte com consistencia
-- operacao entende quando comunicacao falhou
-- backlog de provedores reais fica claramente quebrado em etapas pequenas
 
 ## Depois
 
@@ -101,19 +102,19 @@ Critério de pronto:
 
 ### Semana 1
 
-- [ ] auditar onde ainda existe persistencia local critica
-- [ ] listar rotas, hooks e servicos que ainda divergem do backend real
-- [ ] definir a matriz `rota -> origem de dados -> fallback -> risco`
+- [ ] modelar `payout_requests`, dados bancarios e status do repasse
+- [ ] definir contrato `dashboard -> repasse -> auditoria`
+- [ ] listar quais campos do dashboard ainda sao apenas snapshot
 
 ### Semana 2
 
-- [ ] migrar fluxos mais criticos de checkout e conta para backend prioritario
-- [ ] validar historico cross-device no caminho principal
-- [ ] ampliar smoke tests do BFF
+- [ ] ligar solicitacao de repasse ao backend
+- [ ] persistir historico e timeline de status
+- [ ] ampliar tabela financeira por evento e lote
 
 ### Semana 3
 
-- [ ] reforcar backoffice com permissao e auditoria
+- [ ] reforcar permissao e auditoria
 - [ ] revisar suporte e comunicacao pos-compra
 - [ ] atualizar status global do projeto
 
@@ -126,14 +127,14 @@ Critério de pronto:
 
 ## Bloco atual recomendado
 
-Objetivo: finalizar a adocao real do backend nas jornadas mais sensiveis.
+Objetivo: sair do dashboard forte para a operacao real do produtor e do repasse.
 
 Escopo:
 
-- conta
-- checkout
-- operacao
-- inventario
+- repasse
+- dados bancarios
+- fechamento do produtor
+- conta, checkout, operacao e inventario como suporte ao mesmo estado persistido
 
 Nao entrar ainda:
 

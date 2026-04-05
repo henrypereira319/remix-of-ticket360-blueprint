@@ -1,14 +1,31 @@
 import { useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { BarChart3, CalendarRange, CircleAlert, Layers3, Mail, Plus, ShieldCheck, Ticket } from "lucide-react";
+import {
+  ArrowRight,
+  BanknoteArrowDown,
+  BarChart3,
+  CircleAlert,
+  Layers3,
+  Mail,
+  Plus,
+  ShieldCheck,
+  Sparkles,
+  Ticket,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
 import { events as catalogSeedEvents, type RuntimeEventData } from "@/data/events";
+import { OrganizerAgendaPreviewPanel } from "@/components/producer/OrganizerAgendaPreviewPanel";
+import { OrganizerDashboardCharts } from "@/components/producer/OrganizerDashboardCharts";
 import { OrganizerEventCard } from "@/components/producer/OrganizerEventCard";
 import {
   OrganizerEventEditorDialog,
   type OrganizerEventFormValue,
   type OrganizerEventTemplatePreset,
 } from "@/components/producer/OrganizerEventEditorDialog";
+import { OrganizerEventPerformanceTable } from "@/components/producer/OrganizerEventPerformanceTable";
 import { OrganizerModuleCard } from "@/components/producer/OrganizerModuleCard";
+import { OrganizerPayoutInfoCard } from "@/components/producer/OrganizerPayoutInfoCard";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import { Badge } from "@/components/ui/badge";
@@ -359,6 +376,25 @@ const OrganizerEventsDashboard = () => {
     ...defaultCreateValue,
     slug: buildDraftSlug(defaultCreateValue.title || "novo-evento"),
   });
+  const eventSeedBySlug = useMemo(() => new Map(catalogSeedEvents.map((event) => [event.slug, event])), []);
+  const eventMetaBySlug = useMemo(() => {
+    const metaBySlug = new Map<string, { dateLabel: string; totalSeats: number | null }>();
+
+    if (!snapshot) {
+      return metaBySlug;
+    }
+
+    snapshot.events.forEach((eventSnapshot) => {
+      const seedEvent = eventSeedBySlug.get(eventSnapshot.event.slug);
+
+      metaBySlug.set(eventSnapshot.event.slug, {
+        dateLabel: seedEvent ? `${seedEvent.weekday}, ${seedEvent.day} ${seedEvent.month} - ${seedEvent.time}` : "Data a confirmar",
+        totalSeats: seedEvent?.seatMap.totalSeats ?? null,
+      });
+    });
+
+    return metaBySlug;
+  }, [eventSeedBySlug, snapshot]);
 
   if (!auth.isAuthenticated || !auth.currentAccount) {
     return <Navigate to="/conta/acesso" replace />;
@@ -371,13 +407,30 @@ const OrganizerEventsDashboard = () => {
         <main className="container flex min-h-[60vh] items-center justify-center py-10">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <Layers3 className="h-4 w-4 animate-pulse" />
-            Carregando meus eventos...
+            Carregando central do produtor...
           </div>
         </main>
         <SiteFooter />
       </div>
     );
   }
+
+  const readyForPayout = Math.max(snapshot.summary.authorizedRevenue - snapshot.summary.platformFeeRevenue, 0);
+  const publishedWithoutSales = snapshot.events.filter(
+    (event) => event.publicationStatus === "published" && event.totalOrders === 0,
+  ).length;
+  const topGrossEvent = snapshot.events.find((event) => event.grossRevenue > 0) ?? snapshot.events[0] ?? null;
+  const topAttentionEvent = snapshot.attention[0] ?? null;
+  const topNotificationEvent =
+    [...snapshot.events].sort((left, right) => right.sentNotifications - left.sentNotifications)[0] ?? null;
+  const topTicketEvent = [...snapshot.events].sort((left, right) => right.issuedTickets - left.issuedTickets)[0] ?? null;
+  const financialLeaders = [...snapshot.events]
+    .sort(
+      (left, right) =>
+        Math.max(right.authorizedRevenue - right.platformFeeRevenue, 0) -
+        Math.max(left.authorizedRevenue - left.platformFeeRevenue, 0),
+    )
+    .slice(0, 6);
 
   const openCreateDialog = () => {
     const preset = templatePresets[0]?.preset ?? createEmptyFormValue();
@@ -419,7 +472,9 @@ const OrganizerEventsDashboard = () => {
     try {
       const runtimeEvent = (await getOrganizerEventEditor(eventSnapshot.event.slug)) as OrganizerEditableRuntimeEvent;
       const matchingTemplateSlug =
-        catalogSeedEvents.find((event) => event.slug === runtimeEvent.slug)?.slug ?? templatePresets[0]?.slug ?? DEFAULT_TEMPLATE_SLUG;
+        catalogSeedEvents.find((event) => event.slug === runtimeEvent.slug)?.slug ??
+        templatePresets[0]?.slug ??
+        DEFAULT_TEMPLATE_SLUG;
 
       setEditorMode("edit");
       setEditorRuntimeEvent(runtimeEvent);
@@ -488,33 +543,35 @@ const OrganizerEventsDashboard = () => {
 
   const moduleCards = [
     {
-      title: "Meus eventos e vitrine",
+      title: "Cockpit comercial do produtor",
       description:
-        "O organizador ja consegue navegar pelo catalogo, abrir a pagina publica, entrar no mapa e agora criar ou editar evento real no backend.",
-      detail: `${snapshot.summary.publishedEvents} evento(s) publicados nesta base, com rota publica e leitura comercial por evento.`,
+        "O dashboard agora concentra charts, agenda, preview, tabela detalhada por evento e uma leitura financeira clara por repasse, taxa e ocupacao.",
+      detail: `${snapshot.summary.publishedEvents} evento(s) publicados, ${snapshot.summary.totalOrders} pedido(s) totais e ${snapshot.summary.issuedTickets} ingressos emitidos.`,
       tone: "active" as const,
     },
     {
-      title: "Operacao e revisao manual",
-      description: "Pedidos em revisao, cancelamentos e coerencia entre pagamento, ticket e notificacao ja possuem um backoffice dedicado.",
-      detail: `${snapshot.summary.underReviewOrders} pedido(s) em revisao e ${snapshot.summary.attentionEvents} evento(s) pedindo atencao imediata.`,
+      title: "Repasse e fechamento",
+      description:
+        "O produtor ja consegue visualizar bloco proprio de repasse com campos operacionais e extrato sintetico para leitura rapida.",
+      detail: `${currencyFormatter.format(readyForPayout)} pronto para repasse e ${currencyFormatter.format(snapshot.summary.platformFeeRevenue)} em taxa consolidada.`,
       tone: "active" as const,
     },
     {
-      title: "Comunicacao e pos-compra",
-      description: "O fluxo ja entrega confirmacao, emissao e cancelamento, com rastreabilidade por evento e conta.",
-      detail: `${snapshot.summary.sentNotifications} comunicacao(oes) enviadas e wallet local disponivel para os pedidos aprovados.`,
+      title: "Operacao e risco",
+      description:
+        "Eventos com fila manual, falha de comunicacao e fee em revisao continuam destacados para nao se perderem no volume comercial.",
+      detail: `${snapshot.summary.attentionEvents} evento(s) em atencao e ${snapshot.summary.underReviewOrders} pedido(s) em revisao manual.`,
       tone: "active" as const,
     },
     {
-      title: "Publicacao, edicao e governanca",
+      title: "Governanca ainda pendente",
       description: hasConfiguredBackendUrl
-        ? "O painel ja salva evento real, publica, despublica e arquiva no backend. Ainda faltam colaboradores, lotes e governanca fina."
-        : "CRUD real, despublicacao e governanca de organizacao exigem backend configurado.",
+        ? "CRUD, publicacao, despublicacao e arquivamento reais estao no ar, mas ainda faltam lotes, venues, colaboradores e regras formais de repasse."
+        : "Sem backend ativo, o produtor continua limitado ao snapshot local do catalogo e nao fecha a operacao real.",
       detail: hasConfiguredBackendUrl
-        ? "O proximo passo natural agora e fechar lotes, multiplas sessoes, venues e permissoes de colaboracao."
-        : "Sem backend ativo, o organizador ainda fica limitado ao snapshot local do catalogo.",
-      tone: hasConfiguredBackendUrl ? ("active" as const) : ("partial" as const),
+        ? "Os proximos blocos naturais agora sao lotes, multiplas sessoes, dados bancarios, historico formal de repasse e permissoes."
+        : "Sem backend configurado nao vale prometer operacao do produtor como fluxo confiavel.",
+      tone: "partial" as const,
     },
   ];
 
@@ -524,56 +581,88 @@ const OrganizerEventsDashboard = () => {
 
       <main className="container space-y-4 py-4">
         <Card className="overflow-hidden border-border bg-card">
-          <div className="grid gap-0 xl:grid-cols-[1.1fr_0.9fr]">
-            <CardContent className="space-y-5 p-6">
+          <div className="grid gap-0 xl:grid-cols-[1.15fr_0.85fr]">
+            <CardContent className="space-y-6 p-6">
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-foreground">
-                  <ShieldCheck className="h-4 w-4 text-primary" />
-                  Modulo do organizador
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Central do produtor
                 </div>
                 <div className="space-y-2">
-                  <h1 className="font-display text-3xl font-semibold text-foreground">Meus eventos</h1>
+                  <h1 className="font-display text-3xl font-semibold text-foreground">Cockpit comercial e operacional</h1>
                   <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-                    Painel remote-first para acompanhar catalogo, operacao, comunicacao e sinais comerciais por evento, sem
-                    misturar a visao do produtor com a central operacional da plataforma.
+                    A plataforma passa a tratar o produtor como foco principal. Aqui ficam receita, repasse, ocupacao,
+                    agenda, preview, risco operacional e atalhos para tomar decisao sem cair num painel generico.
                   </p>
                 </div>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 <div className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Eventos publicados</p>
-                  <p className="mt-2 text-3xl font-semibold text-foreground">{snapshot.summary.publishedEvents}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {snapshot.summary.eventsWithOrders} com operacao e {snapshot.summary.eventsWithoutOrders} ainda sem venda.
+                  <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    Eventos publicados
+                  </div>
+                  <p className="mt-3 text-3xl font-semibold text-foreground">{snapshot.summary.publishedEvents}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {snapshot.summary.eventsWithOrders} com vendas e {publishedWithoutSales} no ar sem operacao.
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Bruto transacionado</p>
-                  <p className="mt-2 text-3xl font-semibold text-foreground">
+                  <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                    Bruto transacionado
+                  </div>
+                  <p className="mt-3 text-3xl font-semibold text-foreground">
                     {currencyFormatter.format(snapshot.summary.grossRevenue)}
                   </p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Autorizado {currencyFormatter.format(snapshot.summary.authorizedRevenue)}
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    Autorizado {currencyFormatter.format(snapshot.summary.authorizedRevenue)} nesta base.
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Fee local</p>
-                  <p className="mt-2 text-3xl font-semibold text-foreground">
-                    {currencyFormatter.format(snapshot.summary.platformFeeRevenue)}
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Na fila {currencyFormatter.format(snapshot.summary.pendingPlatformFeeRevenue)}
+                  <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    <Wallet className="h-4 w-4 text-primary" />
+                    Repasse pronto
+                  </div>
+                  <p className="mt-3 text-3xl font-semibold text-foreground">{currencyFormatter.format(readyForPayout)}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    Fee consolidada {currencyFormatter.format(snapshot.summary.platformFeeRevenue)}.
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Pos-compra</p>
-                  <p className="mt-2 text-3xl font-semibold text-foreground">{snapshot.summary.issuedTickets}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Ingressos emitidos e {snapshot.summary.sentNotifications} disparos de comunicacao.
+                  <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    <CircleAlert className="h-4 w-4 text-primary" />
+                    Fila e risco
+                  </div>
+                  <p className="mt-3 text-3xl font-semibold text-foreground">{snapshot.summary.underReviewOrders}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {snapshot.summary.attentionEvents} evento(s) pedindo triagem imediata.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-background p-4">
+                  <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    <Mail className="h-4 w-4 text-primary" />
+                    Pos-compra
+                  </div>
+                  <p className="mt-3 text-3xl font-semibold text-foreground">{snapshot.summary.sentNotifications}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    Comunicacoes disparadas e {snapshot.summary.issuedTickets} ingressos emitidos.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-background p-4">
+                  <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    <Ticket className="h-4 w-4 text-primary" />
+                    Evento lider
+                  </div>
+                  <p className="mt-3 text-xl font-semibold text-foreground">{topGrossEvent?.event.title ?? "Sem destaque"}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {topGrossEvent ? currencyFormatter.format(topGrossEvent.grossRevenue) : "Ainda sem receita registrada."}
                   </p>
                 </div>
               </div>
@@ -583,14 +672,17 @@ const OrganizerEventsDashboard = () => {
               <div className="space-y-4 p-6">
                 <Card className="border-border bg-card">
                   <CardContent className="space-y-4 p-6">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">Conta ativa</Badge>
-                      <p className="text-sm font-semibold text-foreground">{auth.currentAccount.fullName}</p>
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline">Conta ativa</Badge>
+                        <p className="text-sm font-semibold text-foreground">{auth.currentAccount.fullName}</p>
+                      </div>
+                      <p className="text-sm leading-6 text-muted-foreground">
+                        O produtor agora opera com uma leitura mais nitida de portfolio, financeiro e repasse. A rota
+                        <code> /operacao </code>
+                        segue dedicada a administracao da plataforma.
+                      </p>
                     </div>
-                    <p className="text-sm leading-6 text-muted-foreground">
-                      Nesta base, a visao do organizador consolida catalogo, publicacao, pedidos e sinais comerciais por
-                      evento. A rota <code>/operacao</code> segue reservada para a administracao da plataforma.
-                    </p>
 
                     <div className="grid gap-2">
                       {hasConfiguredBackendUrl ? (
@@ -600,41 +692,72 @@ const OrganizerEventsDashboard = () => {
                         </Button>
                       ) : null}
                       <Button asChild variant="outline">
-                        <Link to="/operacao">
-                          <ShieldCheck className="h-4 w-4" />
-                          Abrir central de operacao
+                        <Link to={topGrossEvent ? `/eventos/${topGrossEvent.event.slug}` : "/"}>
+                          <ArrowRight className="h-4 w-4" />
+                          Abrir melhor preview
                         </Link>
                       </Button>
                       <Button asChild variant="outline">
                         <Link to="/conta">
                           <Ticket className="h-4 w-4" />
-                          Abrir conta e wallet
+                          Conta, pedidos e wallet
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline">
+                        <Link to="/operacao">
+                          <ShieldCheck className="h-4 w-4" />
+                          Central da plataforma
                         </Link>
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
 
-                <div className="grid gap-3">
+                <OrganizerPayoutInfoCard
+                  fullName={auth.currentAccount.fullName}
+                  document={auth.currentAccount.document}
+                  authorizedRevenue={snapshot.summary.authorizedRevenue}
+                  platformFeeRevenue={snapshot.summary.platformFeeRevenue}
+                  refundedRevenue={snapshot.summary.refundedRevenue}
+                />
+
+                <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-1">
+                  <div className="rounded-2xl border border-border bg-card p-4">
+                    <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                      <BanknoteArrowDown className="h-4 w-4 text-primary" />
+                      Proximo ganho
+                    </div>
+                    <p className="mt-2 text-2xl font-semibold text-foreground">{currencyFormatter.format(readyForPayout)}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Valor liquido hoje, antes do fluxo formal de solicitacao.</p>
+                  </div>
+
                   <div className="rounded-2xl border border-border bg-card p-4">
                     <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
                       <CircleAlert className="h-4 w-4 text-primary" />
-                      Eventos em atencao
+                      Risco imediato
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">{snapshot.summary.attentionEvents}</p>
+                    <p className="mt-2 text-lg font-semibold text-foreground">
+                      {topAttentionEvent?.event.title ?? "Sem alerta aberto"}
+                    </p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Eventos com fila manual, falha de comunicacao ou necessidade de revisao.
+                      {topAttentionEvent
+                        ? `${topAttentionEvent.underReviewOrders} pedido(s) em revisao e ${topAttentionEvent.failedNotifications} falha(s).`
+                        : "Nenhum evento pedindo triagem agora."}
                     </p>
                   </div>
 
                   <div className="rounded-2xl border border-border bg-card p-4">
                     <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
                       <Mail className="h-4 w-4 text-primary" />
-                      Fluxo de comunicacao
+                      Comunicacao ativa
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">{snapshot.summary.sentNotifications}</p>
+                    <p className="mt-2 text-lg font-semibold text-foreground">
+                      {topNotificationEvent?.event.title ?? "Sem historico relevante"}
+                    </p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Disparos para confirmacao, revisao, emissao e cancelamento.
+                      {topNotificationEvent
+                        ? `${topNotificationEvent.sentNotifications} envio(s) e ${topNotificationEvent.analyticsEvents} evento(s) de analytics.`
+                        : "Os dados aparecem quando o fluxo pos-compra comeca a operar."}
                     </p>
                   </div>
                 </div>
@@ -643,15 +766,121 @@ const OrganizerEventsDashboard = () => {
           </div>
         </Card>
 
-        <Tabs defaultValue="portfolio" className="space-y-4">
+        <Tabs defaultValue="overview" className="space-y-4">
           <TabsList className="h-auto w-full flex-wrap justify-start gap-2 bg-muted p-2">
-            <TabsTrigger value="portfolio">Meus eventos</TabsTrigger>
+            <TabsTrigger value="overview">Visao geral</TabsTrigger>
+            <TabsTrigger value="finance">Financeiro</TabsTrigger>
+            <TabsTrigger value="events">Eventos</TabsTrigger>
             <TabsTrigger value="attention">Em atencao</TabsTrigger>
             <TabsTrigger value="quiet">Sem operacao</TabsTrigger>
-            <TabsTrigger value="modules">Modulos</TabsTrigger>
+            <TabsTrigger value="modules">Maturidade</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="portfolio" className="space-y-4">
+          <TabsContent value="overview" className="space-y-4">
+            <OrganizerDashboardCharts snapshot={snapshot} eventMetaBySlug={eventMetaBySlug} />
+            <OrganizerAgendaPreviewPanel events={snapshot.events} eventMetaBySlug={eventMetaBySlug} />
+          </TabsContent>
+
+          <TabsContent value="finance" className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <Card className="border-border bg-card">
+                <CardContent className="p-5">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Bruto</p>
+                  <p className="mt-3 text-3xl font-semibold text-foreground">
+                    {currencyFormatter.format(snapshot.summary.grossRevenue)}
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">Tudo o que ja entrou no funil financeiro.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border bg-card">
+                <CardContent className="p-5">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Autorizado</p>
+                  <p className="mt-3 text-3xl font-semibold text-foreground">
+                    {currencyFormatter.format(snapshot.summary.authorizedRevenue)}
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">Base liquida antes da taxa da etiqueteira.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border bg-card">
+                <CardContent className="p-5">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Taxa da plataforma</p>
+                  <p className="mt-3 text-3xl font-semibold text-foreground">
+                    {currencyFormatter.format(snapshot.summary.platformFeeRevenue)}
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {currencyFormatter.format(snapshot.summary.pendingPlatformFeeRevenue)} ainda em fila.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border bg-card">
+                <CardContent className="p-5">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Reembolsado</p>
+                  <p className="mt-3 text-3xl font-semibold text-foreground">
+                    {currencyFormatter.format(snapshot.summary.refundedRevenue)}
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">Leitura rapida do que ja voltou ao comprador.</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+              <OrganizerPayoutInfoCard
+                fullName={auth.currentAccount.fullName}
+                document={auth.currentAccount.document}
+                authorizedRevenue={snapshot.summary.authorizedRevenue}
+                platformFeeRevenue={snapshot.summary.platformFeeRevenue}
+                refundedRevenue={snapshot.summary.refundedRevenue}
+              />
+
+              <Card className="border-border bg-card">
+                <CardContent className="space-y-4 p-6">
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Lideres financeiros</p>
+                    <h3 className="text-2xl font-semibold text-foreground">Eventos com maior repasse potencial</h3>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      Ranking rapido para o produtor decidir onde concentrar fechamento, acao comercial e conferencia.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3">
+                    {financialLeaders.map((eventSnapshot) => {
+                      const payoutReady = Math.max(eventSnapshot.authorizedRevenue - eventSnapshot.platformFeeRevenue, 0);
+                      const eventMeta = eventMetaBySlug.get(eventSnapshot.event.slug);
+
+                      return (
+                        <div
+                          key={eventSnapshot.event.id}
+                          className="flex flex-col gap-3 rounded-2xl border border-border bg-background p-4 lg:flex-row lg:items-center lg:justify-between"
+                        >
+                          <div className="space-y-1">
+                            <p className="font-semibold text-foreground">{eventSnapshot.event.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {eventMeta?.dateLabel ?? "Data a confirmar"} - {eventSnapshot.event.venueName}
+                            </p>
+                          </div>
+
+                          <div className="grid gap-1 text-sm lg:text-right">
+                            <p className="font-semibold text-foreground">{currencyFormatter.format(payoutReady)}</p>
+                            <p className="text-muted-foreground">
+                              Bruto {currencyFormatter.format(eventSnapshot.grossRevenue)} - Fee{" "}
+                              {currencyFormatter.format(eventSnapshot.platformFeeRevenue)}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="events" className="space-y-4">
+            <OrganizerEventPerformanceTable events={snapshot.events} eventMetaBySlug={eventMetaBySlug} />
+
             {snapshot.events.map((eventSnapshot) => (
               <OrganizerEventCard
                 key={eventSnapshot.event.id}
@@ -687,8 +916,8 @@ const OrganizerEventsDashboard = () => {
             ) : (
               <Card className="border-border bg-card">
                 <CardContent className="p-6 text-sm leading-6 text-muted-foreground">
-                  Nenhum evento exige triagem agora. Assim que surgir fila manual, falha de comunicacao ou outro desvio,
-                  ele aparece aqui.
+                  Nenhum evento exige triagem agora. Quando surgir fila manual, falha de comunicacao ou quebra de operacao,
+                  o painel destaca aqui primeiro.
                 </CardContent>
               </Card>
             )}
@@ -713,7 +942,7 @@ const OrganizerEventsDashboard = () => {
             ) : (
               <Card className="border-border bg-card">
                 <CardContent className="p-6 text-sm leading-6 text-muted-foreground">
-                  Todos os eventos do catalogo ja receberam algum sinal operacional nesta base local.
+                  Todos os eventos publicados ja receberam algum sinal comercial ou operacional neste ambiente.
                 </CardContent>
               </Card>
             )}
@@ -736,37 +965,57 @@ const OrganizerEventsDashboard = () => {
               <CardContent className="grid gap-4 p-6 lg:grid-cols-3">
                 <div className="rounded-2xl border border-border bg-background p-4">
                   <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    <CalendarRange className="h-4 w-4 text-primary" />
-                    Catalogo
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    O catalogo remoto agora consegue listar eventos que nasceram no backend, sem depender so dos seeds
-                    locais da vitrine.
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-border bg-background p-4">
-                  <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     <BarChart3 className="h-4 w-4 text-primary" />
-                    Organizacao
+                    Leitura executiva
                   </div>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    O organizador enxerga receita, tickets, comunicacao, atencao operacional e agora tambem cria, edita e
-                    arquiva evento real no banco.
+                    O painel deixa de ser so lista de eventos e vira uma mesa de comando com charts, agenda e ranking financeiro.
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-border bg-background p-4">
                   <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    <Ticket className="h-4 w-4 text-primary" />
+                    <Wallet className="h-4 w-4 text-primary" />
+                    Fechamento
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    O bloco de repasse agora fica visivel no centro do dashboard, mas ainda precisa virar fluxo real com historico e solicitacao.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-background p-4">
+                  <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    <Sparkles className="h-4 w-4 text-primary" />
                     Proximo salto
                   </div>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    Os blocos naturais agora sao lotes, multiplas sessoes, venues, mapas e permissoes de colaboracao.
+                    Agora faz sentido atacar lotes, calendario mais rico, dados bancarios, exportacoes e governanca de produtor.
                   </p>
                 </div>
               </CardContent>
             </Card>
+
+            {topTicketEvent ? (
+              <Card className="border-border bg-card">
+                <CardContent className="flex flex-col gap-4 p-6 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Maior publico emitido</p>
+                    <h3 className="text-2xl font-semibold text-foreground">{topTicketEvent.event.title}</h3>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      {topTicketEvent.issuedTickets} ingresso(s) emitido(s), {topTicketEvent.totalOrders} pedido(s) e{" "}
+                      {currencyFormatter.format(topTicketEvent.grossRevenue)} em bruto.
+                    </p>
+                  </div>
+
+                  <Button asChild variant="outline">
+                    <Link to={`/eventos/${topTicketEvent.event.slug}`}>
+                      <ArrowRight className="h-4 w-4" />
+                      Abrir pagina publica
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : null}
           </TabsContent>
         </Tabs>
       </main>

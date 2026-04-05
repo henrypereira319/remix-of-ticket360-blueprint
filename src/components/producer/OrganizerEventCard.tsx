@@ -24,23 +24,23 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   timeStyle: "short",
 });
 
-const formatDateTime = (value?: string | null) => (value ? dateFormatter.format(new Date(value)) : "—");
+const formatDateTime = (value?: string | null) => (value ? dateFormatter.format(new Date(value)) : "--");
 
 const statusMeta = {
   published: {
-    label: "Sem operação",
+    label: "Sem operacao",
     variant: "outline" as const,
     helper: "Evento pronto, mas ainda sem pedidos relevantes nesta base.",
   },
   selling: {
     label: "Com vendas",
     variant: "default" as const,
-    helper: "Evento com pedidos, emissão ou histórico financeiro.",
+    helper: "Evento com pedidos, emissao ou historico financeiro.",
   },
   attention: {
-    label: "Em atenção",
+    label: "Em atencao",
     variant: "secondary" as const,
-    helper: "Existem pendências manuais ou sinais de revisão.",
+    helper: "Existem pendencias manuais ou sinais de revisao.",
   },
 };
 
@@ -99,7 +99,7 @@ export const OrganizerEventCard = ({
               <Badge variant={status.variant}>{status.label}</Badge>
               <Badge variant={publication.variant}>{publication.label}</Badge>
               <Badge variant="outline">{snapshot.event.category}</Badge>
-              {snapshot.underReviewOrders > 0 ? <Badge variant="secondary">{snapshot.underReviewOrders} em revisão</Badge> : null}
+              {snapshot.underReviewOrders > 0 ? <Badge variant="secondary">{snapshot.underReviewOrders} em revisao</Badge> : null}
             </div>
 
             <div className="space-y-1">
@@ -124,7 +124,7 @@ export const OrganizerEventCard = ({
             <Button asChild size="sm" variant="outline">
               <Link to={publicEventHref}>
                 <ArrowRight className="h-4 w-4" />
-                Página pública
+                Pagina publica
               </Link>
             </Button>
             <Button asChild size="sm" variant="outline">
@@ -164,7 +164,7 @@ export const OrganizerEventCard = ({
             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Pedidos</p>
             <p className="mt-2 text-2xl font-semibold text-foreground">{snapshot.totalOrders}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {snapshot.approvedOrders} aprovados · {snapshot.cancelledOrders} cancelados
+              {snapshot.approvedOrders} aprovados - {snapshot.cancelledOrders} cancelados
             </p>
           </div>
 
@@ -180,22 +180,22 @@ export const OrganizerEventCard = ({
             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Ingressos</p>
             <p className="mt-2 text-2xl font-semibold text-foreground">{snapshot.issuedTickets}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Cancelados {snapshot.cancelledTickets} · Fee {currencyFormatter.format(snapshot.platformFeeRevenue)}
+              Cancelados {snapshot.cancelledTickets} - Fee {currencyFormatter.format(snapshot.platformFeeRevenue)}
             </p>
           </div>
 
           <div className="rounded-xl border border-border bg-background p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Comunicação</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Comunicacao</p>
             <p className="mt-2 text-2xl font-semibold text-foreground">{snapshot.sentNotifications}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Falhas {snapshot.failedNotifications} · Analytics {snapshot.analyticsEvents}
+              Falhas {snapshot.failedNotifications} - Analytics {snapshot.analyticsEvents}
             </p>
           </div>
         </div>
 
         <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
           <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Sinais do módulo</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Sinais do modulo</p>
             <div className="grid gap-2">
               {snapshot.diagnostics.map((diagnostic) => (
                 <div key={diagnostic} className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-muted-foreground">
@@ -209,7 +209,7 @@ export const OrganizerEventCard = ({
             <div className="rounded-xl border border-border bg-background px-3 py-2">
               <div className="inline-flex items-center gap-2">
                 <CalendarClock className="h-4 w-4 text-primary" />
-                Última atividade
+                Ultima atividade
               </div>
               <p className="mt-2 font-medium text-foreground">{formatDateTime(snapshot.lastActivityAt)}</p>
             </div>
@@ -217,7 +217,7 @@ export const OrganizerEventCard = ({
             <div className="rounded-xl border border-border bg-background px-3 py-2">
               <div className="inline-flex items-center gap-2">
                 <Ticket className="h-4 w-4 text-primary" />
-                Último pedido
+                Ultimo pedido
               </div>
               <p className="mt-2 font-medium text-foreground">{formatDateTime(snapshot.latestOrderAt)}</p>
             </div>
@@ -225,22 +225,22 @@ export const OrganizerEventCard = ({
             <div className="rounded-xl border border-border bg-background px-3 py-2">
               <div className="inline-flex items-center gap-2">
                 <Mail className="h-4 w-4 text-primary" />
-                Pendência imediata
+                Pendencia imediata
               </div>
               <p className="mt-2 font-medium text-foreground">
-                {snapshot.status === "attention" ? "Revisar fila manual e comunicação." : "Sem bloqueio operacional aberto."}
+                {snapshot.status === "attention" ? "Revisar fila manual e comunicacao." : "Sem bloqueio operacional aberto."}
               </p>
             </div>
 
             <div className="rounded-xl border border-border bg-background px-3 py-2">
               <div className="inline-flex items-center gap-2">
                 <Globe2 className="h-4 w-4 text-primary" />
-                Publicação
+                Publicacao
               </div>
               <p className="mt-2 font-medium text-foreground">
                 {snapshot.publicationStatus === "published"
                   ? `No ar${snapshot.publishedAt ? ` desde ${formatDateTime(snapshot.publishedAt)}` : "."}`
-                  : "Fora do catálogo público neste ambiente."}
+                  : "Fora do catalogo publico neste ambiente."}
               </p>
             </div>
 

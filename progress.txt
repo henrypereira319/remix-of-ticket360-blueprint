@@ -105,6 +105,8 @@ What is already materially implemented
 - New events created in the organizer module now flow into the public catalog through backend list/detail/runtime routes, instead of remaining invisible outside the dashboard.
 - Catalog list, detail, runtime and search now read backend-created published events directly, with local seeds used only as bootstrap/templates when needed.
 - The HTTP smoke suite now validates producer CRUD plus public catalog visibility for created events.
+- The producer dashboard now behaves more like a cockpit than a list view, with revenue and payout charts, agenda and preview blocks, a detailed per-event table and an explicit payout information card.
+- The producer module now prioritizes financial clarity with gross, fee, payout-ready and occupancy visibility in the main surface instead of scattering those signals across isolated cards only.
 
 14. Support and self-service foundation
 - A real support domain now exists in Postgres with `support_cases` migration, persistence and audit logging.
@@ -169,6 +171,7 @@ What is not started or still far from done
 2. Producer/admin operations
 - No real backoffice for payments, orders, tickets, support or manual review.
 - A producer console now exists for portfolio, event health, backend-backed publish/unpublish and real event CRUD.
+- The producer console now also has a stronger dashboard layer, but formal payout requests, bank data, exports, collaborators and operational governance for producers are still missing.
 - Collaborators, permissions, venue/map editors, multi-session management and operational governance for producers are still missing.
 
 3. SEO / SSR / edge

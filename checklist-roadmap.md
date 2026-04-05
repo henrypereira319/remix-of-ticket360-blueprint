@@ -210,6 +210,8 @@
 - [x] Navegação de organização coerente entre header, conta e operação.
 - [x] CRUD de eventos real.
 - [x] Publicação / despublicação.
+- [x] Dashboard do produtor com charts comerciais, agenda, preview, leitura financeira e bloco visível de repasse.
+- [x] Tabela detalhada por evento com pedidos, bruto, repasse, taxa, ocupação, comunicação e links rápidos.
 - [ ] Gerenciamento de venues e mapas.
 - [ ] Regras de lote, taxa e políticas.
 - [ ] Configuração de disponibilidade e sessões.
